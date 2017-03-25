@@ -1,0 +1,91 @@
+<!--suppress AndroidElementNotAllowed, AndroidDomInspection -->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory
+		android:title="@string/preference_category_backgrounds">
+
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:disableDependentsState="true"
+			android:key="preference_use_default_background"
+			android:summary="@string/preference_use_default_background_desc"
+			android:title="@string/preference_use_default_background"/>
+
+		<com.github.danielnilsson9.colorpickerview.preference.ColorPreference
+			android:defaultValue="0xFFE0E0E0"
+			android:dependency="preference_use_default_background"
+			android:key="preference_background_regular"
+			android:title="@string/preference_background_regular"/>
+
+		<com.github.danielnilsson9.colorpickerview.preference.ColorPreference
+			android:defaultValue="0xFFBBBBBB"
+			android:dependency="preference_use_default_background"
+			android:key="preference_background_regular_past"
+			android:title="@string/preference_background_regular_past"/>
+
+		<com.github.danielnilsson9.colorpickerview.preference.ColorPreference
+			android:defaultValue="0xFFFFFF22"
+			android:dependency="preference_use_default_background"
+			android:key="preference_background_exam"
+			android:title="@string/preference_background_exam"/>
+
+		<com.github.danielnilsson9.colorpickerview.preference.ColorPreference
+			android:defaultValue="0xFFEEEE00"
+			android:dependency="preference_use_default_background"
+			android:key="preference_background_exam_past"
+			android:title="@string/preference_background_exam_past"/>
+
+		<com.github.danielnilsson9.colorpickerview.preference.ColorPreference
+			android:defaultValue="0xFFFFFFFF"
+			android:dependency="preference_use_default_background"
+			android:key="preference_background_irregular"
+			android:title="@string/preference_background_irregular"/>
+
+		<com.github.danielnilsson9.colorpickerview.preference.ColorPreference
+			android:defaultValue="0xFFEEEEEE"
+			android:dependency="preference_use_default_background"
+			android:key="preference_background_irregular_past"
+			android:title="@string/preference_background_irregular_past"/>
+
+		<com.github.danielnilsson9.colorpickerview.preference.ColorPreference
+			android:defaultValue="0xFFBBBBFF"
+			android:key="preference_background_free"
+			android:title="@string/preference_background_free"/>
+
+		<com.github.danielnilsson9.colorpickerview.preference.ColorPreference
+			android:defaultValue="0xFFE00000"
+			android:key="preference_marker"
+			android:title="@string/preference_marker"/>
+
+		<Preference
+			android:key="preference_timetable_colors_reset"
+			android:title="@string/preference_timetable_colors_reset"/>
+
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:title="@string/preference_category_themes">
+
+		<ListPreference
+			android:defaultValue="default"
+			android:entries="@array/themes"
+			android:entryValues="@array/theme_values"
+			android:key="preference_theme"
+			android:summary="%s"
+			android:title="@string/preference_theme"/>
+
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="preference_dark_theme"
+			android:title="@string/preference_dark_theme"/>
+
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:dependency="preference_dark_theme"
+			android:key="preference_dark_theme_amoled"
+			android:summary="@string/preference_dark_theme_amoled_desc"
+			android:title="@string/preference_dark_theme_amoled"/>
+
+	</PreferenceCategory>
+
+</PreferenceScreen>

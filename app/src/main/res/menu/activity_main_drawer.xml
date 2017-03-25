@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<item android:title="@string/nav_timetables">
+		<menu>
+			<group android:checkableBehavior="single">
+				<item
+					android:id="@+id/nav_show_personal"
+					android:icon="@drawable/ic_personal"
+					android:title="@string/personal_timetable"/>
+				<item
+					android:id="@+id/nav_show_classes"
+					android:icon="@drawable/ic_classes"
+					android:title="@string/classes"/>
+				<item
+					android:id="@+id/nav_show_teachers"
+					android:icon="@drawable/ic_teacher"
+					android:title="@string/teachers"/>
+				<item
+					android:id="@+id/nav_show_rooms"
+					android:icon="@drawable/ic_rooms"
+					android:title="@string/rooms"/>
+			</group>
+		</menu>
+	</item>
+
+	<group android:checkableBehavior="none">
+		<!--item
+			android:id="@+id/nav_lexicon"
+			android:icon="@drawable/ic_lexicon"
+			android:title="@string/lexicon">
+		</item-->
+		<item
+			android:id="@+id/nav_settings"
+			android:icon="@drawable/ic_settings"
+			android:title="@string/settings">
+		</item>
+	</group>
+</menu>

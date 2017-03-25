@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:gravity="center"
+	android:orientation="vertical">
+
+	<TextView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_margin="16dp"
+		android:layout_marginBottom="100dp"
+		android:gravity="center"
+		android:text="@string/autoupdate_failed"
+		android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+	<Button
+		android:id="@+id/btnTryAgain"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="@string/autoupdate_try_again"/>
+
+	<Button
+		android:id="@+id/btnManualUpdate"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="@string/autoupdate_manual_update"/>
+
+</LinearLayout>
+

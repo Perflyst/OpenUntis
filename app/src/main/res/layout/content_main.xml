@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/content_main"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	app:layout_behavior="@string/appbar_scrolling_view_behavior"
+	tools:context=".activity.ActivityMain"
+	tools:showIn="@layout/app_bar_main">
+
+	<RelativeLayout
+		android:id="@+id/input_date"
+		android:layout_width="@dimen/left_sidebar_width"
+		android:layout_height="@dimen/header_height"
+		android:clickable="true">
+
+		<ImageView
+			android:id="@+id/ivSelectDate"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:contentDescription="@string/jump_to_date"
+			android:padding="4dp"
+			android:tint="@color/colorSecondary_text"
+			app:srcCompat="@drawable/ic_calendar"/>
+
+		<View
+			android:layout_width="1dp"
+			android:layout_height="match_parent"
+			android:layout_alignParentRight="true"
+			android:background="?android:attr/listDivider"/>
+	</RelativeLayout>
+
+	<android.support.v4.view.ViewPager
+		android:id="@+id/viewpagerHeader"
+		android:layout_width="match_parent"
+		android:layout_height="@dimen/header_height"
+		android:layout_toRightOf="@+id/input_date">
+
+	</android.support.v4.view.ViewPager>
+
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="1dp"
+		android:layout_alignParentBottom="false"
+		android:layout_below="@+id/viewpagerHeader"
+		android:background="?android:attr/listDivider"/>
+
+	<android.support.v4.widget.SwipeRefreshLayout
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/swipeRefresh"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_below="@+id/viewpagerHeader"
+		android:layout_marginTop="1dp"
+		>
+
+		<ScrollView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:fillViewport="true">
+
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+
+				<LinearLayout
+					android:id="@+id/hour_view_sidebar"
+					android:layout_width="@dimen/left_sidebar_width"
+					android:layout_height="match_parent"
+					android:orientation="vertical">
+
+				</LinearLayout>
+
+				<View
+					android:layout_width="1dp"
+					android:layout_height="match_parent"
+					android:layout_marginLeft="-1dp"
+					android:background="?android:attr/listDivider"/>
+
+				<android.support.v4.view.ViewPager
+					android:id="@+id/viewpagerTimegrid"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					>
+
+				</android.support.v4.view.ViewPager>
+			</LinearLayout>
+		</ScrollView>
+	</android.support.v4.widget.SwipeRefreshLayout>
+
+	<TextView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentRight="true"
+		android:paddingBottom="@dimen/activity_vertical_margin"
+		android:paddingLeft="@dimen/activity_horizontal_margin"
+		android:paddingRight="@dimen/activity_horizontal_margin"
+		android:paddingTop="@dimen/activity_vertical_margin"
+		android:text="@string/credits"
+		android:visibility="gone"/>
+
+	<ProgressBar
+		android:id="@+id/pbLoading"
+		style="?android:attr/progressBarStyle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentRight="true"
+		android:layout_margin="8dp"/>
+
+</RelativeLayout>

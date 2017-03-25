@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:padding="16dp">
+
+	<TextView
+		android:id="@+id/tvTitle"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="8dp"
+		android:gravity="center_horizontal"
+		android:text="@string/suggest_new_feature"
+		android:textColor="@color/colorPrimary_text"
+		android:textSize="18sp"/>
+
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="1dp"
+		android:background="@color/colorPrimary_text"/>
+
+	<EditText
+		android:id="@+id/etTitle"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="8dp"
+		android:ems="10"
+		android:hint="@string/title"
+		android:inputType="textPersonName"/>
+
+	<EditText
+		android:id="@+id/etDesc"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:ems="10"
+		android:gravity="top"
+		android:hint="@string/description"
+		android:inputType="textMultiLine"/>
+
+	<Button
+		android:id="@+id/btnSend"
+		style="@style/Widget.AppCompat.Button.Borderless"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/send"/>
+
+</LinearLayout>

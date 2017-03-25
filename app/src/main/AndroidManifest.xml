@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.sapuseven.untis">
+
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+	<uses-permission android:name="android.permission.INTERNET"/>
+	<uses-permission android:name="android.permission.WAKE_LOCK"/>
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+	<uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+
+	<application
+		android:allowBackup="true"
+		android:fullBackupContent="@xml/backup_descriptor"
+		android:icon="@mipmap/ic_launcher"
+		android:label="@string/app_name"
+		android:supportsRtl="false"
+		android:theme="@style/AppTheme">
+
+		<activity
+			android:name=".activity.ActivityMain"
+			android:label="@string/app_name"
+			android:screenOrientation="portrait"
+			android:theme="@style/AppTheme.NoActionBar">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"/>
+				<category android:name="android.intent.category.LAUNCHER"/>
+			</intent-filter>
+		</activity>
+
+		<activity
+			android:name=".activity.ActivityLogin"
+			android:label="@string/login"
+			android:theme="@style/AppTheme.NoActionBar">
+		</activity>
+
+		<activity android:name=".activity.ActivityAppUpdate">
+		</activity>
+
+		<activity
+			android:name=".activity.ActivityLoginDataInput"
+			android:label="@string/login"
+			android:parentActivityName=".activity.ActivityLogin"
+			android:theme="@style/AppTheme.NoActionBar">
+			<meta-data
+				android:name="android.support.PARENT_ACTIVITY"
+				android:value=".activity.ActivityLogin"/>
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW"/>
+
+				<category android:name="android.intent.category.DEFAULT"/>
+				<category android:name="android.intent.category.BROWSABLE"/>
+
+				<data
+					android:host="setschool"
+					android:scheme="untis"/>
+			</intent-filter>
+		</activity>
+
+		<activity
+			android:name=".activity.ActivityPreferences"
+			android:label="@string/settings"
+			android:parentActivityName=".activity.ActivityMain"
+			android:theme="@style/AppTheme.ActionBar">
+			<meta-data
+				android:name="android.support.PARENT_ACTIVITY"
+				android:value="com.sapuseven.untis.activity.ActivityMain"/>
+		</activity>
+
+		<activity
+			android:name=".activity.ActivityFeatures"
+			android:label="@string/new_features"
+			android:parentActivityName=".activity.ActivityMain"
+			android:theme="@style/AppTheme">
+			<meta-data
+				android:name="android.support.PARENT_ACTIVITY"
+				android:value="com.sapuseven.untis.activity.ActivityMain"/>
+		</activity>
+
+		<meta-data
+			android:name="io.fabric.ApiKey"
+			android:value="YOUR_FABRIC_API_SECRET"/>
+
+		<provider
+			android:name="android.support.v4.content.FileProvider"
+			android:authorities="${applicationId}.provider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/provider_paths"/>
+		</provider>
+
+		<receiver android:name=".notification.StartupReceiver">
+			<intent-filter>
+				<action android:name="android.intent.action.BOOT_COMPLETED"/>
+			</intent-filter>
+		</receiver>
+
+		<receiver android:name=".notification.NotificationSetup"/>
+
+		<receiver android:name=".notification.NotificationReceiver"/>
+	</application>
+</manifest>

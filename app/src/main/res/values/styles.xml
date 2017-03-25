@@ -1,0 +1,181 @@
+<resources>
+
+	<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="AppTheme.ThemeUntis" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemeUntis</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeUntis</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="AppTheme.ThemeBlue" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemeBlue</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeBlue</item>
+		<item name="colorAccent">@color/colorAccentThemeBlue</item>
+	</style>
+
+	<style name="AppTheme.ThemeGreen" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemeGreen</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeGreen</item>
+		<item name="colorAccent">@color/colorAccentThemeGreen</item>
+	</style>
+
+	<style name="AppTheme.ThemePink" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemePink</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemePink</item>
+		<item name="colorAccent">@color/colorAccentThemePink</item>
+	</style>
+
+	<style name="AppTheme.ThemeCyan" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemeCyan</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeCyan</item>
+		<item name="colorAccent">@color/colorAccentThemeCyan</item>
+	</style>
+
+	<style name="AppTheme.ActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="AppTheme.ThemeUntis.ActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemeUntis</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeUntis</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="AppTheme.ThemeBlue.ActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemeBlue</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeBlue</item>
+		<item name="colorAccent">@color/colorAccentThemeBlue</item>
+	</style>
+
+	<style name="AppTheme.ThemeGreen.ActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemeGreen</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeGreen</item>
+		<item name="colorAccent">@color/colorAccentThemeGreen</item>
+	</style>
+
+	<style name="AppTheme.ThemePink.ActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemePink</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemePink</item>
+		<item name="colorAccent">@color/colorAccentThemePink</item>
+	</style>
+
+	<style name="AppTheme.ThemeCyan.ActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemeCyan</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeCyan</item>
+		<item name="colorAccent">@color/colorAccentThemeCyan</item>
+	</style>
+
+	<!--========================= DARK THEMES =========================-->
+
+	<style name="AppThemeDark" parent="Theme.AppCompat.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="AppThemeDark.ThemeUntis" parent="Theme.AppCompat.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemeUntis</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeUntis</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="AppThemeDark.ThemeBlue" parent="Theme.AppCompat.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemeBlue</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeBlue</item>
+		<item name="colorAccent">@color/colorAccentThemeBlue</item>
+	</style>
+
+	<style name="AppThemeDark.ThemeGreen" parent="Theme.AppCompat.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemeGreen</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeGreen</item>
+		<item name="colorAccent">@color/colorAccentThemeGreen</item>
+	</style>
+
+	<style name="AppThemeDark.ThemePink" parent="Theme.AppCompat.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemePink</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemePink</item>
+		<item name="colorAccent">@color/colorAccentThemePink</item>
+	</style>
+
+	<style name="AppThemeDark.ThemeCyan" parent="Theme.AppCompat.NoActionBar">
+		<item name="colorPrimary">@color/colorPrimaryThemeCyan</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeCyan</item>
+		<item name="colorAccent">@color/colorAccentThemeCyan</item>
+	</style>
+
+	<style name="AppThemeDark.ActionBar" parent="Theme.AppCompat">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="AppThemeDark.ThemeUntis.ActionBar" parent="Theme.AppCompat">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemeUntis</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeUntis</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="AppThemeDark.ThemeBlue.ActionBar" parent="Theme.AppCompat">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemeBlue</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeBlue</item>
+		<item name="colorAccent">@color/colorAccentThemeBlue</item>
+	</style>
+
+	<style name="AppThemeDark.ThemeGreen.ActionBar" parent="Theme.AppCompat">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemeGreen</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeGreen</item>
+		<item name="colorAccent">@color/colorAccentThemeGreen</item>
+	</style>
+
+	<style name="AppThemeDark.ThemePink.ActionBar" parent="Theme.AppCompat">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemePink</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemePink</item>
+		<item name="colorAccent">@color/colorAccentThemePink</item>
+	</style>
+
+	<style name="AppThemeDark.ThemeCyan.ActionBar" parent="Theme.AppCompat">
+		<item name="windowActionBar">true</item>
+		<item name="windowNoTitle">false</item>
+		<item name="colorPrimary">@color/colorPrimaryThemeCyan</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDarkThemeCyan</item>
+		<item name="colorAccent">@color/colorAccentThemeCyan</item>
+	</style>
+
+	<style name="AppTheme.NoActionBar">
+		<item name="windowActionBar">false</item>
+		<item name="windowNoTitle">true</item>
+	</style>
+
+	<style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+	<style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+</resources>

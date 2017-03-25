@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="colorpickerview__hexadecimal_input">Hexadecimal</string>
+	<string name="colorpickerview__ok">OK</string>
+	<string name="colorpickerview__arrow_down" translatable="false">↓</string>
+</resources>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+
+	<View
+		android:layout_width="1dp"
+		android:layout_height="match_parent"
+		android:layout_alignParentRight="true"
+		android:background="?android:attr/listDivider"/>
+
+	<View
+		android:id="@+id/vBackground"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_marginRight="1dp"
+		android:background="@drawable/timetable_item_free_background">
+
+	</View>
+
+	<com.sapuseven.untis.view.VerticalTextView
+		android:id="@+id/textView1"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_marginTop="20dp"
+		android:gravity="center_horizontal"
+		android:textColor="?android:attr/textColorPrimary"
+		android:textSize="@dimen/table_item_primary"/>
+
+</RelativeLayout>

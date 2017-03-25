@@ -1,0 +1,48 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+
+android {
+	compileSdkVersion 25
+	buildToolsVersion '25.0.2'
+	resourcePrefix "colorpickerview__"
+
+	defaultConfig {
+		minSdkVersion 15
+		targetSdkVersion 25
+		versionCode 4
+		versionName "1.4.0"
+	}
+	buildTypes {
+	}
+	return void;
+}
+
+dependencies {
+	compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+ext {
+	bintrayRepo = 'maven'
+	bintrayName = 'color-picker-view'
+
+	publishedGroupId = 'com.github.danielnilsson9'
+	libraryName = 'ColorPickerView'
+	artifact = 'color-picker-view'
+
+	libraryDescription = 'A simple good looking color picker component for Android.'
+
+	siteUrl = 'https://github.com/danielnilsson9/color-picker-view'
+	gitUrl = 'https://github.com/danielnilsson9/color-picker-view.git'
+
+	libraryVersion = '1.4.0'
+
+	developerId = 'danielnilsson9'
+	developerName = 'Daniel Nilsson'
+	developerEmail = 'daniel.nilsson.9@gmail.com'
+
+	licenseName = 'The Apache Software License, Version 2.0'
+	licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+	allLicenses = ["Apache-2.0"]
+}
+
+apply from: 'bintrayupl.gradle'

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<Preference
+		android:key="preference_info_access_key"
+		android:title="@string/access_key"/>
+
+	<Preference
+		android:key="preference_info_app_version"
+		android:title="@string/app_version"/>
+
+	<Preference
+		android:key="preference_info_changelog"
+		android:title="@string/changelog"/>
+
+	<Preference
+		android:key="preference_info_contact_email"
+		android:summary="@string/contact_email"
+		android:title="@string/contact"/>
+
+	<Preference
+		android:key="preference_info_logout"
+		android:title="@string/logout"/>
+</PreferenceScreen>
