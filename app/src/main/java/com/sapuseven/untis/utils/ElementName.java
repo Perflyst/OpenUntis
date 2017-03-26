@@ -59,6 +59,7 @@ public class ElementName {
 	private String getTypeName(int type) {
 		switch (type) {
 			case CLASS:
+				//noinspection SpellCheckingInspection
 				return "klassen";
 			case TEACHER:
 				return "teachers";

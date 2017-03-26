@@ -159,6 +159,7 @@
             <task name="transformClassesWithDexBuilderForDebugAndroidTest" type="com.android.build.gradle.internal.pipeline.TransformTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="mergeDebugAssets" type="com.android.build.gradle.tasks.MergeSourceSetFolders">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="javaPreCompileReleaseUnitTest" type="com.android.build.gradle.tasks.JavaPreCompileTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
+            <task name="validateSigningRelease" type="com.android.build.gradle.internal.tasks.ValidateSigningTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="javaPreCompileRelease" type="com.android.build.gradle.tasks.JavaPreCompileTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="transformDexArchiveWithDexMergerForDebug" type="com.android.build.gradle.internal.pipeline.TransformTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="uninstallAll">Uninstall all applications.&lt;p&gt;&lt;i&gt;Task group: Install&lt;i&gt;</task>
@@ -291,6 +292,7 @@
             <task name="mergeDebugAssets" type="com.android.build.gradle.tasks.MergeSourceSetFolders">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="javaPreCompileReleaseUnitTest" type="com.android.build.gradle.tasks.JavaPreCompileTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="resolveReleaseUnitTestDependencies" type="com.android.build.gradle.internal.tasks.ResolveDependenciesTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
+            <task name="validateSigningRelease" type="com.android.build.gradle.internal.tasks.ValidateSigningTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="javaPreCompileRelease" type="com.android.build.gradle.tasks.JavaPreCompileTask">&lt;i&gt;Task group: other&lt;i&gt;</task>
             <task name="connectedCheck">Runs all device checks on currently connected devices.&lt;p&gt;&lt;i&gt;Task group: verification&lt;i&gt;</task>
             <task name="connectedDebugAndroidTest" type="com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask">Installs and runs the tests for debug on connected devices.&lt;p&gt;&lt;i&gt;Task group: verification&lt;i&gt;</task>

@@ -243,9 +243,9 @@ public class NotificationSetup extends BroadcastReceiver {
 		@SuppressWarnings("deprecation")
 		@Override
 		protected String doInBackground(Void... p1) {
-			String fname = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
-			if (listManager.exists(fname, true)) {
-				return listManager.readList(fname, true);
+			String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
+			if (listManager.exists(fileName, true)) {
+				return listManager.readList(fileName, true);
 			}
 
 			InputStream inputStream;
@@ -290,8 +290,8 @@ public class NotificationSetup extends BroadcastReceiver {
 				JSONObject jsonObj = new JSONObject(result);
 				if (jsonObj.has("result")) {
 					setup(jsonObj.getJSONObject("result"));
-					String fname = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
-					listManager.saveList(fname, result, true);
+					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
+					listManager.saveList(fileName, result, true);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();

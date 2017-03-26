@@ -51,14 +51,14 @@ public class ColorPickerDialogFragment extends DialogFragment {
 	private ColorPickerDialogListener mListener;
 
 	private static ColorPickerDialogFragment newInstance(
-			int dialogId, String title, String okButtonText, int initialColor, boolean showAlphaSlider, boolean showHexadecimalInput) {
+			int dialogId, String title, int initialColor, boolean showHexadecimalInput) {
 
 		ColorPickerDialogFragment frag = new ColorPickerDialogFragment();
 		Bundle args = new Bundle();
 		args.putInt("id", dialogId);
 		args.putString("title", title);
-		args.putString("ok_button", okButtonText);
-		args.putBoolean("alpha", showAlphaSlider);
+		args.putString("ok_button", "OK");
+		args.putBoolean("alpha", false);
 		args.putInt("init_color", initialColor);
 		args.putBoolean(ARG_HEXADECIMAL_INPUT, showHexadecimalInput);
 
@@ -108,7 +108,8 @@ public class ColorPickerDialogFragment extends DialogFragment {
 
 
 		d.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		d.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT,
+		if (d.getWindow() != null)
+			d.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
 
 		return d;
@@ -233,9 +234,7 @@ public class ColorPickerDialogFragment extends DialogFragment {
 	public static class Builder {
 		private final int dialogId;
 		private final int initialColor;
-		private String okButtonText;
 		private String title;
-		private boolean showAlphaSlider;
 		private boolean showHexadecimalInput;
 
 		public Builder(int dialogId, int initialColor) {
@@ -248,23 +247,13 @@ public class ColorPickerDialogFragment extends DialogFragment {
 			return this;
 		}
 
-		public Builder okButtonText(String text) {
-			this.okButtonText = text;
-			return this;
-		}
-
-		public Builder showAlphaSlider(boolean show) {
-			this.showAlphaSlider = show;
-			return this;
-		}
-
-		public Builder showHexadecimalInput(boolean show) {
-			this.showHexadecimalInput = show;
+		public Builder showHexadecimalInput() {
+			this.showHexadecimalInput = true;
 			return this;
 		}
 
 		public ColorPickerDialogFragment build() {
-			return ColorPickerDialogFragment.newInstance(dialogId, title, okButtonText, initialColor, showAlphaSlider, showHexadecimalInput);
+			return ColorPickerDialogFragment.newInstance(dialogId, title, initialColor, showHexadecimalInput);
 		}
 	}
 }

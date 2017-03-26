@@ -32,17 +32,17 @@ public class ColorPreference extends Preference {
 
 	public ColorPreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		init(attrs);
+		init();
 	}
 
 
 	public ColorPreference(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		init(attrs);
+		init();
 
 	}
 
-	private void init(AttributeSet attrs) {
+	private void init() {
 		setPersistent(true);
 
 		setWidgetLayoutResource(R.layout.colorpickerview__preference_preview_layout);
@@ -72,7 +72,7 @@ public class ColorPreference extends Preference {
 	 * <p>
 	 * Call saveValue() once you have a color to save.
 	 *
-	 * @param listener
+	 * @param listener OnShowDialogListener
 	 */
 	public void setOnShowDialogListener(OnShowDialogListener listener) {
 		mListener = listener;

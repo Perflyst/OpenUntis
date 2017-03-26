@@ -24,6 +24,7 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 
 /**
  * This drawable will draw a simple white and gray chessboard pattern.
@@ -34,12 +35,10 @@ import android.graphics.drawable.Drawable;
  */
 public class AlphaPatternDrawable extends Drawable {
 
+	private final Paint mPaint = new Paint();
+	private final Paint mPaintWhite = new Paint();
+	private final Paint mPaintGray = new Paint();
 	private int mRectangleSize = 10;
-
-	private Paint mPaint = new Paint();
-	private Paint mPaintWhite = new Paint();
-	private Paint mPaintGray = new Paint();
-
 	private int numRectanglesHorizontal;
 	private int numRectanglesVertical;
 
@@ -58,7 +57,7 @@ public class AlphaPatternDrawable extends Drawable {
 	}
 
 	@Override
-	public void draw(Canvas canvas) {
+	public void draw(@NonNull Canvas canvas) {
 		if (mBitmap != null && !mBitmap.isRecycled()) {
 			canvas.drawBitmap(mBitmap, null, getBounds(), mPaint);
 		}
@@ -96,7 +95,7 @@ public class AlphaPatternDrawable extends Drawable {
 	/**
 	 * This will generate a bitmap with the pattern
 	 * as big as the rectangle we were allow to draw on.
-	 * We do this to chache the bitmap so we don't need to
+	 * We do this to cache the bitmap so we don't need to
 	 * recreate it each time draw() is called since it
 	 * takes a few milliseconds.
 	 */
