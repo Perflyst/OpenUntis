@@ -44,11 +44,6 @@ import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 import static com.sapuseven.untis.utils.Authentication.getAuthElement;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2017-01-20
- */
 public class NotificationSetup extends BroadcastReceiver {
 	private ListManager listManager;
 	private Context context;

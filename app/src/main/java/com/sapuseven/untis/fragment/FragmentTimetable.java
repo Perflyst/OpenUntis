@@ -62,12 +62,6 @@ import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-09-28
- */
-
 @SuppressLint("SimpleDateFormat")
 public class FragmentTimetable extends Fragment {
 	private static final String ID_GET_TIMETABLE = "2";

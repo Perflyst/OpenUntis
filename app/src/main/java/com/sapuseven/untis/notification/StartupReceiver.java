@@ -12,11 +12,6 @@ import android.util.Log;
 
 import java.util.Calendar;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2017-01-20
- */
 public class StartupReceiver extends BroadcastReceiver {
 	@SuppressLint("UnsafeProtectedBroadcastReceiver")
 	@Override

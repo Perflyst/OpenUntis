@@ -33,12 +33,6 @@ import java.util.List;
 
 import static com.sapuseven.untis.activity.ActivityMain.setupTheme;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-12-01
- */
-
 public class ActivityFeatures extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +82,7 @@ public class ActivityFeatures extends AppCompatActivity {
 		}
 	}
 
-	public class loadList extends AsyncTask<Void, Void, List<FeatureInfo>> {
+	private class loadList extends AsyncTask<Void, Void, List<FeatureInfo>> {
 		ListView lvFeatures;
 		ProgressBar pbLoading;
 

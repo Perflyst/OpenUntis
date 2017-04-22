@@ -15,12 +15,6 @@ import java.net.URL;
 
 import static com.sapuseven.untis.utils.StreamUtils.readStream;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2017-02-21
- */
-
 public class DisplayChangelog extends AsyncTask<Integer, Void, String> {
 	private final Context context;
 

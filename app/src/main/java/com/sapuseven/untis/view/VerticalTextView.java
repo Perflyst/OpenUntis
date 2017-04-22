@@ -6,12 +6,6 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.Gravity;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-11-02
- */
-
 public class VerticalTextView extends android.support.v7.widget.AppCompatTextView {
 	private final boolean topDown;
 

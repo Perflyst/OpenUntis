@@ -9,12 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2017-02-19
- */
-
 public class Authentication {
 	private static long createTimeBasedCode(long timestamp, String secret) {
 		GeneralSecurityException e;

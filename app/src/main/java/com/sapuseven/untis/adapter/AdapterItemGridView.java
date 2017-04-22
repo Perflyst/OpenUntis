@@ -9,12 +9,6 @@ import android.widget.Filterable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2017-03-10
- */
-
 public class AdapterItemGridView extends ArrayAdapter<String> implements Filterable {
 	private final List<String> originalItems;
 	private final ItemFilter filter = new ItemFilter();

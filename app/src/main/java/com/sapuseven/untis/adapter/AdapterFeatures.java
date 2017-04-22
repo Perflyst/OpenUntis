@@ -31,12 +31,6 @@ import java.util.List;
 import static android.content.Context.MODE_PRIVATE;
 import static android.os.AsyncTask.THREAD_POOL_EXECUTOR;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-12-01
- */
-
 public class AdapterFeatures extends BaseAdapter {
 
 	private static LayoutInflater inflater = null;
@@ -70,7 +64,7 @@ public class AdapterFeatures extends BaseAdapter {
 		View v = convertView;
 		if (v == null)
 			v = inflater.inflate(R.layout.list_item_features, parent, false);
-		final TextView tvHeader = (TextView) v.findViewById(R.id.tvTitle);
+		final TextView tvHeader = (TextView) v.findViewById(R.id.tvName);
 		final TextView tvDesc = (TextView) v.findViewById(R.id.tvDesc);
 		final TextView tvLikes = (TextView) v.findViewById(R.id.tvLikes);
 		final ImageButton btnLike = (ImageButton) v.findViewById(R.id.btnLike);

@@ -1,11 +1,5 @@
 package com.sapuseven.untis.utils;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2017-02-19
- */
-
 @SuppressWarnings("unused")
 public class Constants {
 	public class API {

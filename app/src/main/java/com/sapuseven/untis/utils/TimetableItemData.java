@@ -13,12 +13,6 @@ import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.SUBJECT;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-10-31
- */
-
 public class TimetableItemData {
 	private final ArrayList<Integer> holidays = new ArrayList<>();
 	private String startDateTime = "";
