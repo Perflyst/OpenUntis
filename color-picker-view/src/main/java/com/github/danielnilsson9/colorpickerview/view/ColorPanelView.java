@@ -128,10 +128,8 @@ public class ColorPanelView extends View {
 	protected void onDraw(Canvas canvas) {
 		final Rect rect = mColorRect;
 
-		if (BORDER_WIDTH_PX > 0) {
-			mBorderPaint.setColor(mBorderColor);
-			canvas.drawRect(mDrawingRect, mBorderPaint);
-		}
+		mBorderPaint.setColor(mBorderColor);
+		canvas.drawRect(mDrawingRect, mBorderPaint);
 
 		if (mAlphaPattern != null) {
 			mAlphaPattern.draw(canvas);
@@ -152,8 +150,8 @@ public class ColorPanelView extends View {
 	}
 
 	@Override
-	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-		super.onSizeChanged(w, h, oldw, oldh);
+	protected void onSizeChanged(int w, int h, int oldWidth, int oldHeight) {
+		super.onSizeChanged(w, h, oldWidth, oldHeight);
 
 		mDrawingRect = new Rect();
 		mDrawingRect.left = getPaddingLeft();
@@ -184,38 +182,12 @@ public class ColorPanelView extends View {
 	}
 
 	/**
-	 * Get the color currently show by this view.
-	 *
-	 * @return
-	 */
-	public int getColor() {
-		return mColor;
-	}
-
-	/**
 	 * Set the color that should be shown by this view.
 	 *
-	 * @param color
+	 * @param color Color in hex format
 	 */
 	public void setColor(int color) {
 		mColor = color;
-		invalidate();
-	}
-
-	/**
-	 * Get the color of the border surrounding the panel.
-	 */
-	public int getBorderColor() {
-		return mBorderColor;
-	}
-
-	/**
-	 * Set the color of the border surrounding the panel.
-	 *
-	 * @param color
-	 */
-	public void setBorderColor(int color) {
-		mBorderColor = color;
 		invalidate();
 	}
 

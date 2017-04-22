@@ -7,12 +7,6 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.sapuseven.untis.fragment.FragmentTimetableHeader;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-09-28
- */
-
 public class AdapterTimetableHeader extends FragmentStatePagerAdapter {
 	public AdapterTimetableHeader(FragmentManager fm) {
 		super(fm);

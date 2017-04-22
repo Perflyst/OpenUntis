@@ -7,15 +7,6 @@ import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.STUDENT;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
 
-/**
- * This class is used to store a session object
- * for comfortable access.
- *
- * @author paul
- * @version 1.0
- * @since 2016-09-25
- */
-
 public class SessionInfo {
 	private int elemId;
 	private String elemType;

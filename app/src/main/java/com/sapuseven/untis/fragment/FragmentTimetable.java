@@ -62,12 +62,6 @@ import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-09-28
- */
-
 @SuppressLint("SimpleDateFormat")
 public class FragmentTimetable extends Fragment {
 	private static final String ID_GET_TIMETABLE = "2";
@@ -639,9 +633,9 @@ public class FragmentTimetable extends Fragment {
 
 		@Override
 		protected String doInBackground(Void... p1) {
-			String fname = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
-			if (listManager.exists(fname, true))
-				return listManager.readList(fname, true);
+			String fileName = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
+			if (listManager.exists(fileName, true))
+				return listManager.readList(fileName, true);
 
 			String result;
 			HttpURLConnection urlConnection = null;
@@ -696,8 +690,8 @@ public class FragmentTimetable extends Fragment {
 					}
 				} else if (jsonObj.has("result")) {
 					setTimetableData(jsonObj.getJSONObject("result"));
-					String fname = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
-					listManager.saveList(fname, result, true);
+					String fileName = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
+					listManager.saveList(fileName, result, true);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();

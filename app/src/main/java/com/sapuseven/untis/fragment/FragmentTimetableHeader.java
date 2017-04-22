@@ -27,12 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-09-28
- */
-
 public class FragmentTimetableHeader extends Fragment {
 	private int startDateOffset;
 	private float scale;

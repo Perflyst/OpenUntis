@@ -1,11 +1,5 @@
 package com.sapuseven.untis.utils;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-12-01
- */
-
 public class FeatureInfo {
 	private String title;
 	private String desc;

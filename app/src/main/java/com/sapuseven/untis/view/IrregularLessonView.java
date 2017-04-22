@@ -7,12 +7,6 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2017-01-22
- */
-
 public class IrregularLessonView extends View {
 	private final float scale;
 	private final Paint paint;

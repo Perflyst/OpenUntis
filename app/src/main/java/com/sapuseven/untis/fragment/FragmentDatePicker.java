@@ -13,12 +13,6 @@ import com.sapuseven.untis.activity.ActivityMain;
 
 import java.util.Calendar;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-11-03
- */
-
 public class FragmentDatePicker extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
 	@NonNull

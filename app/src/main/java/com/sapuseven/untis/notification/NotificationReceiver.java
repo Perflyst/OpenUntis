@@ -16,11 +16,6 @@ import com.sapuseven.untis.activity.ActivityMain;
 
 import java.util.Calendar;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2017-01-20
- */
 public class NotificationReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, final Intent intent) {
@@ -107,7 +102,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 				n = new Notification.Builder(context)
 						.setContentTitle(title)
 						.setContentText(message)
-						.setSmallIcon(R.mipmap.ic_launcher_silhouette)
+						.setSmallIcon(R.drawable.ic_stat_timetable)
 						.setContentIntent(pIntent)
 						.setStyle(new Notification.BigTextStyle().bigText(longMessage))
 						.setAutoCancel(false)
@@ -119,7 +114,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 				n = new Notification.Builder(context)
 						.setContentTitle(title)
 						.setContentText(message)
-						.setSmallIcon(R.mipmap.ic_launcher_silhouette)
+						.setSmallIcon(R.drawable.ic_stat_timetable)
 						.setContentIntent(pIntent)
 						.setStyle(new Notification.BigTextStyle().bigText(longMessage))
 						.setAutoCancel(false)

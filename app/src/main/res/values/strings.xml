@@ -91,8 +91,6 @@
 	<string name="notification_subjects">Next lesson: %1$s</string>
 	<string name="notification_rooms">Room: %1$s</string>
 	<string name="notification_teachers">Teacher: %1$s</string>
-	<string name="ok">OK</string>
-	<string name="view_changelog">View ChangeLog</string>
 	<string name="changelog">ChangeLog</string>
 	<string name="close">Close</string>
 	<string name="pref_infos">Info\'s</string>

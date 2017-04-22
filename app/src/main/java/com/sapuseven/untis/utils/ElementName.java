@@ -4,11 +4,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-11-20
- */
 @SuppressWarnings("WeakerAccess")
 public class ElementName {
 	public static final int CLASS = 0x0001;
@@ -59,6 +54,7 @@ public class ElementName {
 	private String getTypeName(int type) {
 		switch (type) {
 			case CLASS:
+				//noinspection SpellCheckingInspection
 				return "klassen";
 			case TEACHER:
 				return "teachers";

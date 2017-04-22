@@ -186,7 +186,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				public void onShowColorPickerDialog(String title, int currentColor) {
 					new ColorPickerDialogFragment.Builder(BACKGROUND_REGULAR_ID, currentColor)
 							.title(title)
-							.showHexadecimalInput(true)
+							.showHexadecimalInput()
 							.build().show(getFragmentManager(), "preference_background_regular_dialog");
 				}
 			});
@@ -197,7 +197,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				public void onShowColorPickerDialog(String title, int currentColor) {
 					new ColorPickerDialogFragment.Builder(BACKGROUND_REGULAR_PAST_ID, currentColor)
 							.title(title)
-							.showHexadecimalInput(true)
+							.showHexadecimalInput()
 							.build().show(getFragmentManager(), "preference_background_regular_past_dialog");
 				}
 			});
@@ -208,7 +208,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				public void onShowColorPickerDialog(String title, int currentColor) {
 					new ColorPickerDialogFragment.Builder(BACKGROUND_EXAM_ID, currentColor)
 							.title(title)
-							.showHexadecimalInput(true)
+							.showHexadecimalInput()
 							.build().show(getFragmentManager(), "preference_background_exam_dialog");
 				}
 			});
@@ -219,7 +219,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				public void onShowColorPickerDialog(String title, int currentColor) {
 					new ColorPickerDialogFragment.Builder(BACKGROUND_EXAM_PAST_ID, currentColor)
 							.title(title)
-							.showHexadecimalInput(true)
+							.showHexadecimalInput()
 							.build().show(getFragmentManager(), "preference_background_exam_past_dialog");
 				}
 			});
@@ -230,7 +230,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				public void onShowColorPickerDialog(String title, int currentColor) {
 					new ColorPickerDialogFragment.Builder(BACKGROUND_IRREGULAR_ID, currentColor)
 							.title(title)
-							.showHexadecimalInput(true)
+							.showHexadecimalInput()
 							.build().show(getFragmentManager(), "preference_background_irregular_dialog");
 				}
 			});
@@ -241,7 +241,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				public void onShowColorPickerDialog(String title, int currentColor) {
 					new ColorPickerDialogFragment.Builder(BACKGROUND_IRREGULAR_PAST_ID, currentColor)
 							.title(title)
-							.showHexadecimalInput(true)
+							.showHexadecimalInput()
 							.build().show(getFragmentManager(), "preference_background_irregular_past_dialog");
 				}
 			});
@@ -252,7 +252,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				public void onShowColorPickerDialog(String title, int currentColor) {
 					new ColorPickerDialogFragment.Builder(BACKGROUND_FREE_ID, currentColor)
 							.title(title)
-							.showHexadecimalInput(true)
+							.showHexadecimalInput()
 							.build().show(getFragmentManager(), "preference_background_free_dialog");
 				}
 			});
@@ -263,7 +263,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				public void onShowColorPickerDialog(String title, int currentColor) {
 					new ColorPickerDialogFragment.Builder(MARKER_ID, currentColor)
 							.title(title)
-							.showHexadecimalInput(true)
+							.showHexadecimalInput()
 							.build().show(getFragmentManager(), "preference_marker_dialog");
 				}
 			});

@@ -4,9 +4,9 @@ import android.content.Context;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
-public class DrawingUtils {
+class DrawingUtils {
 
-	public static int dpToPx(Context c, float dipValue) {
+	static int dpToPx(Context c, float dipValue) {
 		DisplayMetrics metrics = c.getResources().getDisplayMetrics();
 
 		float val = TypedValue.applyDimension(

@@ -6,12 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-10-14
- */
-
 public class Timetable {
 	private final ArrayList<TimetableItemData> timetableItems = new ArrayList<>();
 	private ArrayList<TimegridUnitManager.UnitData> units;

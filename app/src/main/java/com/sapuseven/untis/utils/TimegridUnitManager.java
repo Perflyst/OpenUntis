@@ -4,12 +4,6 @@ import org.json.JSONArray;
 
 import java.util.ArrayList;
 
-/**
- * @author paul
- * @version 1.0
- * @since 2016-10-15
- */
-
 public class TimegridUnitManager {
 	private JSONArray data;
 	private int length = -1;
