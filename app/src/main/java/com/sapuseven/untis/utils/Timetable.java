@@ -35,9 +35,8 @@ public class Timetable {
 	}
 
 	public void setFromJsonObject(JSONObject data) {
-		for (int i = 0; i < data.optJSONArray("periods").length(); i++) {
+		for (int i = 0; i < data.optJSONArray("periods").length(); i++)
 			addItem(new TimetableItemData(data.optJSONArray("periods").optJSONObject(i)));
-		}
 	}
 
 	public int indexOf(String startDateTime, TimegridUnitManager unitManager) {
@@ -45,7 +44,7 @@ public class Timetable {
 			if (units == null)
 				units = unitManager.getUnits();
 			for (int i = 0; i < timetableItems.size(); i++) {
-				if (timetableItems.get(i).getStartDateTime().equals(String.valueOf(startDateTime))) {
+				if (timetableItems.get(i).getStartDateTime().equals(startDateTime)) {
 					String in = timetableItems.get(i).getStartDateTime();
 					if (in.equals(startDateTime))
 						return i;

@@ -58,7 +58,7 @@
 	<string name="preference_use_default_background">Use colors provided from your school</string>
 	<string name="preference_use_default_background_desc">Some schools send their own background colors.</string>
 	<string name="preference_dark_theme">Dark theme</string>
-	<string name="new_features">New Features</string>
+	<string name="title_new_features">New Features</string>
 	<string name="preference_category_themes">Themes</string>
 	<string name="preference_category_backgrounds">Background Colors</string>
 	<string name="preference_theme">Select a theme</string>
@@ -123,4 +123,42 @@
 	<string name="lesson_test">%1$s (test!)</string>
 	<string name="snackbar_error">Error: %1$s</string>
 	<string name="snackbar_press_back_double">Press BACK twice to exit</string>
+	<string name="title_free_rooms">Free Rooms</string>
+	<string name="room_availability_indicator">Room availability indicator</string>
+	<string name="hint_add_room">Add a room…</string>
+	<string name="error">Error</string>
+	<string name="ok">OK</string>
+	<string name="room_desc_occupied">This Room is occupied.</string>
+	<string name="delete_item">delete item</string>
+	<string name="add">add</string>
+	<string name="no_rooms_to_display">No rooms to display.\nTap + to add one!</string>
+	<string name="room_expired">Room data expired</string>
+	<string name="delete_item_title">Delete %1$s</string>
+	<string name="delete_item_text">Are you sure you want to remove this room from the list?</string>
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
+	<string name="refresh_item_title">Refresh room data</string>
+	<string name="refresh_item_text">The timetable for this room is from another week.\nThis may result in inaccurate predictions.</string>
+	<string name="refresh_this_item">Refresh this room</string>
+	<string name="refresh_all_items">Refresh all rooms</string>
+	<string name="cancel">Cancel</string>
+	<string name="preference_note_disable">(disable)</string>
+	<string name="previous_hour">previous hour</string>
+	<string name="next_hour">next hour</string>
+	<string name="hour_index_current">This hour</string>
+	<string name="preference_room_to_display_in_free_lessons">Room to display in free lessons</string>
+	<string name="preference_room_to_display_in_free_lessons_trim">Only display in free lessons</string>
+	<string name="preference_room_to_display_in_free_lessons_trim_desc">This will hide the indicator after the last lesson</string>
+	<plurals name="room_desc">
+		<item quantity="one">This Room is free right now.</item>
+		<item quantity="other">This Room is free for %d hours.</item>
+	</plurals>
+	<plurals name="hour_index_last">
+		<item quantity="one">Last hour</item>
+		<item quantity="other">%d hours ago</item>
+	</plurals>
+	<plurals name="hour_index_next">
+		<item quantity="one">Next hour</item>
+		<item quantity="other">In %d hours</item>
+	</plurals>
 </resources>

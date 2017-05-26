@@ -1,0 +1,14 @@
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<ListPreference
+		android:key="preference_room_to_display_in_free_lessons"
+		android:summary="%s"
+		android:title="@string/preference_room_to_display_in_free_lessons"/>
+
+	<CheckBoxPreference
+		android:key="preference_room_to_display_in_free_lessons_trim"
+		android:summary="@string/preference_room_to_display_in_free_lessons_trim_desc"
+		android:title="@string/preference_room_to_display_in_free_lessons_trim"/>
+
+</PreferenceScreen>

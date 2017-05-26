@@ -27,31 +27,7 @@ public class ElementName {
 		this.type = type;
 	}
 
-	public ElementName setUserDataList(JSONObject list) {
-		this.list = list;
-		return this;
-	}
-
-	ElementName fromIdList(ArrayList<Integer> list, int elemType) {
-		if (this.list == null)
-			throw new RuntimeException("You have to provide a list via setUserDataList()!");
-		type = elemType;
-		ids = list;
-		for (int i : list)
-			names.add((String) findFieldByValue("id", i, "name"));
-		for (int i : list)
-			longNames.add((String) findFieldByValue("id", i, "longName"));
-		return this;
-	}
-
-	public Object findFieldByValue(String srcValueField, Object srcValue, String dstFieldName) {
-		for (int i = 0; i < list.optJSONObject("masterData").optJSONArray(getTypeName(type)).length(); i++)
-			if (list.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(srcValueField).equals(srcValue))
-				return list.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(dstFieldName);
-		return null;
-	}
-
-	private String getTypeName(int type) {
+	public static String getTypeName(int type) {
 		switch (type) {
 			case CLASS:
 				//noinspection SpellCheckingInspection
@@ -69,6 +45,30 @@ public class ElementName {
 			default:
 				return null;
 		}
+	}
+
+	public ElementName setUserDataList(JSONObject list) {
+		this.list = list;
+		return this;
+	}
+
+	ElementName fromIdList(ArrayList<Integer> list, int elemType) {
+		if (this.list == null)
+			throw new RuntimeException("You have to provide a list via setUserDataList()!");
+		type = elemType;
+		ids = list;
+		for (int i : list)
+			names.add((String) findFieldByValue("id", i, "name"));
+		for (int i : list)
+			longNames.add((String) findFieldByValue("id", i, "longName"));
+		return this;
+	}
+
+	public Object findFieldByValue(String srcField, Object srcValue, String dstFieldName) {
+		for (int i = 0; i < list.optJSONObject("masterData").optJSONArray(getTypeName(type)).length(); i++)
+			if (list.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(srcField).equals(srcValue))
+				return list.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(dstFieldName);
+		return null;
 	}
 
 	public boolean isEmpty() {

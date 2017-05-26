@@ -59,7 +59,7 @@
 	<string name="preference_background_free">Freie Tage</string>
 	<string name="preference_timetable_colors_reset">Farben zurücksetzen</string>
 	<string name="preference_dark_theme">Dunkles Design</string>
-	<string name="new_features">Neue Features</string>
+	<string name="title_new_features">Neue Features</string>
 	<string name="preference_category_backgrounds">Hintergrundfarben</string>
 	<string name="preference_category_themes">Designs</string>
 	<string name="preference_theme">Design auswählen</string>
@@ -124,4 +124,42 @@
 	<string name="hint_search_teachers">Suche nach Lehrern…</string>
 	<string name="snackbar_error">Fehler: %1$s</string>
 	<string name="snackbar_press_back_double">Drücke erneut auf die ZURÜCK-Taste, um die App zu beenden</string>
+	<string name="cancel">Abbrechen</string>
+	<string name="delete_item_title">%1$s löschen</string>
+	<string name="delete_item_text">Bist du sicher, dass du diesen Raum von der Liste entfernen willst?</string>
+	<string name="error">Fehler</string>
+	<string name="hint_add_room">Raum hinzufügen…</string>
+	<string name="next_hour">nächste Stunde</string>
+	<string name="no">Nein</string>
+	<string name="ok">OK</string>
+	<string name="preference_note_disable">(deaktivieren)</string>
+	<string name="previous_hour">letzte Stunde</string>
+	<string name="refresh_all_items">Alle Räume aktualisieren</string>
+	<string name="refresh_item_title">Raumdaten aktualisieren</string>
+	<string name="refresh_this_item">Diesen Raum aktualisieren</string>
+	<string name="room_availability_indicator">Raum-Verfügbarkeits-Anzeige</string>
+	<string name="room_desc_occupied">Dieser Raum ist besetzt.</string>
+	<string name="title_free_rooms">Freie Räume</string>
+	<string name="yes">Ja</string>
+	<string name="add">hinzufügen</string>
+	<string name="delete_item">Eintrag löschen</string>
+	<string name="no_rooms_to_display">Die Raumliste ist leer.\\nTippe auf + um Räume auszuwählen!</string>
+	<string name="refresh_item_text">Die Stundenplandaten dieses Raumes sind von einer anderen Woche.\\nDies kann zu fehlerhaften Anzeigen führen.</string>
+	<string name="room_expired">Raumdaten abgelaufen</string>
+	<plurals name="room_desc">
+		<item quantity="one">Dieser Raum ist gerade frei.</item>
+		<item quantity="other">Dieser Raum ist %d Stunden lang frei.</item>
+	</plurals>
+	<plurals name="hour_index_last">
+		<item quantity="one">Letzte Stunde</item>
+		<item quantity="other">Vor %d Stunden</item>
+	</plurals>
+	<plurals name="hour_index_next">
+		<item quantity="one">Nächste Stunde</item>
+		<item quantity="other">In %d Stunden</item>
+	</plurals>
+	<string name="hour_index_current">Diese Stunde</string>
+	<string name="preference_room_to_display_in_free_lessons">Anzuzeigender Raum in freien Stunden</string>
+	<string name="preference_room_to_display_in_free_lessons_trim">Nur in Freistunden anzeigen</string>
+	<string name="preference_room_to_display_in_free_lessons_trim_desc">Dadurch wird die Anzeige nach der letzten Stunde ausgeblendet</string>
 </resources>

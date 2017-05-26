@@ -12,7 +12,7 @@ public class TimegridUnitManager {
 		this.data = data;
 	}
 
-	public int numberOfDays() {
+	public int getNumberOfDays() {
 		return data.length();
 	}
 

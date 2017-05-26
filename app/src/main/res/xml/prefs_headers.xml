@@ -11,6 +11,11 @@
 		android:title="@string/pref_notifications"/>
 
 	<header
+		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$RoomFinderFragment"
+		android:icon="@drawable/ic_prefs_roomfinder"
+		android:title="@string/title_free_rooms"/>
+
+	<header
 		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$InfosFragment"
 		android:icon="@drawable/ic_prefs_info"
 		android:title="@string/pref_infos"/>

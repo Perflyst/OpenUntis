@@ -31,7 +31,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sapuseven.untis.activity.ActivityMain.setupTheme;
+import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
 public class ActivityFeatures extends AppCompatActivity {
 	@Override

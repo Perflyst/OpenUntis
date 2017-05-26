@@ -31,6 +31,7 @@
 		<activity
 			android:name=".activity.ActivityLogin"
 			android:label="@string/login"
+			android:screenOrientation="portrait"
 			android:theme="@style/AppTheme.NoActionBar">
 		</activity>
 
@@ -41,6 +42,7 @@
 			android:name=".activity.ActivityLoginDataInput"
 			android:label="@string/login"
 			android:parentActivityName=".activity.ActivityLogin"
+			android:screenOrientation="portrait"
 			android:theme="@style/AppTheme.NoActionBar">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
@@ -69,7 +71,17 @@
 
 		<activity
 			android:name=".activity.ActivityFeatures"
-			android:label="@string/new_features"
+			android:label="@string/title_new_features"
+			android:parentActivityName=".activity.ActivityMain"
+			android:theme="@style/AppTheme">
+			<meta-data
+				android:name="android.support.PARENT_ACTIVITY"
+				android:value="com.sapuseven.untis.activity.ActivityMain"/>
+		</activity>
+
+		<activity
+			android:name=".activity.ActivityRoomFinder"
+			android:label="@string/title_free_rooms"
 			android:parentActivityName=".activity.ActivityMain"
 			android:theme="@style/AppTheme">
 			<meta-data

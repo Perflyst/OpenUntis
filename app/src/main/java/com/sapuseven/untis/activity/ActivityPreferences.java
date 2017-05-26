@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -26,8 +27,9 @@ import com.sapuseven.untis.utils.ListManager;
 
 import java.util.List;
 
-import static com.sapuseven.untis.activity.ActivityMain.setupBackground;
-import static com.sapuseven.untis.activity.ActivityMain.setupTheme;
+import static com.sapuseven.untis.utils.ThemeUtils.restartApplication;
+import static com.sapuseven.untis.utils.ThemeUtils.setupBackground;
+import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
 public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.ActivityPreferences implements ColorPickerDialogFragment.ColorPickerDialogListener {
 
@@ -67,6 +69,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 		return PreferenceFragment.class.getName().equals(fragmentName)
 				|| StylingFragment.class.getName().equals(fragmentName)
 				|| NotificationsFragment.class.getName().equals(fragmentName)
+				|| RoomFinderFragment.class.getName().equals(fragmentName)
 				|| InfosFragment.class.getName().equals(fragmentName);
 	}
 
@@ -361,6 +364,48 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 		}
 	}
 
+	public static class RoomFinderFragment extends PreferenceFragment {
+		public RoomFinderFragment() {
+		}
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.prefs_roomfinder);
+
+			String[] roomList = ActivityRoomFinder.getRooms(getActivity(), true).toArray(new String[0]);
+			((ListPreference) findPreference("preference_room_to_display_in_free_lessons")).setEntries(roomList);
+			((ListPreference) findPreference("preference_room_to_display_in_free_lessons")).setEntryValues(roomList);
+
+			findPreference("preference_room_to_display_in_free_lessons").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+				@Override
+				public boolean onPreferenceChange(Preference preference, Object newValue) {
+					restartOnExit(getActivity());
+					return true;
+				}
+			});
+
+			findPreference("preference_room_to_display_in_free_lessons_trim").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+				@Override
+				public boolean onPreferenceChange(Preference preference, Object newValue) {
+					restartOnExit(getActivity());
+					return true;
+				}
+			});
+		}
+
+		@Override
+		public boolean onOptionsItemSelected(MenuItem item) {
+			int id = item.getItemId();
+			if (id == android.R.id.home) {
+				startActivity(new Intent(getActivity(), ActivityPreferences.class));
+				return true;
+			}
+
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
 	public static class InfosFragment extends PreferenceFragment {
 		private int clicks;
 		private BetterToast toast;
@@ -426,7 +471,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 					getActivity().getSharedPreferences("login_data", MODE_PRIVATE).edit().clear().apply();
 					ListManager lm = new ListManager(getActivity());
 					lm.delete("userData", false);
-					ActivityMain.restartApplication(getActivity());
+					restartApplication(getActivity());
 					return true;
 				}
 			});

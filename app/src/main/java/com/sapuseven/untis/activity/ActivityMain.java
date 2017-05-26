@@ -1,8 +1,6 @@
 package com.sapuseven.untis.activity;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -45,18 +43,18 @@ import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
 import com.sapuseven.untis.BuildConfig;
 import com.sapuseven.untis.R;
-import com.sapuseven.untis.adapter.AdapterItemGridView;
+import com.sapuseven.untis.adapter.AdapterGridView;
 import com.sapuseven.untis.adapter.AdapterTimetable;
 import com.sapuseven.untis.adapter.AdapterTimetableHeader;
 import com.sapuseven.untis.fragment.FragmentDatePicker;
 import com.sapuseven.untis.notification.StartupReceiver;
 import com.sapuseven.untis.utils.AutoUpdater;
+import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
 import com.sapuseven.untis.utils.TimegridUnitManager;
 
-import org.jetbrains.annotations.Contract;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,8 +78,11 @@ import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
 import static com.sapuseven.untis.utils.StreamUtils.readStream;
+import static com.sapuseven.untis.utils.ThemeUtils.restartApplication;
+import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
 public class ActivityMain extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+	private static final int REQUEST_CODE_ROOM_FINDER = 1;
 	public SwipeRefreshLayout swipeRefresh;
 	public SessionInfo sessionInfo;
 	public int currentViewPos = 50;
@@ -93,101 +94,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 	private AlertDialog dialog;
 	private Calendar lastCalendar;
 	private JSONObject userDataList;
-	private float scale;
 	private long lastBackPress;
-
-	public static void setupTheme(Context context, boolean actionBar) {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		if (actionBar)
-			switch (prefs.getString("preference_theme", "default")) {
-				case "untis":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemeUntis_ActionBar);
-					else
-						context.setTheme(R.style.AppTheme_ThemeUntis_ActionBar);
-					break;
-				case "blue":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemeBlue_ActionBar);
-					else
-						context.setTheme(R.style.AppTheme_ThemeBlue_ActionBar);
-					break;
-				case "green":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemeGreen_ActionBar);
-					else
-						context.setTheme(R.style.AppTheme_ThemeGreen_ActionBar);
-					break;
-				case "pink":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemePink_ActionBar);
-					else
-						context.setTheme(R.style.AppTheme_ThemePink_ActionBar);
-					break;
-				case "cyan":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemeCyan_ActionBar);
-					else
-						context.setTheme(R.style.AppTheme_ThemeCyan_ActionBar);
-					break;
-				default:
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ActionBar);
-					else
-						context.setTheme(R.style.AppTheme_ActionBar);
-			}
-		else
-			switch (prefs.getString("preference_theme", "default")) {
-				case "untis":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemeUntis);
-					else
-						context.setTheme(R.style.AppTheme_ThemeUntis);
-					break;
-				case "blue":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemeBlue);
-					else
-						context.setTheme(R.style.AppTheme_ThemeBlue);
-					break;
-				case "green":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemeGreen);
-					else
-						context.setTheme(R.style.AppTheme_ThemeGreen);
-					break;
-				case "pink":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemePink);
-					else
-						context.setTheme(R.style.AppTheme_ThemePink);
-					break;
-				case "cyan":
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark_ThemeCyan);
-					else
-						context.setTheme(R.style.AppTheme_ThemeCyan);
-					break;
-				default:
-					if (prefs.getBoolean("preference_dark_theme", false))
-						context.setTheme(R.style.AppThemeDark);
-					else
-						context.setTheme(R.style.AppTheme);
-			}
-	}
-
-	public static void setupBackground(Activity context) {
-		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-		if (sharedPrefs.getBoolean("preference_dark_theme_amoled", false) && sharedPrefs.getBoolean("preference_dark_theme", false))
-			context.getWindow().getDecorView().setBackgroundColor(Color.BLACK);
-	}
-
-	public static void restartApplication(Context context) {
-		Intent i = new Intent(context, ActivityMain.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		context.startActivity(i);
-	}
+	private int itemListMargins;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -200,6 +108,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				.debuggable(true)
 				.build();
 		Fabric.with(fabric);
+
+		itemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		if (!checkLoginState()) {
@@ -221,7 +131,6 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			toggle.syncState();
 			listManager = new ListManager(getApplicationContext());
 			dialog = new AlertDialog.Builder(this).create();
-			scale = getResources().getDisplayMetrics().density;
 			try {
 				userDataList = new JSONObject(listManager.readList("userData", false));
 			} catch (JSONException e) {
@@ -231,7 +140,9 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 				@Override
 				public void onRefresh() {
-					listManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4), true);
+					int startDate = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+							.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), (currentViewPos - 50) * 7).getTime()));
+					listManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDate + "-" + addDaysToInt(startDate, 4), true);
 					refresh();
 				}
 			});
@@ -532,11 +443,25 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				Intent i2 = new Intent(ActivityMain.this, ActivityFeatures.class);
 				startActivity(i2);
 				break;
+			case R.id.nav_free_rooms:
+				Intent i3 = new Intent(ActivityMain.this, ActivityRoomFinder.class);
+				startActivityForResult(i3, REQUEST_CODE_ROOM_FINDER);
+				break;
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawer.closeDrawer(GravityCompat.START);
 		return true;
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+			case REQUEST_CODE_ROOM_FINDER:
+				if (resultCode == RESULT_OK) {
+					setTarget(data.getIntExtra("elemId", 0), data.getIntExtra("elemType", ElementName.ROOM), data.getStringExtra("displayName"));
+				}
+		}
 	}
 
 	private void showItemList(final int elementType, @StringRes int searchFieldHint, final int targetPageTitle, String masterDataField) {
@@ -577,10 +502,10 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				}
 			});
 
-			final AdapterItemGridView adapter = new AdapterItemGridView(this, list);
+			final AdapterGridView adapter = new AdapterGridView(this, list);
 			TextInputLayout titleContainer = new TextInputLayout(this);
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-			params.setMargins(dp2px(12), dp2px(12), dp2px(12), 0);
+			params.setMargins(itemListMargins, itemListMargins, itemListMargins, 0);
 			titleContainer.setLayoutParams(params);
 
 			GridView gridView = new GridView(this);
@@ -624,18 +549,13 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			builder.setView(content);
 			dialog = builder.create();
 			dialog.setOnCancelListener(cancelListener);
+			dialog.setCanceledOnTouchOutside(true);
 			dialog.show();
 		} catch (JSONException e) {
-			Snackbar.make(pagerTable, getString(R.string.snackbar_error) + e.getMessage(), Snackbar.LENGTH_LONG).setAction("OK", null).show();
+			Snackbar.make(pagerTable, getString(R.string.snackbar_error, e.getMessage()), Snackbar.LENGTH_LONG).setAction("OK", null).show();
 			swipeRefresh.setRefreshing(false);
 			e.printStackTrace();
 		}
-	}
-
-	@SuppressWarnings("SameParameterValue")
-	@Contract(pure = true)
-	private int dp2px(int dp) {
-		return (int) (dp * scale + 0.5f);
 	}
 
 	private void setTarget(int elemId, int elemType, String displayName) {
@@ -704,16 +624,6 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 		au.startAutoUpdate(this);
 	}
 
-	private Calendar getStartDateFromWeek(Calendar c) {
-		c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-		c.add(Calendar.DATE, (currentViewPos - 50) * 7);
-		return c;
-	}
-
-	private int getStartDateFromWeek() {
-		return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US).format(getStartDateFromWeek(Calendar.getInstance()).getTime()));
-	}
-
 	@SuppressWarnings("SameParameterValue")
 	private int addDaysToInt(int startDate, int days) {
 		try {
@@ -747,7 +657,7 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
 				JSONObject list = new JSONObject(readStream(in));
 				urlConnection.disconnect();
-				return list.optJSONObject("result").optBoolean("newFeatures");
+				return list.getJSONObject("result").getBoolean("newFeatures");
 			} catch (JSONException | IOException | NullPointerException e) {
 				e.printStackTrace();
 			}
