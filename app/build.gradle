@@ -1,27 +1,6 @@
-buildscript {
-	repositories {
-		maven { url 'https://maven.fabric.io/public' }
-	}
-
-	dependencies {
-		classpath 'io.fabric.tools:gradle:1.22.0'
-	}
-}
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
-
-repositories {
-	maven { url 'https://maven.fabric.io/public' }
-}
 
 android {
-	signingConfigs {
-		release {
-			keyPassword '=:jikZamUFOlUv^~gE^Y#GLZNkMfbb8Y'
-			storeFile file('/home/paul/Android/keystores/BetterUntis.jks')
-			storePassword '{4N4+xc29glrOTQx`H0*Q[i^JiS8VtJL'
-		}
-	}
 	compileSdkVersion 25
 	buildToolsVersion "25.0.2"
 	defaultConfig {
@@ -38,14 +17,12 @@ android {
 			minifyEnabled true
 			shrinkResources true
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-			signingConfig signingConfigs.release
 		}
 		debug {
-			applicationIdSuffix '.debug'
-			versionNameSuffix '-DEBUG'
-			ext.enableCrashlytics = false
 			minifyEnabled false
 			shrinkResources false
+			applicationIdSuffix '.debug'
+			versionNameSuffix '-DEBUG'
 		}
 	}
 	useLibrary 'org.apache.http.legacy'
@@ -57,9 +34,7 @@ dependencies {
 	androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
 		exclude group: 'com.android.support', module: 'support-annotations'
 	})
-	compile('com.crashlytics.sdk.android:crashlytics:2.6.7@aar') {
-		transitive = true;
-	}
+	compile project(':color-picker-view')
 	compile 'com.android.support:appcompat-v7:25.3.1'
 	compile 'com.android.support:design:25.3.1'
 	compile 'com.android.support:recyclerview-v7:25.3.1'
@@ -67,7 +42,8 @@ dependencies {
 	compile 'com.android.support:support-v4:25.3.1'
 	compile 'com.android.support:support-vector-drawable:25.3.1'
 	compile 'commons-codec:commons-codec:1.5'
-	compile project(':color-picker-view')
-	testCompile 'junit:junit:4.12'
 	compile 'org.jetbrains:annotations-java5:15.0'
+	compile 'com.google.firebase:firebase-crash:10.0.1'
+	testCompile 'junit:junit:4.12'
 }
+apply plugin: 'com.google.gms.google-services'
