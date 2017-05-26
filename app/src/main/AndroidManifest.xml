@@ -89,10 +89,6 @@
 				android:value="com.sapuseven.untis.activity.ActivityMain"/>
 		</activity>
 
-		<meta-data
-			android:name="io.fabric.ApiKey"
-			android:value="YOUR_FABRIC_API_SECRET"/>
-
 		<provider
 			android:name="android.support.v4.content.FileProvider"
 			android:authorities="${applicationId}.provider"
