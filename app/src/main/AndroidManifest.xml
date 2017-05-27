@@ -88,6 +88,14 @@
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value="com.sapuseven.untis.activity.ActivityMain"/>
 		</activity>
+    
+		<meta-data
+			android:name="com.google.firebase.messaging.default_notification_icon"
+			android:resource="@drawable/ic_stat_timetable"/>
+
+		<meta-data
+			android:name="com.google.firebase.messaging.default_notification_color"
+			android:resource="@color/colorPrimary"/>
 
 		<provider
 			android:name="android.support.v4.content.FileProvider"

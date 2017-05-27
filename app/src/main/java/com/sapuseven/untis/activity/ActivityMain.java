@@ -39,8 +39,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.core.CrashlyticsCore;
 import com.sapuseven.untis.BuildConfig;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterGridView;
@@ -72,8 +70,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-import io.fabric.sdk.android.Fabric;
-
 import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
@@ -101,13 +97,6 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 	protected void onCreate(Bundle savedInstanceState) {
 		setupTheme(this, false);
 		super.onCreate(savedInstanceState);
-		final Fabric fabric = new Fabric.Builder(this)
-				.kits(new Crashlytics.Builder()
-						.core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
-						.build())
-				.debuggable(true)
-				.build();
-		Fabric.with(fabric);
 
 		itemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 

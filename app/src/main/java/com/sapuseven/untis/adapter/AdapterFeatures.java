@@ -65,7 +65,7 @@ public class AdapterFeatures extends BaseAdapter {
 		View v = convertView;
 		if (v == null)
 			v = inflater.inflate(R.layout.list_item_features, parent, false);
-		final TextView tvHeader = (TextView) v.findViewById(R.id.tvName);
+		final TextView tvHeader = (TextView) v.findViewById(R.id.tvTitle);
 		final TextView tvDesc = (TextView) v.findViewById(R.id.tvDesc);
 		final TextView tvLikes = (TextView) v.findViewById(R.id.tvLikes);
 		final ImageButton btnLike = (ImageButton) v.findViewById(R.id.btnLike);
