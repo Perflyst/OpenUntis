@@ -1,6 +1,5 @@
 package com.sapuseven.untis.notification;
 
-import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -10,9 +9,9 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
@@ -38,16 +37,19 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 import static com.sapuseven.untis.utils.Authentication.getAuthElement;
+import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
 
 public class NotificationSetup extends BroadcastReceiver {
 	private ListManager listManager;
 	private Context context;
 	private SessionInfo sessionInfo;
+	private int startDateFromWeek;
 
 	@Override
 	public void onReceive(final Context context, Intent intent) {
@@ -65,13 +67,16 @@ public class NotificationSetup extends BroadcastReceiver {
 			e.printStackTrace();
 		}
 
+		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
+
 		prefs = context.getSharedPreferences("login_data", MODE_PRIVATE);
 		Request request = new Request(prefs.getString("url", null));
 		request.setSchool(prefs.getString("school", null));
 		request.setParams("[{\"id\":\"" + sessionInfo.getElemId() + "\"," +
 				"\"type\":\"" + sessionInfo.getElemType() + "\"," +
-				"\"startDate\":" + getStartDateFromWeek() + "," +
-				"\"endDate\":" + addDaysToInt(getStartDateFromWeek(), 4) + "," +
+				"\"startDate\":" + startDateFromWeek + "," +
+				"\"endDate\":" + addDaysToInt(startDateFromWeek, 4) + "," +
 				"\"masterDataTimestamp\":" + System.currentTimeMillis() + "," +
 				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
 				"}]");
@@ -105,10 +110,22 @@ public class NotificationSetup extends BroadcastReceiver {
 		ArrayList<TimetableItemData> result = new ArrayList<>();
 
 		for (int x = 0; x < dim; x++) {
-			@SuppressLint("SimpleDateFormat") String startDateTime = new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()) + "T" + fixedLength(unitManager.getUnits().get(x).getDisplayStartTime(), 5, '0') + "Z";
-			int index = timetable.indexOf(startDateTime, unitManager);
-			if (index > 0)
-				result.add(timetableData.get(index));
+			startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+					.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
+
+			Calendar hour = Calendar.getInstance();
+			try {
+				hour.setTime(new SimpleDateFormat("HH:mm", Locale.US).parse(unitManager.getUnits().get(x).getStartTime()));
+				c.set(Calendar.HOUR_OF_DAY, hour.get(Calendar.HOUR_OF_DAY));
+				c.set(Calendar.MINUTE, hour.get(Calendar.MINUTE));
+
+				String startDateTime = DateOperations.formatToISO(c.getTime());
+				int index = timetable.indexOf(startDateTime, unitManager);
+				if (index > 0)
+					result.add(timetableData.get(index));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 		}
 
 		if (!prefs.getBoolean("preference_notifications_in_multiple", false))
@@ -181,39 +198,6 @@ public class NotificationSetup extends BroadcastReceiver {
 		}
 	}
 
-	@SuppressLint("SimpleDateFormat")
-	private int getStartDateFromWeek() {
-		Calendar c = Calendar.getInstance();
-		c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-		return Integer.parseInt(new SimpleDateFormat("yyyyMMdd").format(c.getTime()));
-	}
-
-	@SuppressWarnings("SameParameterValue")
-	@SuppressLint("SimpleDateFormat")
-	private int addDaysToInt(int startDate, int days) {
-		try {
-			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-			c.setTime(sdf.parse(Integer.toString(startDate)));
-			c.add(Calendar.DATE, days);
-			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd").format(c.getTime()));
-		} catch (ParseException e) {
-			e.printStackTrace();
-			return startDate;
-		}
-	}
-
-	@SuppressWarnings("SameParameterValue")
-	@NonNull
-	private String fixedLength(String str, int length, char fillChar) {
-		StringBuilder sb = new StringBuilder();
-		while (sb.length() + str.length() < length) {
-			sb.append(fillChar);
-		}
-		sb.append(str);
-		return sb.toString();
-	}
-
 	private class Request extends AsyncTask<Void, Void, String> {
 		private static final String jsonrpc = "2.0";
 		private final String method = "getTimetable2017";
@@ -238,7 +222,7 @@ public class NotificationSetup extends BroadcastReceiver {
 		@SuppressWarnings("deprecation")
 		@Override
 		protected String doInBackground(Void... p1) {
-			String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
+			String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
 			if (listManager.exists(fileName, true)) {
 				return listManager.readList(fileName, true);
 			}
@@ -285,7 +269,7 @@ public class NotificationSetup extends BroadcastReceiver {
 				JSONObject jsonObj = new JSONObject(result);
 				if (jsonObj.has("result")) {
 					setup(jsonObj.getJSONObject("result"));
-					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
+					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
 					listManager.saveList(fileName, result, true);
 				}
 			} catch (JSONException e) {

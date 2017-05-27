@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:clickable="true"
+	android:focusable="true"
+	android:foreground="?android:attr/selectableItemBackground"
+	android:minHeight="60dp">
+
+	<android.support.v7.widget.AppCompatImageView
+		android:id="@+id/ivState"
+		android:layout_width="32dp"
+		android:layout_height="32dp"
+		android:layout_centerVertical="true"
+		android:layout_marginLeft="16dp"
+		android:layout_marginStart="16dp"
+		android:contentDescription="@string/room_availability_indicator"
+		app:srcCompat="@android:color/transparent"/>
+
+	<ProgressBar
+		android:id="@+id/pbState"
+		style="?android:attr/progressBarStyle"
+		android:layout_width="32dp"
+		android:layout_height="32dp"
+		android:layout_centerVertical="true"
+		android:layout_marginLeft="16dp"
+		android:layout_marginStart="16dp"
+		android:visibility="gone"/>
+
+	<ImageButton
+		android:id="@+id/btnRoomExpired"
+		android:layout_width="32dp"
+		android:layout_height="32dp"
+		android:layout_marginLeft="26dp"
+		android:layout_marginStart="26dp"
+		android:layout_marginTop="26dp"
+		android:background="?attr/selectableItemBackgroundBorderless"
+		android:contentDescription="@string/room_expired"
+		android:padding="4dp"
+		android:visibility="gone"
+		app:srcCompat="@drawable/ic_error"/>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_centerVertical="true"
+		android:layout_marginEnd="72dp"
+		android:layout_marginLeft="72dp"
+		android:layout_marginRight="72dp"
+		android:layout_marginStart="72dp"
+		android:orientation="vertical">
+
+		<TextView
+			android:id="@+id/tvName"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textColor="?android:attr/textColorPrimary"
+			android:textSize="13sp"/>
+
+		<TextView
+			android:id="@+id/tvDetails"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textColor="?android:attr/textColorSecondary"
+			android:textSize="13sp"/>
+	</LinearLayout>
+
+	<ImageButton
+		android:id="@+id/btnDelete"
+		android:layout_width="32dp"
+		android:layout_height="32dp"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentRight="true"
+		android:layout_centerVertical="true"
+		android:layout_marginEnd="16dp"
+		android:layout_marginRight="16dp"
+		android:background="?attr/selectableItemBackgroundBorderless"
+		android:contentDescription="@string/delete_item"
+		app:srcCompat="@drawable/ic_delete"/>
+
+</RelativeLayout>

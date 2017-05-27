@@ -9,12 +9,12 @@ import android.widget.Filterable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AdapterItemGridView extends ArrayAdapter<String> implements Filterable {
+public class AdapterGridView extends ArrayAdapter<String> implements Filterable {
 	private final List<String> originalItems;
 	private final ItemFilter filter = new ItemFilter();
 	private List<String> filteredItems;
 
-	public AdapterItemGridView(@NonNull Context context, @NonNull List<String> objects) {
+	public AdapterGridView(@NonNull Context context, @NonNull List<String> objects) {
 		super(context, android.R.layout.simple_list_item_1, objects);
 		filteredItems = objects;
 		originalItems = new ArrayList<>(filteredItems);

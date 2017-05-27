@@ -15,20 +15,25 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.view.ContextThemeWrapper;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.activity.ActivityMain;
+import com.sapuseven.untis.activity.ActivityRoomFinder;
+import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
@@ -52,19 +57,20 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 import static com.sapuseven.untis.utils.Authentication.getAuthElement;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_CANCELLED;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_EXAM;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_IRREGULAR;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_REGULAR;
+import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
 import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
 
-@SuppressLint("SimpleDateFormat")
 public class FragmentTimetable extends Fragment {
-	private static final String ID_GET_TIMETABLE = "2";
+	public static final String ID_GET_TIMETABLE = "2";
 	private int startDateOffset;
 	private ListManager listManager;
 	private GridLayout glTimetable;
@@ -75,6 +81,7 @@ public class FragmentTimetable extends Fragment {
 	private ProgressBar pbLoading;
 	private JSONObject userDataList;
 	private LayoutInflater inflater;
+	private int startDateFromWeek;
 
 	public FragmentTimetable() {
 	}
@@ -124,26 +131,6 @@ public class FragmentTimetable extends Fragment {
 		return rootView;
 	}
 
-	private int getStartDateFromWeek() {
-		Calendar c = Calendar.getInstance();
-		c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-		c.add(Calendar.DATE, startDateOffset * 7);
-		return Integer.parseInt(new SimpleDateFormat("yyyyMMdd").format(c.getTime()));
-	}
-
-	private int addDaysToInt(int startDate, int days) {
-		try {
-			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-			c.setTime(sdf.parse(Integer.toString(startDate)));
-			c.add(Calendar.DATE, days);
-			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd").format(c.getTime()));
-		} catch (ParseException e) {
-			e.printStackTrace();
-			return startDate;
-		}
-	}
-
 	private void requestTimetable() {
 		SharedPreferences prefs = main.getLoginData();
 		try {
@@ -171,12 +158,15 @@ public class FragmentTimetable extends Fragment {
 			e.printStackTrace();
 		}
 
+		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), startDateOffset * 7).getTime()));
+
 		Request request = new Request(prefs.getString("url", null));
 		request.setSchool(prefs.getString("school", null));
 		request.setParams("[{\"id\":\"" + main.sessionInfo.getElemId() + "\"," +
 				"\"type\":\"" + main.sessionInfo.getElemType() + "\"," +
-				"\"startDate\":" + getStartDateFromWeek() + "," +
-				"\"endDate\":" + addDaysToInt(getStartDateFromWeek(), 4) + "," +
+				"\"startDate\":" + startDateFromWeek + "," +
+				"\"endDate\":" + addDaysToInt(startDateFromWeek, 4) + "," +
 				"\"masterDataTimestamp\":" + System.currentTimeMillis() + "," +
 				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
 				"}]");
@@ -349,8 +339,8 @@ public class FragmentTimetable extends Fragment {
 		private static final float DARKNESS_FACTOR = 0.8f;
 		TimegridUnitManager unitManager;
 
-		int dimX;
 		int dimY;
+		int dimX;
 		View[][] views;
 
 		@SuppressLint("InflateParams")
@@ -366,23 +356,22 @@ public class FragmentTimetable extends Fragment {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			dimX = unitManager.getUnitCount();
-			dimY = unitManager.numberOfDays();
-			result = new TimetableItemData[dimX][dimY];
-			views = new View[dimX][dimY];
+			dimY = unitManager.getUnitCount();
+			dimX = unitManager.getNumberOfDays();
+			result = new TimetableItemData[dimY][dimX];
+			views = new View[dimY][dimX];
 
-			for (int x = 0; x < dimX; x++) {
-
-				for (int y = 0; y < dimY; y++) {
+			for (int x = 0; x < dimY; x++) {
+				for (int y = 0; y < dimX; y++) {
 					try {
 						result[x][y] = new TimetableItemData();
-						String startDateTime = getStringDateFromInt(addDaysToInt(getStartDateFromWeek(), y)) + "T" + fixedLength(unitManager.getUnits().get(x).getDisplayStartTime(), 5, '0') + "Z";
+						String startDateTime = getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" + fixedLength(unitManager.getUnits().get(x).getDisplayStartTime(), 5, '0') + "Z";
 						int index = timetable[0].indexOf(startDateTime, unitManager);
 						if (index != -1) {
 							result[x][y] = timetableData.get(index);
 						} else {
 							for (int i = 0; i < holidays.length(); i++) {
-								if (isBetween(addDaysToInt(getStartDateFromWeek(), y),
+								if (isBetween(addDaysToInt(startDateFromWeek, y),
 										Integer.parseInt(holidays.optJSONObject(i).optString("startDate").replace("-", "")),
 										Integer.parseInt(holidays.optJSONObject(i).optString("endDate").replace("-", "")))) {
 									TimetableItemData data = new TimetableItemData();
@@ -393,6 +382,7 @@ public class FragmentTimetable extends Fragment {
 								}
 							}
 						}
+
 						if (result[x][y].isFree())
 							views[x][y] = inflater.inflate(R.layout.table_item_free, null, false);
 						else if (result[x][y].getCodes().contains(CODE_CANCELLED))
@@ -414,12 +404,12 @@ public class FragmentTimetable extends Fragment {
 		@Override
 		protected void onPostExecute(Void v) {
 			SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(main.getApplicationContext());
-			glTimetable.setColumnCount(dimY);
-			glTimetable.setRowCount(dimX);
-			for (int y = 0; y < dimY; y++) {
-				for (int x = 0; x < dimX; x++) {
+			glTimetable.setColumnCount(dimX);
+			glTimetable.setRowCount(dimY);
+			for (int y = 0; y < dimX; y++) {
+				for (int x = 0; x < dimY; x++) {
 					int i = 1;
-					while (x + i < dimX
+					while (x + i < dimY
 							&& result[x][y].getTeachers(userDataList).getNames().equals(result[x + i][y].getTeachers(userDataList).getNames())
 							&& result[x][y].getRooms(userDataList).getNames().equals(result[x + i][y].getRooms(userDataList).getNames())
 							&& result[x][y].getSubjects(userDataList).getNames().equals(result[x + i][y].getSubjects(userDataList).getNames())
@@ -433,7 +423,7 @@ public class FragmentTimetable extends Fragment {
 					GridLayout.Spec col = GridLayout.spec(y);
 					GridLayout.LayoutParams params = new GridLayout.LayoutParams(row, col);
 					params.height = dp2px(56) * i; // dp = height + divider!!
-					if (y + 1 == dimY)
+					if (y + 1 == dimX)
 						params.width = glTimetable.getWidth() - (glTimetable.getWidth() / glTimetable.getColumnCount()) * y;
 					else
 						params.width = glTimetable.getWidth() / glTimetable.getColumnCount();
@@ -446,14 +436,28 @@ public class FragmentTimetable extends Fragment {
 							((TextView) views[x][y].findViewById(R.id.textView1)).setText(result[x][y].getClasses(userDataList).getName(ElementName.SHORT));
 						else
 							((TextView) views[x][y].findViewById(R.id.textView1)).setText(result[x][y].getTeachers(userDataList).getName(ElementName.SHORT));
+
 						if (SessionInfo.getElemTypeId(main.sessionInfo.getElemType()) == ROOM)
 							((TextView) views[x][y].findViewById(R.id.textView4)).setText(result[x][y].getClasses(userDataList).getName(ElementName.SHORT));
 						else
 							((TextView) views[x][y].findViewById(R.id.textView4)).setText(result[x][y].getRooms(userDataList).getName(ElementName.SHORT));
+
 						((TextView) views[x][y].findViewById(R.id.textView5)).setText(result[x][y].getSubjects(userDataList).getName(ElementName.SHORT));
 					}
-					if (result[x][y].isEmpty(userDataList))
-						views[x][y].findViewById(R.id.vBackground).setVisibility(View.GONE);
+					if (result[x][y].isEmpty(userDataList)) {
+						if (showIndicatorForHour(sharedPrefs, x, y, dimY)) {
+							views[x][y].findViewById(R.id.statusView).setVisibility(View.VISIBLE);
+
+							((ImageView) views[x][y].findViewById(R.id.statusView)).setImageDrawable(
+									ActivityRoomFinder.getRoomStates(getActivity(), sharedPrefs.getString("preference_room_to_display_in_free_lessons", null))
+											.charAt(y * dimY + x) == '1' ?
+											ContextCompat.getDrawable(getActivity(), R.drawable.ic_room_occupied) :
+											ContextCompat.getDrawable(getActivity(), R.drawable.ic_room_available));
+						} else {
+							views[x][y].findViewById(R.id.vBackground).setVisibility(View.GONE);
+						}
+					}
+
 					views[x][y].setOnClickListener(new View.OnClickListener() {
 						@Override
 						public void onClick(View view) {
@@ -541,7 +545,7 @@ public class FragmentTimetable extends Fragment {
 						layerList.setLayerInset(2, 0, 0, 0, getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()));
 						views[x][y].findViewById(R.id.vBackground).setBackground(layerList);
 					} else {
-						boolean showDivider = getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(getStartDateFromWeek(), y)) + "T" + unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(getStartDateFromWeek(), y)) + "T" + unitManager.getUnits().get(x).getEndTime() + "Z") < dp2px(56);
+						boolean showDivider = getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" + unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" + unitManager.getUnits().get(x).getEndTime() + "Z") < dp2px(56);
 
 						LayerDrawable layerList;
 						if (showDivider) {
@@ -550,12 +554,12 @@ public class FragmentTimetable extends Fragment {
 							layerList = new LayerDrawable(new GradientDrawable[]{divider});
 							layerList.setLayerInset(0,
 									0,
-									dp2px(56) * i - getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(getStartDateFromWeek(), y)) + "T" +
-											unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(getStartDateFromWeek(), y)) + "T" +
+									dp2px(56) * i - getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" +
+											unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" +
 											unitManager.getUnits().get(x).getEndTime() + "Z"),
 									0,
-									max(getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(getStartDateFromWeek(), y)) + "T" +
-											unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(getStartDateFromWeek(), y)) + "T" +
+									max(getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" +
+											unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" +
 											unitManager.getUnits().get(x).getEndTime() + "Z")) - dp2px(2));
 						} else {
 							layerList = new LayerDrawable(new GradientDrawable[]{});
@@ -573,6 +577,26 @@ public class FragmentTimetable extends Fragment {
 			pbLoading.setVisibility(View.GONE);
 		}
 
+		private boolean showIndicatorForHour(SharedPreferences sharedPrefs, int x, int y, int hoursPerDay) {
+			if (getActivity() != null &&
+					!TextUtils.isEmpty(sharedPrefs.getString("preference_room_to_display_in_free_lessons", null)) &&
+					ActivityRoomFinder.getRooms(getActivity(), false)
+							.contains(sharedPrefs.getString("preference_room_to_display_in_free_lessons", null))) {
+				if (sharedPrefs.getBoolean("preference_room_to_display_in_free_lessons_trim", false)) {
+					int length = hoursPerDay;
+					while (length > 0) {
+						if (result[length - 1][y].isEmpty(userDataList))
+							length--;
+						else
+							break;
+					}
+					return x < length;
+				} else
+					return true;
+			} else
+				return false;
+		}
+
 		private int max(int value) {
 			if (value < 0)
 				return 0;
@@ -585,18 +609,14 @@ public class FragmentTimetable extends Fragment {
 			Calendar cNow = Calendar.getInstance();
 
 			Calendar cStart = Calendar.getInstance();
-			cStart.set(Calendar.YEAR, Integer.parseInt(startDateTime.substring(0, 4)));
-			cStart.set(Calendar.MONTH, Integer.parseInt(startDateTime.substring(5, 7)) - 1); // Month counting starts at 0, so Jan=0, ..., Dec=11
-			cStart.set(Calendar.DAY_OF_MONTH, Integer.parseInt(startDateTime.substring(8, 10)));
-			cStart.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startDateTime.substring(11, 13)));
-			cStart.set(Calendar.MINUTE, Integer.parseInt(startDateTime.substring(14, 16)));
-
 			Calendar cEnd = Calendar.getInstance();
-			cEnd.set(Calendar.YEAR, Integer.parseInt(endDateTime.substring(0, 4)));
-			cEnd.set(Calendar.MONTH, Integer.parseInt(endDateTime.substring(5, 7)) - 1); // Month counting starts at 0, so Jan=0, ..., Dec=11
-			cEnd.set(Calendar.DAY_OF_MONTH, Integer.parseInt(endDateTime.substring(8, 10)));
-			cEnd.set(Calendar.HOUR_OF_DAY, Integer.parseInt(endDateTime.substring(11, 13)));
-			cEnd.set(Calendar.MINUTE, Integer.parseInt(endDateTime.substring(14, 16)));
+
+			try {
+				cStart.setTime(DateOperations.parseFromISO(startDateTime));
+				cEnd.setTime(DateOperations.parseFromISO(endDateTime));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 
 			if (cStart.getTimeInMillis() < cNow.getTimeInMillis() && cNow.getTimeInMillis() < cEnd.getTimeInMillis()) {
 				long diff = cEnd.getTimeInMillis() - cStart.getTimeInMillis();
@@ -633,7 +653,7 @@ public class FragmentTimetable extends Fragment {
 
 		@Override
 		protected String doInBackground(Void... p1) {
-			String fileName = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
+			String fileName = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
 			if (listManager.exists(fileName, true))
 				return listManager.readList(fileName, true);
 
@@ -683,14 +703,14 @@ public class FragmentTimetable extends Fragment {
 				if (jsonObj.has("error")) {
 					if (Math.abs(startDateOffset + 50 - main.currentViewPos) == 0) {
 						if (getView() != null)
-							Snackbar.make(getView(), "Error: " + jsonObj.getJSONObject("error").getString("message"), Snackbar.LENGTH_LONG).setAction("OK", null).show();
+							Snackbar.make(getView(), getString(R.string.snackbar_error, jsonObj.getJSONObject("error").getString("message")), Snackbar.LENGTH_LONG).setAction("OK", null).show();
 						Log.w("error", jsonObj.toString());
 						pbLoading.setVisibility(View.GONE);
 						main.swipeRefresh.setRefreshing(false);
 					}
 				} else if (jsonObj.has("result")) {
 					setTimetableData(jsonObj.getJSONObject("result"));
-					String fileName = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + getStartDateFromWeek() + "-" + addDaysToInt(getStartDateFromWeek(), 4);
+					String fileName = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
 					listManager.saveList(fileName, result, true);
 				}
 			} catch (JSONException e) {

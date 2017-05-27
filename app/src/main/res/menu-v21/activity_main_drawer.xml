@@ -25,15 +25,15 @@
 	</item>
 
 	<group android:checkableBehavior="none">
-		<!--item
-			android:id="@+id/nav_lexicon"
-			android:icon="@drawable/ic_lexicon"
-			android:title="@string/lexicon">
-		</item-->
+		<item
+			android:id="@+id/nav_free_rooms"
+			android:icon="@drawable/ic_search_rooms"
+			android:title="@string/title_free_rooms">
+		</item>
 		<item
 			android:id="@+id/nav_suggested_features"
 			android:icon="@drawable/ic_suggested_features"
-			android:title="@string/new_features">
+			android:title="@string/title_new_features">
 		</item>
 		<item
 			android:id="@+id/nav_settings"

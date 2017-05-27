@@ -30,6 +30,7 @@ import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 import static android.os.AsyncTask.THREAD_POOL_EXECUTOR;
+import static com.sapuseven.untis.utils.ThemeUtils.tintDrawable;
 
 public class AdapterFeatures extends BaseAdapter {
 
@@ -73,15 +74,11 @@ public class AdapterFeatures extends BaseAdapter {
 		tvDesc.setText(data.get(position).getDesc());
 		final int voteOffset = data.get(position).getHasVoted();
 		tvLikes.setText(Integer.toString(data.get(position).getLikes()));
-		int[] attrs = new int[]{R.attr.colorPrimary};
-		TypedArray ta = context.obtainStyledAttributes(attrs);
-		final int color = ta.getColor(0, 0);
-		ta.recycle();
-		if (data.get(position).getHasVoted() == 1)
-			DrawableCompat.setTint(btnLike.getDrawable(), color);
-		else if (data.get(position).getHasVoted() == -1)
-			DrawableCompat.setTint(btnDislike.getDrawable(), color);
 
+		if (data.get(position).getHasVoted() == 1)
+			tintDrawable(context, btnLike.getDrawable(), R.attr.colorPrimary);
+		else if (data.get(position).getHasVoted() == -1)
+			tintDrawable(context, btnDislike.getDrawable(), R.attr.colorPrimary);
 
 		//noinspection ResourceType
 		btnLike.setOnClickListener(new View.OnClickListener() {

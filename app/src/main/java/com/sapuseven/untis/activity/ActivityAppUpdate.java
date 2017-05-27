@@ -28,7 +28,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
 
-import static com.sapuseven.untis.activity.ActivityMain.setupTheme;
+import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
 public class ActivityAppUpdate extends Activity {
 	private static final long TIMEOUT = 10000;

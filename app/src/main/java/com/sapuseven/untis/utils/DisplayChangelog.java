@@ -1,5 +1,6 @@
 package com.sapuseven.untis.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
@@ -39,15 +40,16 @@ public class DisplayChangelog extends AsyncTask<Integer, Void, String> {
 
 	@Override
 	protected void onPostExecute(String content) {
-		new AlertDialog.Builder(context)
-				.setTitle(R.string.changelog)
-				.setMessage(content.replace("<br>", "\n"))
-				.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int id) {
-						dialog.dismiss();
-					}
-				})
-				.show();
+		if (!((Activity) context).isFinishing())
+			new AlertDialog.Builder(context)
+					.setTitle(R.string.changelog)
+					.setMessage(content.replace("<br>", "\n"))
+					.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.dismiss();
+						}
+					})
+					.show();
 	}
 }
