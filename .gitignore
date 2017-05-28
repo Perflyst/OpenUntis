@@ -36,9 +36,6 @@ captures/
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
-
 # Freeline
 freeline.py
 freeline/
@@ -175,3 +172,5 @@ $RECYCLE.BIN/
 # End of https://www.gitignore.io/api/android,osx,windows,linux,intellij,java
 /.idea/codeStyleSettings.xml
 /keys.tar
+/app/fabric.properties
+/app/google-services.json
