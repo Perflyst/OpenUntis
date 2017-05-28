@@ -4,4 +4,4 @@ An alternative Android client for the Untis timetable system.
 ## Installation
 You can download the current release [from my website](https://sapuseven.com/apps/BetterUntis).
 
-Alternatively, you can build the app yourself. See the wiki for detailed instructions.
+Alternatively, [you can build the app yourself](wiki/Building instructions).
