@@ -99,9 +99,7 @@ public class FragmentTimetable extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		// TODO: Remove suppression when Android Studio releases a fix for this bug
-		//noinspection RestrictedApi
-		final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), getActivity().getTheme());
+		@SuppressLint("RestrictedApi") final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), getActivity().getTheme());
 		this.inflater = inflater.cloneInContext(contextThemeWrapper);
 		startDateOffset = getArguments().getInt("position") - 50;
 		ViewGroup rootView = (ViewGroup) this.inflater.inflate(R.layout.content_timetable, container, false);
@@ -262,10 +260,11 @@ public class FragmentTimetable extends Fragment {
 		}
 
 		if (timetableItemData.getSubjects(userDataList).getLongNames().size() > 0) {
-			String title = timetableItemData.getSubjects(userDataList).getLongNames().get(0);
+			StringBuilder titleBuilder = new StringBuilder(timetableItemData.getSubjects(userDataList).getLongNames().get(0));
 			for (int i = 1; i < timetableItemData.getSubjects(userDataList).getLongNames().size(); i++) {
-				title += ", " + timetableItemData.getSubjects(userDataList).getLongNames().get(i);
+				titleBuilder.append(", ").append(timetableItemData.getSubjects(userDataList).getLongNames().get(i));
 			}
+			String title = titleBuilder.toString();
 			if (timetableItemData.getCodes().contains(CODE_CANCELLED))
 				title = getString(R.string.lesson_cancelled, title);
 			if (timetableItemData.getCodes().contains(CODE_IRREGULAR))

@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
 	compileSdkVersion 25
-	buildToolsVersion '25.0.2'
+	buildToolsVersion '25.0.3'
 	resourcePrefix "colorpickerview__"
 
 	defaultConfig {
@@ -13,7 +13,7 @@ android {
 	}
 	buildTypes {
 	}
-	return void;
+	return void
 }
 
 dependencies {

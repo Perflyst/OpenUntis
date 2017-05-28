@@ -7,7 +7,7 @@
 	android:padding="16dp">
 
 	<TextView
-		android:id="@+id/tvName"
+		android:id="@+id/tvTitle"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:textColor="?android:attr/textColorPrimary"
@@ -18,7 +18,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_alignParentStart="true"
-		android:layout_below="@+id/tvName"
+		android:layout_below="@+id/tvTitle"
 		android:layout_marginEnd="8dp"
 		android:layout_marginTop="8dp"
 		android:layout_toStartOf="@+id/llLikeOrDislike"
@@ -31,7 +31,7 @@
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
 		android:layout_alignParentEnd="true"
-		android:layout_below="@+id/tvName"
+		android:layout_below="@+id/tvTitle"
 		android:layout_marginTop="8dp"
 		android:baselineAligned="false"
 		android:gravity="bottom"

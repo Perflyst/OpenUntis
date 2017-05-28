@@ -39,6 +39,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.sapuseven.untis.BuildConfig;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterGridView;
@@ -70,6 +71,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import io.fabric.sdk.android.Fabric;
+
 import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
@@ -96,6 +99,7 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		setupTheme(this, false);
+		Fabric.with(this, new Crashlytics());
 		super.onCreate(savedInstanceState);
 
 		itemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
@@ -122,6 +126,9 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			dialog = new AlertDialog.Builder(this).create();
 			try {
 				userDataList = new JSONObject(listManager.readList("userData", false));
+
+				logUser(userDataList.getJSONObject("userData").optInt("elemId", -1),
+						userDataList.getJSONObject("userData").optString("displayName", "BetterUntis"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -295,6 +302,11 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 		}
 	}
 
+	private void logUser(int id, String name) {
+		Crashlytics.setUserIdentifier(String.valueOf(id));
+		Crashlytics.setUserName(name);
+	}
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -344,6 +356,7 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 		}
 	}
 
+	@SuppressLint("WrongViewCast")
 	@Override
 	public void onBackPressed() {
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -641,7 +654,7 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			try {
 				SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
 				String user = prefs.getString("user", "");
-				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php?method=CheckForNewFeatures&name=" + user);
+				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php?method=checkForNewFeatures&name=" + user);
 				HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 				BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
 				JSONObject list = new JSONObject(readStream(in));
@@ -653,6 +666,7 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			return false;
 		}
 
+		@SuppressLint("WrongViewCast")
 		@Override
 		protected void onPostExecute(Boolean newFeatureAvailable) {
 			if (newFeatureAvailable) {

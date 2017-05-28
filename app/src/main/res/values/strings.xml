@@ -70,7 +70,7 @@
 	<string name="placeholder_numeric">0</string>
 	<string name="plus">+</string>
 	<string name="new_features_header">Planned new features</string>
-	<string name="new_features_body">Rate existing proposals or submit your own!</string>
+	<string name="new_features_body">Rate existing proposals or submit your own!\nPlease rate every Feature.</string>
 	<string name="toast_colors_reset">Color settings have been reset.</string>
 	<string name="preference_marker">Time indicator</string>
 	<string name="preference_background_irregular">Irregular lessons</string>

@@ -14,12 +14,13 @@ public class BetterToast {
 
 	private void showToast(String text, int duration) {
 		try {
-			this.toast.getView().isShown();
-			this.toast.setText(text);
+			toast.getView().isShown();
+			toast.setText(text);
+			toast.show();
 		} catch (Exception e) {
-			this.toast = Toast.makeText(this.context, text, duration);
+			toast = Toast.makeText(context, text, duration);
+			toast.show();
 		}
-		this.toast.show();
 	}
 
 	public void showToast(@StringRes int resId, int duration) {
