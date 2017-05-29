@@ -161,4 +161,6 @@
 		<item quantity="one">Next hour</item>
 		<item quantity="other">In %d hours</item>
 	</plurals>
+	<string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"http://sapuseven.com\",\n  }\n}]</string>
+	<string name="title_teacher">%1$s %2$s</string>
 </resources>

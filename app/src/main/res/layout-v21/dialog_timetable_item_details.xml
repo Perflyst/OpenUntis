@@ -19,8 +19,8 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
-			android:layout_marginLeft="12dp"
-			android:layout_marginRight="24dp"
+			android:layout_marginEnd="24dp"
+			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/teachers"
 			android:tint="?android:attr/textColorPrimary"
@@ -29,7 +29,8 @@
 		<HorizontalScrollView
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:paddingRight="12dp">
+			android:paddingEnd="12dp"
+			android:paddingStart="0dp">
 
 			<LinearLayout
 				android:id="@+id/llTeacherList"
@@ -51,8 +52,8 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
-			android:layout_marginLeft="12dp"
-			android:layout_marginRight="24dp"
+			android:layout_marginEnd="24dp"
+			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/classes"
 			android:tint="?android:attr/textColorPrimary"
@@ -61,7 +62,8 @@
 		<HorizontalScrollView
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:paddingRight="12dp">
+			android:paddingEnd="12dp"
+			android:paddingStart="0dp">
 
 			<LinearLayout
 				android:id="@+id/llClassList"
@@ -83,8 +85,8 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
-			android:layout_marginLeft="12dp"
-			android:layout_marginRight="24dp"
+			android:layout_marginEnd="24dp"
+			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/rooms"
 			android:tint="?android:attr/textColorPrimary"
@@ -93,7 +95,8 @@
 		<HorizontalScrollView
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:paddingRight="12dp">
+			android:paddingEnd="12dp"
+			android:paddingStart="0dp">
 
 			<LinearLayout
 				android:id="@+id/llRoomList"
@@ -116,13 +119,12 @@
 			android:layout_width="0dp"
 			android:layout_height="match_parent"
 			android:layout_weight="1"
-			android:drawableLeft="@drawable/ic_info"
 			android:drawablePadding="24dp"
 			android:drawableStart="@drawable/ic_info"
 			android:drawableTint="?android:attr/textColorPrimary"
 			android:gravity="center_vertical"
 			android:padding="12dp"
-			android:textColor="@color/colorPrimary_text"
+			android:textColor="?android:attr/textColorPrimary"
 			android:tint="?android:attr/textColorPrimary"
 			tools:ignore="UnusedAttribute"/>
 

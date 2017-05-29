@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -60,8 +62,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,6 +74,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 import io.fabric.sdk.android.Fabric;
 
@@ -80,7 +85,8 @@ import static com.sapuseven.untis.utils.StreamUtils.readStream;
 import static com.sapuseven.untis.utils.ThemeUtils.restartApplication;
 import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
-public class ActivityMain extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ActivityMain extends AppCompatActivity
+		implements NavigationView.OnNavigationItemSelectedListener {
 	private static final int REQUEST_CODE_ROOM_FINDER = 1;
 	public SwipeRefreshLayout swipeRefresh;
 	public SessionInfo sessionInfo;
@@ -98,8 +104,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		setupTheme(this, false);
 		Fabric.with(this, new Crashlytics());
+		setupTheme(this, false);
 		super.onCreate(savedInstanceState);
 
 		itemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
@@ -119,7 +125,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 
 			DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 			ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-					this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+					this, drawer, toolbar, R.string.navigation_drawer_open,
+					R.string.navigation_drawer_close);
 			drawer.addDrawerListener(toggle);
 			toggle.syncState();
 			listManager = new ListManager(getApplicationContext());
@@ -128,7 +135,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				userDataList = new JSONObject(listManager.readList("userData", false));
 
 				logUser(userDataList.getJSONObject("userData").optInt("elemId", -1),
-						userDataList.getJSONObject("userData").optString("displayName", "BetterUntis"));
+						userDataList.getJSONObject("userData")
+								.optString("displayName", "BetterUntis"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -137,8 +145,10 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				@Override
 				public void onRefresh() {
 					int startDate = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
-							.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), (currentViewPos - 50) * 7).getTime()));
-					listManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDate + "-" + addDaysToInt(startDate, 4), true);
+							.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(),
+									(currentViewPos - 50) * 7).getTime()));
+					listManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
+							"-" + startDate + "-" + addDaysToInt(startDate, 4), true);
 					refresh();
 				}
 			});
@@ -160,7 +170,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			pagerTable.setOnTouchListener(new View.OnTouchListener() {
 				@Override
 				public boolean onTouch(View v, MotionEvent event) {
-					if (event.getAction() == MotionEvent.ACTION_MOVE && !swipeRefresh.isRefreshing())
+					if (event.getAction() == MotionEvent.ACTION_MOVE
+							&& !swipeRefresh.isRefreshing())
 						swipeRefresh.setEnabled(false);
 					else if (!swipeRefresh.isRefreshing())
 						swipeRefresh.setEnabled(true);
@@ -173,7 +184,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				private int scrollState = ViewPager.SCROLL_STATE_IDLE;
 
 				@Override
-				public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels) {
+				public void onPageScrolled(final int position, final float positionOffset,
+				                           final int positionOffsetPixels) {
 					if (scrollState == ViewPager.SCROLL_STATE_IDLE) {
 						return;
 					}
@@ -199,7 +211,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				private int scrollState = ViewPager.SCROLL_STATE_IDLE;
 
 				@Override
-				public void onPageScrolled(final int position, final float positionOffset, final int positionOffsetPixels) {
+				public void onPageScrolled(final int position, final float positionOffset,
+				                           final int positionOffsetPixels) {
 					if (scrollState == ViewPager.SCROLL_STATE_IDLE) {
 						return;
 					}
@@ -238,7 +251,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 
 			try {
 				TimegridUnitManager unitManager = new TimegridUnitManager();
-				unitManager.setList(userDataList.getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
+				unitManager.setList(userDataList.getJSONObject("masterData")
+						.getJSONObject("timeGrid").getJSONArray("days"));
 				ArrayList<TimegridUnitManager.UnitData> units = unitManager.getUnits();
 
 				for (int i = 0; i < units.size(); i++)
@@ -251,8 +265,12 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			navigationView.setNavigationItemSelectedListener(this);
 			navigationView.setCheckedItem(R.id.nav_show_personal);
 
-			((TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_drawer_header_line1)).setText(userDataList.optJSONObject("userData").optString("displayName", getString(R.string.app_name)));
-			((TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_drawer_header_line2)).setText(userDataList.optJSONObject("userData").optString("schoolName", getString(R.string.contact_email)));
+			((TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_drawer_header_line1))
+					.setText(userDataList.optJSONObject("userData")
+							.optString("displayName", getString(R.string.app_name)));
+			((TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_drawer_header_line2))
+					.setText(userDataList.optJSONObject("userData")
+							.optString("schoolName", getString(R.string.contact_email)));
 
 			pagerHeader.setCurrentItem(currentViewPos);
 			pagerTable.setCurrentItem(currentViewPos);
@@ -269,11 +287,13 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
 				builder.setMessage(getString(R.string.new_version_message))
 						.setCancelable(false)
-						.setNeutralButton(R.string.view_changelog, new DialogInterface.OnClickListener() {
+						.setNeutralButton(R.string.view_changelog,
+						 new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialogInterface, int i) {
 								dialogInterface.dismiss();
-								new DisplayChangelog(ActivityMain.this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, oldVersion);
+								new DisplayChangelog(ActivityMain.this)
+								.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, oldVersion);
 							}
 						})
 						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
@@ -299,7 +319,44 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 				editor.apply();
 			}
 			setupBackgroundColor();
+
+			Intent appLinkIntent = getIntent();
+			Uri appLinkData = appLinkIntent.getData();
+			if (appLinkData != null && !TextUtils.isEmpty(appLinkData.getQuery())) {
+				try {
+					if (!TextUtils.isEmpty(appLinkData.getQueryParameter("room")))
+						setTarget((int) new ElementName(ROOM).setUserDataList(userDataList)
+										.findFieldByValue("name", appLinkData
+												.getQueryParameter("room"), "id"), ROOM,
+								getString(R.string.title_room, appLinkData.getQueryParameter("room")));
+					else if (!TextUtils.isEmpty(appLinkData.getQueryParameter("teacher")))
+						setTarget((int) new ElementName(TEACHER).setUserDataList(userDataList)
+										.findFieldByValue("name", appLinkData
+												.getQueryParameter("teacher"), "id"), TEACHER,
+								getTeacherTitleByName(appLinkData.getQueryParameter("teacher")));
+					else if (!TextUtils.isEmpty(appLinkData.getQueryParameter("class")))
+						setTarget((int) new ElementName(CLASS).setUserDataList(userDataList)
+										.findFieldByValue("name", appLinkData
+												.getQueryParameter("class"), "id"), CLASS,
+								getString(R.string.title_class,
+										URLDecoder.decode(appLinkData.getQueryParameter("class"),
+												"UTF-8")));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				} catch (NoSuchElementException e) {
+					e.printStackTrace(); // TODO: Show 'item not found' dialog
+				}
+				// TODO: Add parameter for date selection
+				// TODO: Add parameter for school (for compatibility)
+			}
 		}
+	}
+
+	private String getTeacherTitleByName(String teacherName) {
+		ElementName teacher = new ElementName(TEACHER).setUserDataList(userDataList);
+		return getString(R.string.title_teacher,
+				teacher.findFieldByValue("name", teacherName, "firstName"),
+				teacher.findFieldByValue("name", teacherName, "lastName"));
 	}
 
 	private void logUser(int id, String name) {
@@ -331,7 +388,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 		c2.set(Calendar.MINUTE, 0);
 		c2.set(Calendar.SECOND, 0);
 		c2.set(Calendar.MILLISECOND, 0);
-		currentViewPos = (int) (50L + (c1.getTimeInMillis() - c2.getTimeInMillis()) / (7 * 24 * 60 * 60 * 1000));
+		currentViewPos = (int) (50L + (c1.getTimeInMillis() - c2.getTimeInMillis())
+				/ (7 * 24 * 60 * 60 * 1000));
 		pagerHeader.setCurrentItem(currentViewPos);
 		pagerTable.setCurrentItem(currentViewPos);
 	}
@@ -350,27 +408,31 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 	private void setupBackgroundColor() {
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		if (sharedPrefs.getBoolean("preference_dark_theme_amoled", false) && sharedPrefs.getBoolean("preference_dark_theme", false)) {
+		if (sharedPrefs.getBoolean("preference_dark_theme_amoled", false)
+				&& sharedPrefs.getBoolean("preference_dark_theme", false)) {
 			findViewById(R.id.input_date).setBackgroundColor(Color.BLACK);
 			findViewById(R.id.hour_view_sidebar).setBackgroundColor(Color.BLACK);
 		}
 	}
 
-	@SuppressLint("WrongViewCast")
 	@Override
 	public void onBackPressed() {
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		if (drawer.isDrawerOpen(GravityCompat.START)) {
 			drawer.closeDrawer(GravityCompat.START);
 		} else {
-			if (sessionInfo != null && sessionInfo.getElemId() != userDataList.optJSONObject("userData").optInt("elemId", -1)) {
+			if (sessionInfo != null && sessionInfo.getElemId()
+					!= userDataList.optJSONObject("userData").optInt("elemId", -1)) {
 				setTarget(
 						userDataList.optJSONObject("userData").optInt("elemId", -1),
-						SessionInfo.getElemTypeId(userDataList.optJSONObject("userData").optString("elemType", "")),
-						userDataList.optJSONObject("userData").optString("displayName", "BetterUntis"));
+						SessionInfo.getElemTypeId(userDataList.optJSONObject("userData")
+								.optString("elemType", "")),
+						userDataList.optJSONObject("userData")
+								.optString("displayName", "BetterUntis"));
 			} else {
 				if (System.currentTimeMillis() - 2000 > lastBackPress) {
-					Snackbar.make(findViewById(R.id.content_main), R.string.snackbar_press_back_double, 2000).show();
+					Snackbar.make(findViewById(R.id.content_main),
+							R.string.snackbar_press_back_double, 2000).show();
 					lastBackPress = System.currentTimeMillis();
 				} else {
 					super.onBackPressed();
@@ -408,31 +470,37 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 		// Handle navigation view item clicks here.
 		switch (sessionInfo.getElemType()) {
 			case "CLASS":
-				((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_classes);
+				((NavigationView) findViewById(R.id.nav_view))
+						.setCheckedItem(R.id.nav_show_classes);
 				break;
 			case "TEACHER":
-				((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_teachers);
+				((NavigationView) findViewById(R.id.nav_view))
+						.setCheckedItem(R.id.nav_show_teachers);
 				break;
 			case "ROOM":
-				((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_rooms);
+				((NavigationView) findViewById(R.id.nav_view))
+						.setCheckedItem(R.id.nav_show_rooms);
 				break;
 			default:
-				((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_personal);
+				((NavigationView) findViewById(R.id.nav_view))
+						.setCheckedItem(R.id.nav_show_personal);
 		}
 
 		switch (item.getItemId()) {
 			case R.id.nav_show_personal:
 				setTarget(
 						userDataList.optJSONObject("userData").optInt("elemId", -1),
-						SessionInfo.getElemTypeId(userDataList.optJSONObject("userData").optString("elemType", "")),
-						userDataList.optJSONObject("userData").optString("displayName", "BetterUntis"));
+						SessionInfo.getElemTypeId(userDataList.optJSONObject("userData")
+								.optString("elemType", "")),
+						userDataList.optJSONObject("userData")
+								.optString("displayName", "BetterUntis"));
 				break;
 			case R.id.nav_show_classes:
 				//noinspection SpellCheckingInspection
 				showItemList(CLASS, R.string.hint_search_classes, R.string.title_class, "klassen");
 				break;
 			case R.id.nav_show_teachers:
-				showItemList(TEACHER, R.string.hint_search_teachers, -10, "teachers");
+				showItemList(TEACHER, R.string.hint_search_teachers, -1, "teachers");
 				break;
 			case R.id.nav_show_rooms:
 				showItemList(ROOM, R.string.hint_search_rooms, R.string.title_room, "rooms");
@@ -461,12 +529,15 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 		switch (requestCode) {
 			case REQUEST_CODE_ROOM_FINDER:
 				if (resultCode == RESULT_OK) {
-					setTarget(data.getIntExtra("elemId", 0), data.getIntExtra("elemType", ElementName.ROOM), data.getStringExtra("displayName"));
+					setTarget(data.getIntExtra("elemId", 0),
+							data.getIntExtra("elemType", ElementName.ROOM),
+							data.getStringExtra("displayName"));
 				}
 		}
 	}
 
-	private void showItemList(final int elementType, @StringRes int searchFieldHint, final int targetPageTitle, String masterDataField) {
+	private void showItemList(final int elementType, @StringRes int searchFieldHint,
+	                          final int targetPageTitle, String masterDataField) {
 		DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
 			@Override
 			public void onCancel(DialogInterface dialogInterface) {
@@ -474,27 +545,33 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 					getSupportActionBar().setTitle(sessionInfo.getDisplayName());
 				switch (sessionInfo.getElemType()) {
 					case "CLASS":
-						((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_classes);
+						((NavigationView) findViewById(R.id.nav_view))
+								.setCheckedItem(R.id.nav_show_classes);
 						break;
 					case "TEACHER":
-						((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_teachers);
+						((NavigationView) findViewById(R.id.nav_view))
+								.setCheckedItem(R.id.nav_show_teachers);
 						break;
 					case "ROOM":
-						((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_rooms);
+						((NavigationView) findViewById(R.id.nav_view))
+								.setCheckedItem(R.id.nav_show_rooms);
 						break;
 					default:
-						((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_personal);
+						((NavigationView) findViewById(R.id.nav_view))
+								.setCheckedItem(R.id.nav_show_personal);
 				}
 			}
 		};
 
 		try {
-			final ElementName elementName = new ElementName(elementType).setUserDataList(userDataList);
+			final ElementName elementName = new ElementName(elementType)
+					.setUserDataList(userDataList);
 			LinearLayout content = new LinearLayout(this);
 			content.setOrientation(LinearLayout.VERTICAL);
 
 			final List<String> list = new ArrayList<>();
-			JSONArray roomList = userDataList.optJSONObject("masterData").optJSONArray(masterDataField);
+			JSONArray roomList = userDataList.optJSONObject("masterData")
+					.optJSONArray(masterDataField);
 			for (int i = 0; i < roomList.length(); i++)
 				list.add(roomList.getJSONObject(i).getString("name"));
 			Collections.sort(list, new Comparator<String>() {
@@ -506,7 +583,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 
 			final AdapterGridView adapter = new AdapterGridView(this, list);
 			TextInputLayout titleContainer = new TextInputLayout(this);
-			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 			params.setMargins(itemListMargins, itemListMargins, itemListMargins, 0);
 			titleContainer.setLayoutParams(params);
 
@@ -516,12 +594,17 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					if (targetPageTitle == -10)
-						setTarget((int) elementName.findFieldByValue("name", list.get(position), "id"),
+					if (targetPageTitle == -1)
+						setTarget((int) elementName
+										.findFieldByValue("name", list.get(position), "id"),
 								elementType,
-								elementName.findFieldByValue("name", list.get(position), "firstName") + " " + elementName.findFieldByValue("name", list.get(position), "lastName"));
+								elementName.findFieldByValue("name",
+										list.get(position), "firstName") + " "
+										+ elementName.findFieldByValue("name", list.get(position),
+										"lastName"));
 					else
-						setTarget((Integer) elementName.findFieldByValue("name", list.get(position), "id"),
+						setTarget((Integer) elementName.findFieldByValue("name", list.get(position),
+								"id"),
 								elementType,
 								getString(targetPageTitle, list.get(position)));
 				}
@@ -554,27 +637,34 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			dialog.setCanceledOnTouchOutside(true);
 			dialog.show();
 		} catch (JSONException e) {
-			Snackbar.make(pagerTable, getString(R.string.snackbar_error, e.getMessage()), Snackbar.LENGTH_LONG).setAction("OK", null).show();
+			Snackbar.make(pagerTable, getString(R.string.snackbar_error, e.getMessage()), Snackbar.LENGTH_LONG)
+					.setAction("OK", null).show();
 			swipeRefresh.setRefreshing(false);
 			e.printStackTrace();
 		}
 	}
 
 	private void setTarget(int elemId, int elemType, String displayName) {
+		if (sessionInfo == null)
+			sessionInfo = new SessionInfo();
 		sessionInfo.setElemId(elemId);
 		sessionInfo.setElemType(SessionInfo.getElemTypeName(elemType));
 		sessionInfo.setDisplayName(displayName);
 		if (getSupportActionBar() != null)
 			getSupportActionBar().setTitle(displayName);
+
 		switch (elemType) {
 			case CLASS:
-				((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_classes);
+				((NavigationView) findViewById(R.id.nav_view))
+						.setCheckedItem(R.id.nav_show_classes);
 				break;
 			case TEACHER:
-				((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_teachers);
+				((NavigationView) findViewById(R.id.nav_view))
+						.setCheckedItem(R.id.nav_show_teachers);
 				break;
 			case ROOM:
-				((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_rooms);
+				((NavigationView) findViewById(R.id.nav_view))
+						.setCheckedItem(R.id.nav_show_rooms);
 				break;
 		}
 		refresh();
@@ -590,7 +680,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 
 	private void addHour(TimegridUnitManager.UnitData unitData) {
 		LinearLayout sidebar = (LinearLayout) findViewById(R.id.hour_view_sidebar);
-		@SuppressLint("InflateParams") View v = getLayoutInflater().inflate(R.layout.item_hour, null);
+		@SuppressLint("InflateParams") View v = getLayoutInflater()
+				.inflate(R.layout.item_hour, null);
 		((TextView) v.findViewById(R.id.tvTimeStart)).setText(unitData.getDisplayStartTime());
 		((TextView) v.findViewById(R.id.tvTimeEnd)).setText(unitData.getDisplayEndTime());
 		((TextView) v.findViewById(R.id.tvHourIndex)).setText(unitData.getIndex());
@@ -633,7 +724,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
 			c.setTime(sdf.parse(Integer.toString(startDate)));
 			c.add(Calendar.DATE, days);
-			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US).format(c.getTime()));
+			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+					.format(c.getTime()));
 		} catch (ParseException e) {
 			e.printStackTrace();
 			return startDate;
@@ -654,7 +746,8 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			try {
 				SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
 				String user = prefs.getString("user", "");
-				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php?method=checkForNewFeatures&name=" + user);
+				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php" +
+						"?method=checkForNewFeatures&name=" + user);
 				HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 				BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
 				JSONObject list = new JSONObject(readStream(in));
@@ -666,11 +759,11 @@ public class ActivityMain extends AppCompatActivity implements NavigationView.On
 			return false;
 		}
 
-		@SuppressLint("WrongViewCast")
 		@Override
 		protected void onPostExecute(Boolean newFeatureAvailable) {
 			if (newFeatureAvailable) {
-				Snackbar.make(findViewById(R.id.content_main), R.string.new_feature_planned, Snackbar.LENGTH_INDEFINITE).setAction(R.string.show, new View.OnClickListener() {
+				Snackbar.make(findViewById(R.id.content_main), R.string.new_feature_planned,
+						Snackbar.LENGTH_INDEFINITE).setAction(R.string.show, new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
 						Intent i = new Intent(ActivityMain.this, ActivityFeatures.class);

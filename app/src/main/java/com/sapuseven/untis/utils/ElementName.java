@@ -3,6 +3,7 @@ package com.sapuseven.untis.utils;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 @SuppressWarnings("WeakerAccess")
 public class ElementName {
@@ -30,7 +31,6 @@ public class ElementName {
 	public static String getTypeName(int type) {
 		switch (type) {
 			case CLASS:
-				//noinspection SpellCheckingInspection
 				return "klassen";
 			case TEACHER:
 				return "teachers";
@@ -58,17 +58,25 @@ public class ElementName {
 		type = elemType;
 		ids = list;
 		for (int i : list)
-			names.add((String) findFieldByValue("id", i, "name"));
+			try {
+				names.add((String) findFieldByValue("id", i, "name"));
+			} catch (NoSuchElementException ignored) {
+			}
 		for (int i : list)
-			longNames.add((String) findFieldByValue("id", i, "longName"));
+			try {
+				longNames.add((String) findFieldByValue("id", i, "longName"));
+			} catch (NoSuchElementException ignored) {
+			}
 		return this;
 	}
 
 	public Object findFieldByValue(String srcField, Object srcValue, String dstFieldName) {
+		if (srcField == null || srcValue == null || dstFieldName == null)
+			return null;
 		for (int i = 0; i < list.optJSONObject("masterData").optJSONArray(getTypeName(type)).length(); i++)
 			if (list.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(srcField).equals(srcValue))
 				return list.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(dstFieldName);
-		return null;
+		throw new NoSuchElementException("Item not found");
 	}
 
 	public boolean isEmpty() {

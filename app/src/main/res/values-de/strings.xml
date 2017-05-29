@@ -162,4 +162,5 @@
 	<string name="preference_room_to_display_in_free_lessons">Anzuzeigender Raum in freien Stunden</string>
 	<string name="preference_room_to_display_in_free_lessons_trim">Nur in Freistunden anzeigen</string>
 	<string name="preference_room_to_display_in_free_lessons_trim_desc">Dadurch wird die Anzeige nach der letzten Stunde ausgeblendet</string>
+	<string name="title_teacher">%1$s %2$s</string>
 </resources>

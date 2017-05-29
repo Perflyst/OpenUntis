@@ -49,7 +49,7 @@ public class TimetableItemData {
 			setEndDateTime(itemData.optString("endDateTime"));
 			setCodes(itemData.optJSONArray("is"));
 			setBackColor(itemData.optString("backColor", "#E0E0E0"));
-			setInfo(itemData.optJSONObject("text").optString("lesson", ""));
+			setInfo(itemData.optJSONObject("text").optString("lesson", "")); // TODO: Show all three texts
 		}
 	}
 
