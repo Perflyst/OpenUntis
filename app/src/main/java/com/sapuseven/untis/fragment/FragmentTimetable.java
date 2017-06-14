@@ -99,7 +99,8 @@ public class FragmentTimetable extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		@SuppressLint("RestrictedApi") final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), getActivity().getTheme());
+		// noinspection RestrictedApi
+		final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), getActivity().getTheme());
 		this.inflater = inflater.cloneInContext(contextThemeWrapper);
 		startDateOffset = getArguments().getInt("position") - 50;
 		ViewGroup rootView = (ViewGroup) this.inflater.inflate(R.layout.content_timetable, container, false);

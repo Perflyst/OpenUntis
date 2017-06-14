@@ -32,12 +32,12 @@ import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
 public class ActivityAppUpdate extends Activity {
 	private static final long TIMEOUT = 10000;
-	private final Handler timeout = new Handler();
-	private ProgressBar progressBar;
-	private TextView progressTextView;
-	private DownloadTask downloadTask;
-	private Runnable runnable;
-	private File outputFile;
+	private final Handler mTimeout = new Handler();
+	private ProgressBar mProgressBar;
+	private TextView mTvProgress;
+	private DownloadTask mDownloadTask;
+	private Runnable mRunnable;
+	private File mOutputFile;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +45,10 @@ public class ActivityAppUpdate extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.outdated);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		final TextView tv = (TextView) findViewById(R.id.tvUpdateLater);
-		final Button updateBtn = (Button) findViewById(R.id.btnUpdate);
+		final Button btnNotNow = (Button) findViewById(R.id.btnUpdateLater);
+		final Button btnUpdate = (Button) findViewById(R.id.btnUpdate);
 
-		tv.setOnClickListener(new OnClickListener() {
+		btnNotNow.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				Intent intent = new Intent(getApplicationContext(), ActivityMain.class);
@@ -57,27 +57,28 @@ public class ActivityAppUpdate extends Activity {
 				finish();
 			}
 		});
-		updateBtn.setOnClickListener(new OnClickListener() {
+		btnUpdate.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				setContentView(R.layout.download);
-				progressBar = (ProgressBar) findViewById(R.id.pbDownload);
-				progressTextView = (TextView) findViewById(R.id.tvDownload);
+				mProgressBar = (ProgressBar) findViewById(R.id.pbDownload);
+				mTvProgress = (TextView) findViewById(R.id.tvDownload);
 
-				downloadTask = new DownloadTask();
-				downloadTask.execute("https://data.sapuseven.com/BetterUntis/download.php?redirect=1");
-				runnable = new Runnable() {
+				mDownloadTask = new DownloadTask();
+				mDownloadTask
+						.execute("https://data.sapuseven.com/BetterUntis/download.php?redirect=1");
+				mRunnable = new Runnable() {
 					public void run() {
 						cancel();
 					}
 				};
-				timeout.postDelayed(runnable, TIMEOUT);
+				mTimeout.postDelayed(mRunnable, TIMEOUT);
 			}
 		});
 	}
 
 	private void cancel() {
-		downloadTask.cancel(true);
+		mDownloadTask.cancel(true);
 		setContentView(R.layout.download_failed);
 		Button try_again = (Button) findViewById(R.id.btnTryAgain);
 		Button manual = (Button) findViewById(R.id.btnManualUpdate);
@@ -88,7 +89,8 @@ public class ActivityAppUpdate extends Activity {
 		});
 		manual.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://sapuseven.com/BetterUntis/download.php"));
+				Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+						Uri.parse("http://sapuseven.com/BetterUntis/download.php"));
 				startActivity(browserIntent);
 			}
 		});
@@ -114,16 +116,18 @@ public class ActivityAppUpdate extends Activity {
 				connection.connect();
 
 				if (connection.getResponseCode() != HttpURLConnection.HTTP_OK)
-					return "Server returned HTTP " + connection.getResponseCode() + " " + connection.getResponseMessage();
+					return "Server returned HTTP " + connection.getResponseCode()
+							+ " " + connection.getResponseMessage();
 
 				int fileLength = connection.getContentLength();
 
 				File dir = new File(context.getExternalCacheDir() + "/update");
 				if (!dir.exists() && !dir.mkdirs())
 					ActivityAppUpdate.this.cancel();
-				outputFile = new File(dir, "from-v" + getPackageManager().getPackageInfo(getPackageName(), 0).versionCode + ".apk");
+				mOutputFile = new File(dir, "from-v" + getPackageManager()
+						.getPackageInfo(getPackageName(), 0).versionCode + ".apk");
 				input = connection.getInputStream();
-				output = new FileOutputStream(outputFile);
+				output = new FileOutputStream(mOutputFile);
 
 				byte data[] = new byte[4096];
 				long total = 0;
@@ -139,8 +143,8 @@ public class ActivityAppUpdate extends Activity {
 					output.write(data, 0, count);
 				}
 			} catch (Exception e) {
-				throw new RuntimeException(e);
-				//return e.toString();
+				ActivityAppUpdate.this.cancel();
+				return e.toString();
 			} finally {
 				try {
 					if (output != null)
@@ -159,16 +163,16 @@ public class ActivityAppUpdate extends Activity {
 
 		@Override
 		protected void onProgressUpdate(Integer... progress) {
-			timeout.removeCallbacks(runnable);
+			mTimeout.removeCallbacks(mRunnable);
 			super.onProgressUpdate(progress);
-			progressBar.setIndeterminate(false);
-			progressBar.setMax(100);
-			progressBar.setProgress(progress[0]);
+			mProgressBar.setIndeterminate(false);
+			mProgressBar.setMax(100);
+			mProgressBar.setProgress(progress[0]);
 			double progressSize = progress[1] / 1024.0 / 1024.0;
 			progressSize = Math.round(progressSize * 100) / 100.0;
 			double totalSize = progress[2] / 1024.0 / 1024.0;
 			totalSize = Math.round(totalSize * 100) / 100.0;
-			progressTextView.setText(
+			mTvProgress.setText(
 					getString(R.string.download_progress,
 							Integer.parseInt(Double.toString(progressSize).split("\\.")[0]),
 							String.format(Locale.ENGLISH, "%02d", Integer.parseInt(Double.toString(progressSize).split("\\.")[1])),
@@ -179,13 +183,14 @@ public class ActivityAppUpdate extends Activity {
 
 		private void openFile() {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-				Uri apkUri = FileProvider.getUriForFile(ActivityAppUpdate.this, context.getPackageName() + ".provider", outputFile);
+				Uri apkUri = FileProvider.getUriForFile(ActivityAppUpdate.this,
+						context.getPackageName() + ".provider", mOutputFile);
 				Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
 				intent.setData(apkUri);
 				intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 				ActivityAppUpdate.this.startActivity(intent);
 			} else {
-				Uri apkUri = Uri.fromFile(outputFile);
+				Uri apkUri = Uri.fromFile(mOutputFile);
 				Intent intent = new Intent(Intent.ACTION_VIEW);
 				intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
 				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

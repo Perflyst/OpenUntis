@@ -17,7 +17,7 @@ import android.view.ViewGroup;
  */
 public abstract class ActivityPreferences extends PreferenceActivity {
 
-	private AppCompatDelegate delegate;
+	private AppCompatDelegate mDelegate;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +43,8 @@ public abstract class ActivityPreferences extends PreferenceActivity {
 	}
 
 	@Override
-	public void setContentView(@LayoutRes int layoutResID) {
-		getDelegate().setContentView(layoutResID);
+	public void setContentView(@LayoutRes int layoutResId) {
+		getDelegate().setContentView(layoutResId);
 	}
 
 	@Override
@@ -97,9 +97,9 @@ public abstract class ActivityPreferences extends PreferenceActivity {
 	}
 
 	private AppCompatDelegate getDelegate() {
-		if (delegate == null) {
-			delegate = AppCompatDelegate.create(this, null);
+		if (mDelegate == null) {
+			mDelegate = AppCompatDelegate.create(this, null);
 		}
-		return delegate;
+		return mDelegate;
 	}
 }

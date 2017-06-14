@@ -91,16 +91,16 @@ public class ActivityMain extends AppCompatActivity
 	public SwipeRefreshLayout swipeRefresh;
 	public SessionInfo sessionInfo;
 	public int currentViewPos = 50;
-	private ViewPager pagerHeader;
-	private ViewPager pagerTable;
-	private ListManager listManager;
-	private AdapterTimetableHeader pagerHeaderAdapter;
-	private AdapterTimetable pagerTableAdapter;
-	private AlertDialog dialog;
-	private Calendar lastCalendar;
-	private JSONObject userDataList;
-	private long lastBackPress;
-	private int itemListMargins;
+	private ViewPager mPagerHeader;
+	private ViewPager mPagerTable;
+	private ListManager mListManager;
+	private AdapterTimetableHeader mPagerHeaderAdapter;
+	private AdapterTimetable mPagerTableAdapter;
+	private AlertDialog mDialog;
+	private Calendar mLastCalendar;
+	private JSONObject mUserDataList;
+	private long mLastBackPress;
+	private int mItemListMargins;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +108,7 @@ public class ActivityMain extends AppCompatActivity
 		setupTheme(this, false);
 		super.onCreate(savedInstanceState);
 
-		itemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
+		mItemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		if (!checkLoginState()) {
@@ -129,13 +129,13 @@ public class ActivityMain extends AppCompatActivity
 					R.string.navigation_drawer_close);
 			drawer.addDrawerListener(toggle);
 			toggle.syncState();
-			listManager = new ListManager(getApplicationContext());
-			dialog = new AlertDialog.Builder(this).create();
+			mListManager = new ListManager(getApplicationContext());
+			mDialog = new AlertDialog.Builder(this).create();
 			try {
-				userDataList = new JSONObject(listManager.readList("userData", false));
+				mUserDataList = new JSONObject(mListManager.readList("userData", false));
 
-				logUser(userDataList.getJSONObject("userData").optInt("elemId", -1),
-						userDataList.getJSONObject("userData")
+				logUser(mUserDataList.getJSONObject("userData").optInt("elemId", -1),
+						mUserDataList.getJSONObject("userData")
 								.optString("displayName", "BetterUntis"));
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -147,7 +147,7 @@ public class ActivityMain extends AppCompatActivity
 					int startDate = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
 							.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(),
 									(currentViewPos - 50) * 7).getTime()));
-					listManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
+					mListManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
 							"-" + startDate + "-" + addDaysToInt(startDate, 4), true);
 					refresh();
 				}
@@ -159,15 +159,15 @@ public class ActivityMain extends AppCompatActivity
 					&& c.getFirstDayOfWeek() == Calendar.MONDAY))
 				currentViewPos++;
 
-			pagerHeader = (ViewPager) findViewById(R.id.viewpagerHeader);
-			pagerHeaderAdapter = new AdapterTimetableHeader(getSupportFragmentManager());
-			pagerHeader.setAdapter(pagerHeaderAdapter);
+			mPagerHeader = (ViewPager) findViewById(R.id.viewpagerHeader);
+			mPagerHeaderAdapter = new AdapterTimetableHeader(getSupportFragmentManager());
+			mPagerHeader.setAdapter(mPagerHeaderAdapter);
 
-			pagerTable = (ViewPager) findViewById(R.id.viewpagerTimegrid);
-			pagerTableAdapter = new AdapterTimetable(getSupportFragmentManager());
-			pagerTable.setAdapter(pagerTableAdapter);
+			mPagerTable = (ViewPager) findViewById(R.id.viewpagerTimegrid);
+			mPagerTableAdapter = new AdapterTimetable(getSupportFragmentManager());
+			mPagerTable.setAdapter(mPagerTableAdapter);
 
-			pagerTable.setOnTouchListener(new View.OnTouchListener() {
+			mPagerTable.setOnTouchListener(new View.OnTouchListener() {
 				@Override
 				public boolean onTouch(View v, MotionEvent event) {
 					if (event.getAction() == MotionEvent.ACTION_MOVE
@@ -179,7 +179,7 @@ public class ActivityMain extends AppCompatActivity
 				}
 			});
 
-			pagerHeader.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			mPagerHeader.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
 				private int scrollState = ViewPager.SCROLL_STATE_IDLE;
 
@@ -189,7 +189,7 @@ public class ActivityMain extends AppCompatActivity
 					if (scrollState == ViewPager.SCROLL_STATE_IDLE) {
 						return;
 					}
-					pagerTable.scrollTo(pagerHeader.getScrollX(), pagerTable.getScrollY());
+					mPagerTable.scrollTo(mPagerHeader.getScrollX(), mPagerTable.getScrollY());
 				}
 
 				@Override
@@ -201,12 +201,12 @@ public class ActivityMain extends AppCompatActivity
 				public void onPageScrollStateChanged(final int state) {
 					scrollState = state;
 					if (state == ViewPager.SCROLL_STATE_IDLE) {
-						pagerTable.setCurrentItem(pagerHeader.getCurrentItem(), false);
+						mPagerTable.setCurrentItem(mPagerHeader.getCurrentItem(), false);
 					}
 				}
 			});
 
-			pagerTable.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			mPagerTable.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
 				private int scrollState = ViewPager.SCROLL_STATE_IDLE;
 
@@ -216,7 +216,7 @@ public class ActivityMain extends AppCompatActivity
 					if (scrollState == ViewPager.SCROLL_STATE_IDLE) {
 						return;
 					}
-					pagerHeader.scrollTo(pagerTable.getScrollX(), pagerHeader.getScrollY());
+					mPagerHeader.scrollTo(mPagerTable.getScrollX(), mPagerHeader.getScrollY());
 				}
 
 				@Override
@@ -228,12 +228,12 @@ public class ActivityMain extends AppCompatActivity
 				public void onPageScrollStateChanged(final int state) {
 					scrollState = state;
 					if (state == ViewPager.SCROLL_STATE_IDLE) {
-						pagerHeader.setCurrentItem(pagerTable.getCurrentItem(), false);
+						mPagerHeader.setCurrentItem(mPagerTable.getCurrentItem(), false);
 					}
 				}
 			});
 
-			lastCalendar = Calendar.getInstance();
+			mLastCalendar = Calendar.getInstance();
 
 			ImageView ivSelectDate = (ImageView) findViewById(R.id.ivSelectDate);
 			ivSelectDate.setOnClickListener(new View.OnClickListener() {
@@ -241,9 +241,9 @@ public class ActivityMain extends AppCompatActivity
 				public void onClick(View view) {
 					DialogFragment fragment = new FragmentDatePicker();
 					Bundle args = new Bundle();
-					args.putInt("year", lastCalendar.get(Calendar.YEAR));
-					args.putInt("month", lastCalendar.get(Calendar.MONTH));
-					args.putInt("day", lastCalendar.get(Calendar.DAY_OF_MONTH));
+					args.putInt("year", mLastCalendar.get(Calendar.YEAR));
+					args.putInt("month", mLastCalendar.get(Calendar.MONTH));
+					args.putInt("day", mLastCalendar.get(Calendar.DAY_OF_MONTH));
 					fragment.setArguments(args);
 					fragment.show(getSupportFragmentManager(), "datePicker");
 				}
@@ -251,7 +251,7 @@ public class ActivityMain extends AppCompatActivity
 
 			try {
 				TimegridUnitManager unitManager = new TimegridUnitManager();
-				unitManager.setList(userDataList.getJSONObject("masterData")
+				unitManager.setList(mUserDataList.getJSONObject("masterData")
 						.getJSONObject("timeGrid").getJSONArray("days"));
 				ArrayList<TimegridUnitManager.UnitData> units = unitManager.getUnits();
 
@@ -266,14 +266,14 @@ public class ActivityMain extends AppCompatActivity
 			navigationView.setCheckedItem(R.id.nav_show_personal);
 
 			((TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_drawer_header_line1))
-					.setText(userDataList.optJSONObject("userData")
+					.setText(mUserDataList.optJSONObject("userData")
 							.optString("displayName", getString(R.string.app_name)));
 			((TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_drawer_header_line2))
-					.setText(userDataList.optJSONObject("userData")
+					.setText(mUserDataList.optJSONObject("userData")
 							.optString("schoolName", getString(R.string.contact_email)));
 
-			pagerHeader.setCurrentItem(currentViewPos);
-			pagerTable.setCurrentItem(currentViewPos);
+			mPagerHeader.setCurrentItem(currentViewPos);
+			mPagerTable.setCurrentItem(currentViewPos);
 
 			checkVersion();
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -297,8 +297,8 @@ public class ActivityMain extends AppCompatActivity
 							}
 						})
 						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.dismiss();
+							public void onClick(DialogInterface mDialog, int id) {
+								mDialog.dismiss();
 							}
 						});
 				AlertDialog alertDialog = builder.create();
@@ -325,17 +325,17 @@ public class ActivityMain extends AppCompatActivity
 			if (appLinkData != null && !TextUtils.isEmpty(appLinkData.getQuery())) {
 				try {
 					if (!TextUtils.isEmpty(appLinkData.getQueryParameter("room")))
-						setTarget((int) new ElementName(ROOM).setUserDataList(userDataList)
+						setTarget((int) new ElementName(ROOM).setUserDataList(mUserDataList)
 										.findFieldByValue("name", appLinkData
 												.getQueryParameter("room"), "id"), ROOM,
 								getString(R.string.title_room, appLinkData.getQueryParameter("room")));
 					else if (!TextUtils.isEmpty(appLinkData.getQueryParameter("teacher")))
-						setTarget((int) new ElementName(TEACHER).setUserDataList(userDataList)
+						setTarget((int) new ElementName(TEACHER).setUserDataList(mUserDataList)
 										.findFieldByValue("name", appLinkData
 												.getQueryParameter("teacher"), "id"), TEACHER,
 								getTeacherTitleByName(appLinkData.getQueryParameter("teacher")));
 					else if (!TextUtils.isEmpty(appLinkData.getQueryParameter("class")))
-						setTarget((int) new ElementName(CLASS).setUserDataList(userDataList)
+						setTarget((int) new ElementName(CLASS).setUserDataList(mUserDataList)
 										.findFieldByValue("name", appLinkData
 												.getQueryParameter("class"), "id"), CLASS,
 								getString(R.string.title_class,
@@ -344,7 +344,7 @@ public class ActivityMain extends AppCompatActivity
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				} catch (NoSuchElementException e) {
-					e.printStackTrace(); // TODO: Show 'item not found' dialog
+					e.printStackTrace(); // TODO: Show 'item not found' mDialog
 				}
 				// TODO: Add parameter for date selection
 				// TODO: Add parameter for school (for compatibility)
@@ -353,7 +353,7 @@ public class ActivityMain extends AppCompatActivity
 	}
 
 	private String getTeacherTitleByName(String teacherName) {
-		ElementName teacher = new ElementName(TEACHER).setUserDataList(userDataList);
+		ElementName teacher = new ElementName(TEACHER).setUserDataList(mUserDataList);
 		return getString(R.string.title_teacher,
 				teacher.findFieldByValue("name", teacherName, "firstName"),
 				teacher.findFieldByValue("name", teacherName, "lastName"));
@@ -390,17 +390,17 @@ public class ActivityMain extends AppCompatActivity
 		c2.set(Calendar.MILLISECOND, 0);
 		currentViewPos = (int) (50L + (c1.getTimeInMillis() - c2.getTimeInMillis())
 				/ (7 * 24 * 60 * 60 * 1000));
-		pagerHeader.setCurrentItem(currentViewPos);
-		pagerTable.setCurrentItem(currentViewPos);
+		mPagerHeader.setCurrentItem(currentViewPos);
+		mPagerTable.setCurrentItem(currentViewPos);
 	}
 
 	public void refresh() {
-		if (dialog.isShowing())
-			dialog.dismiss();
-		pagerTable.setAdapter(pagerTableAdapter);
-		pagerHeader.setAdapter(pagerHeaderAdapter);
-		pagerTable.setCurrentItem(currentViewPos);
-		pagerHeader.setCurrentItem(currentViewPos);
+		if (mDialog.isShowing())
+			mDialog.dismiss();
+		mPagerTable.setAdapter(mPagerTableAdapter);
+		mPagerHeader.setAdapter(mPagerHeaderAdapter);
+		mPagerTable.setCurrentItem(currentViewPos);
+		mPagerHeader.setCurrentItem(currentViewPos);
 
 		setupBackgroundColor();
 	}
@@ -422,18 +422,18 @@ public class ActivityMain extends AppCompatActivity
 			drawer.closeDrawer(GravityCompat.START);
 		} else {
 			if (sessionInfo != null && sessionInfo.getElemId()
-					!= userDataList.optJSONObject("userData").optInt("elemId", -1)) {
+					!= mUserDataList.optJSONObject("userData").optInt("elemId", -1)) {
 				setTarget(
-						userDataList.optJSONObject("userData").optInt("elemId", -1),
-						SessionInfo.getElemTypeId(userDataList.optJSONObject("userData")
+						mUserDataList.optJSONObject("userData").optInt("elemId", -1),
+						SessionInfo.getElemTypeId(mUserDataList.optJSONObject("userData")
 								.optString("elemType", "")),
-						userDataList.optJSONObject("userData")
+						mUserDataList.optJSONObject("userData")
 								.optString("displayName", "BetterUntis"));
 			} else {
-				if (System.currentTimeMillis() - 2000 > lastBackPress) {
+				if (System.currentTimeMillis() - 2000 > mLastBackPress) {
 					Snackbar.make(findViewById(R.id.content_main),
 							R.string.snackbar_press_back_double, 2000).show();
-					lastBackPress = System.currentTimeMillis();
+					mLastBackPress = System.currentTimeMillis();
 				} else {
 					super.onBackPressed();
 				}
@@ -489,10 +489,10 @@ public class ActivityMain extends AppCompatActivity
 		switch (item.getItemId()) {
 			case R.id.nav_show_personal:
 				setTarget(
-						userDataList.optJSONObject("userData").optInt("elemId", -1),
-						SessionInfo.getElemTypeId(userDataList.optJSONObject("userData")
+						mUserDataList.optJSONObject("userData").optInt("elemId", -1),
+						SessionInfo.getElemTypeId(mUserDataList.optJSONObject("userData")
 								.optString("elemType", "")),
-						userDataList.optJSONObject("userData")
+						mUserDataList.optJSONObject("userData")
 								.optString("displayName", "BetterUntis"));
 				break;
 			case R.id.nav_show_classes:
@@ -565,12 +565,12 @@ public class ActivityMain extends AppCompatActivity
 
 		try {
 			final ElementName elementName = new ElementName(elementType)
-					.setUserDataList(userDataList);
+					.setUserDataList(mUserDataList);
 			LinearLayout content = new LinearLayout(this);
 			content.setOrientation(LinearLayout.VERTICAL);
 
 			final List<String> list = new ArrayList<>();
-			JSONArray roomList = userDataList.optJSONObject("masterData")
+			JSONArray roomList = mUserDataList.optJSONObject("masterData")
 					.optJSONArray(masterDataField);
 			for (int i = 0; i < roomList.length(); i++)
 				list.add(roomList.getJSONObject(i).getString("name"));
@@ -585,7 +585,7 @@ public class ActivityMain extends AppCompatActivity
 			TextInputLayout titleContainer = new TextInputLayout(this);
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
 					ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-			params.setMargins(itemListMargins, itemListMargins, itemListMargins, 0);
+			params.setMargins(mItemListMargins, mItemListMargins, mItemListMargins, 0);
 			titleContainer.setLayoutParams(params);
 
 			GridView gridView = new GridView(this);
@@ -632,12 +632,12 @@ public class ActivityMain extends AppCompatActivity
 			content.addView(titleContainer);
 			content.addView(gridView);
 			builder.setView(content);
-			dialog = builder.create();
-			dialog.setOnCancelListener(cancelListener);
-			dialog.setCanceledOnTouchOutside(true);
-			dialog.show();
+			mDialog = builder.create();
+			mDialog.setOnCancelListener(cancelListener);
+			mDialog.setCanceledOnTouchOutside(true);
+			mDialog.show();
 		} catch (JSONException e) {
-			Snackbar.make(pagerTable, getString(R.string.snackbar_error, e.getMessage()), Snackbar.LENGTH_LONG)
+			Snackbar.make(mPagerTable, getString(R.string.snackbar_error, e.getMessage()), Snackbar.LENGTH_LONG)
 					.setAction("OK", null).show();
 			swipeRefresh.setRefreshing(false);
 			e.printStackTrace();

@@ -19,6 +19,7 @@ import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterFeatures;
 import com.sapuseven.untis.utils.FeatureInfo;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -56,13 +57,15 @@ public class ActivityFeatures extends AppCompatActivity {
 					@Override
 					public void onClick(View v) {
 						dialog.dismiss();
-						new suggestFeature().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, etTitle.getText().toString(), etDesc.getText().toString());
+						new suggestFeature().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+								etTitle.getText().toString(), etDesc.getText().toString());
 					}
 				});
 				dialog.show();
 				Window window = dialog.getWindow();
 				assert window != null;
-				window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+				window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT,
+						LinearLayout.LayoutParams.MATCH_PARENT);
 			}
 		});
 	}
@@ -99,24 +102,30 @@ public class ActivityFeatures extends AppCompatActivity {
 			try {
 				SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
 				String user = prefs.getString("user", "");
-				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php?method=getSuggestedFeatures");
+				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php" +
+						"?method=getSuggestedFeatures");
 				HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 				BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
 				JSONObject list = new JSONObject(readStream(in));
 				urlConnection.disconnect();
-				for (int i = 0; i < list.optJSONObject("result").optJSONArray("suggestedFeatures").length(); i++) {
+				final JSONArray suggestedFeatures = list.optJSONObject("result")
+						.optJSONArray("suggestedFeatures");
+				for (int i = 0; i < suggestedFeatures.length(); i++) {
 					final FeatureInfo featureInfo = new FeatureInfo();
-					featureInfo.setTitle(list.optJSONObject("result").optJSONArray("suggestedFeatures").optJSONObject(i).optString("title"));
-					featureInfo.setDesc(list.optJSONObject("result").optJSONArray("suggestedFeatures").optJSONObject(i).optString("desc"));
+					final JSONObject item = suggestedFeatures.optJSONObject(i);
+					featureInfo.setTitle(item.optString("title"));
+					featureInfo.setDesc(item.optString("desc"));
 					int likes = 0;
-					for (int j = 0; j < list.optJSONObject("result").optJSONArray("suggestedFeatures").optJSONObject(i).optJSONArray("votes").length(); j++) {
-						likes += list.optJSONObject("result").optJSONArray("suggestedFeatures").optJSONObject(i).optJSONArray("votes").optJSONObject(j).optInt("vote");
-						if (list.optJSONObject("result").optJSONArray("suggestedFeatures").optJSONObject(i).optJSONArray("votes").optJSONObject(j).optString("name").equals(user))
-							featureInfo.setHasVoted(list.optJSONObject("result").optJSONArray("suggestedFeatures").optJSONObject(i).optJSONArray("votes").optJSONObject(j).optInt("vote"));
+					for (int j = 0; j < item.optJSONArray("votes").length(); j++) {
+						likes += item.optJSONArray("votes").optJSONObject(j).optInt("vote");
+						if (item.optJSONArray("votes").optJSONObject(j)
+								.optString("name").equals(user))
+							featureInfo.setHasVoted(item.optJSONArray("votes")
+									.optJSONObject(j).optInt("vote"));
 					}
 					featureInfo.setLikes(likes);
-					featureInfo.setId(list.optJSONObject("result").optJSONArray("suggestedFeatures").optJSONObject(i).optInt("id"));
-					if (!list.optJSONObject("result").optJSONArray("suggestedFeatures").optJSONObject(i).optBoolean("disabled", false))
+					featureInfo.setId(item.optInt("id"));
+					if (!item.optBoolean("disabled", false))
 						items.add(featureInfo);
 				}
 			} catch (JSONException | IOException e) {
@@ -165,9 +174,11 @@ public class ActivityFeatures extends AppCompatActivity {
 		@Override
 		protected void onPostExecute(Boolean success) {
 			if (success) {
-				Toast.makeText(ActivityFeatures.this, R.string.toast_suggestion_submitted, Toast.LENGTH_SHORT).show();
+				Toast.makeText(ActivityFeatures.this, R.string.toast_suggestion_submitted,
+						Toast.LENGTH_SHORT).show();
 			} else {
-				Toast.makeText(ActivityFeatures.this, R.string.toast_error_occurred, Toast.LENGTH_SHORT).show();
+				Toast.makeText(ActivityFeatures.this, R.string.toast_error_occurred,
+						Toast.LENGTH_SHORT).show();
 			}
 		}
 	}

@@ -37,15 +37,6 @@ public class ActivityLogin extends AppCompatActivity {
 		btnScanCode.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				/*
-				 The following would simulate a scan for debugging with an emulator
-
-				 Intent i = new Intent();
-				 i.putExtra("SCAN_RESULT_FORMAT", "QR_CODE");
-				 i.putExtra("SCAN_RESULT", "untis://setschool?url=fs-v3.htl-salzburg.ac.at&school=htl-salzburg&user=paul.kratochwill&key=A6EITPZYDLOYPIIM");
-				 onActivityResult(1, RESULT_OK, i);
-				 */
-
 				try {
 					Intent intent = new Intent("com.google.zxing.client.android.SCAN");
 					intent.putExtra("SCAN_MODE", "QR_CODE_MODE");

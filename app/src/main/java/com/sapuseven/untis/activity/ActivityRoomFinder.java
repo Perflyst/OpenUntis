@@ -74,18 +74,18 @@ import static com.sapuseven.untis.utils.SessionInfo.getElemTypeName;
 import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
 public class ActivityRoomFinder extends AppCompatActivity implements View.OnClickListener {
-	private int roomListMargins;
-	private JSONObject userDataList;
-	private AlertDialog dialog;
-	private ArrayList<AdapterItemRoomFinder> roomList;
-	private AdapterRoomFinder roomAdapter;
-	private int currentHourIndex = -1;
-	private int hourIndexOffset;
-	private ArrayList<Request> requestQueue;
-	private ArrayList<String> refreshingItems;
-	private RecyclerView recyclerView;
-	private TextView currentHour;
-	private int maxHourIndex;
+	private int mRoomListMargins;
+	private JSONObject mUserDataList;
+	private AlertDialog mDialog;
+	private ArrayList<AdapterItemRoomFinder> mRoomList;
+	private AdapterRoomFinder mRoomAdapter;
+	private int mCurrentHourIndex = -1;
+	private int mHourIndexOffset;
+	private ArrayList<Request> mRequestQueue;
+	private ArrayList<String> mRefreshingItems;
+	private RecyclerView mRecyclerView;
+	private TextView mCurrentHour;
+	private int mMaxHourIndex;
 
 	public static ArrayList<String> getRooms(Context context, boolean includeDisable) {
 		ArrayList<String> roomList = new ArrayList<>();
@@ -95,7 +95,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					context.openFileInput("roomList.txt")));
+					context.openFileInput("mRoomList.txt")));
 			String name;
 			while ((name = reader.readLine()) != null) {
 				for (int i = 0; i < 2; i++)
@@ -112,7 +112,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	public static String getRoomStates(Context context, String name) {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					context.openFileInput("roomList.txt")));
+					context.openFileInput("mRoomList.txt")));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				if (line.equals(name))
@@ -130,18 +130,18 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_room_finder);
 
-		roomListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
+		mRoomListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
 		ListManager listManager = new ListManager(getApplicationContext());
 		try {
-			userDataList = new JSONObject(listManager.readList("userData", false));
+			mUserDataList = new JSONObject(listManager.readList("userData", false));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
-		recyclerView = (RecyclerView) findViewById(R.id.lvRoomList);
+		mRecyclerView = (RecyclerView) findViewById(R.id.lvRoomList);
 		setupNoRoomsIndicator();
-		setupRoomList(recyclerView);
+		setupRoomList(mRecyclerView);
 		setupHourSelector();
 	}
 
@@ -149,8 +149,8 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		findViewById(R.id.btnNextHour).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (currentHourIndex + hourIndexOffset < maxHourIndex) {
-					hourIndexOffset++;
+				if (mCurrentHourIndex + mHourIndexOffset < mMaxHourIndex) {
+					mHourIndexOffset++;
 					refreshRoomList();
 				}
 			}
@@ -159,8 +159,8 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		findViewById(R.id.btnPrevHour).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (currentHourIndex + hourIndexOffset > 0) {
-					hourIndexOffset--;
+				if (mCurrentHourIndex + mHourIndexOffset > 0) {
+					mHourIndexOffset--;
 					refreshRoomList();
 				}
 			}
@@ -184,13 +184,13 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void setupRoomList(RecyclerView listView) {
-		roomList = new ArrayList<>();
-		requestQueue = new ArrayList<>();
-		refreshingItems = new ArrayList<>();
+		mRoomList = new ArrayList<>();
+		mRequestQueue = new ArrayList<>();
+		mRefreshingItems = new ArrayList<>();
 
 		listView.setLayoutManager(new LinearLayoutManager(this));
-		roomAdapter = new AdapterRoomFinder(this, roomList);
-		listView.setAdapter(roomAdapter);
+		mRoomAdapter = new AdapterRoomFinder(this, mRoomList);
+		listView.setAdapter(mRoomAdapter);
 
 		reload();
 
@@ -203,55 +203,55 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void reload() {
-		roomList.clear();
+		mRoomList.clear();
 		try {
 			BufferedReader reader =
-					new BufferedReader(new InputStreamReader(openFileInput("roomList.txt")));
+					new BufferedReader(new InputStreamReader(openFileInput("mRoomList.txt")));
 			String name;
 			while ((name = reader.readLine()) != null) {
 				AdapterItemRoomFinder roomItem =
-						new AdapterItemRoomFinder(this, name, refreshingItems.contains(name));
+						new AdapterItemRoomFinder(this, name, mRefreshingItems.contains(name));
 				String binaryData = reader.readLine();
 				boolean[] states = new boolean[binaryData.length()];
 				for (int i = 0; i < states.length; i++)
 					states[i] = binaryData.charAt(i) == '1';
 				roomItem.setStates(states);
-				maxHourIndex = states.length - 1;
+				mMaxHourIndex = states.length - 1;
 				roomItem.setDate(Long.parseLong(reader.readLine()));
-				roomList.add(roomItem);
+				mRoomList.add(roomItem);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		for (Request r : requestQueue) {
+		for (Request r : mRequestQueue) {
 			if (!r.isRefreshOnly())
-				roomList.add(new AdapterItemRoomFinder(this, r.getDisplayName(), true));
-			roomAdapter.notifyItemInserted(roomList.size() - 1);
+				mRoomList.add(new AdapterItemRoomFinder(this, r.getDisplayName(), true));
+			mRoomAdapter.notifyItemInserted(mRoomList.size() - 1);
 		}
 
 		refreshRoomList();
 	}
 
 	private void refreshRoomList() {
-		if (roomList.isEmpty())
+		if (mRoomList.isEmpty())
 			findViewById(R.id.tvNoRooms).setVisibility(View.VISIBLE);
 		else
 			findViewById(R.id.tvNoRooms).setVisibility(View.GONE);
 
-		Collections.sort(roomList);
-		roomAdapter.notifyDataSetChanged();
+		Collections.sort(mRoomList);
+		mRoomAdapter.notifyDataSetChanged();
 		displayCurrentHour();
 	}
 
 	private void showItemList() {
 		try {
-			final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
+			final ElementName elementName = new ElementName(ROOM).setUserDataList(mUserDataList);
 			LinearLayout content = new LinearLayout(this);
 			content.setOrientation(LinearLayout.VERTICAL);
 
 			final List<String> list = new ArrayList<>();
-			JSONArray roomList = userDataList.optJSONObject("masterData").optJSONArray("rooms");
+			JSONArray roomList = mUserDataList.optJSONObject("masterData").optJSONArray("rooms");
 			for (int i = 0; i < roomList.length(); i++)
 				list.add(roomList.getJSONObject(i).getString("name"));
 			Collections.sort(list, new Comparator<String>() {
@@ -266,7 +266,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			LinearLayout.LayoutParams searchFieldParams =
 					new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 							ViewGroup.LayoutParams.WRAP_CONTENT);
-			searchFieldParams.setMargins(roomListMargins, roomListMargins, roomListMargins, 0);
+			searchFieldParams.setMargins(mRoomListMargins, mRoomListMargins, mRoomListMargins, 0);
 			titleContainer.setLayoutParams(searchFieldParams);
 
 			GridView gridView = new GridView(this);
@@ -304,7 +304,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					for (String item : adapter.getSelectedItems())
 						addRoom(new AdapterItemRoomFinder(context, item, true),
 								(Integer) elementName.findFieldByValue("name", item, "id"));
-					dialog.dismiss();
+					mDialog.dismiss();
 					executeRequestQueue();
 				}
 			});
@@ -313,10 +313,10 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			content.addView(gridView);
 			content.addView(selectAll);
 
-			dialog = new AlertDialog.Builder(this)
+			mDialog = new AlertDialog.Builder(this)
 					.setView(content)
 					.create();
-			dialog.show();
+			mDialog.show();
 		} catch (JSONException e) {
 			e.printStackTrace();
 			new AlertDialog.Builder(this)
@@ -333,7 +333,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void addRoom(AdapterItemRoomFinder item, Integer roomID) {
-		if (roomList.contains(item))
+		if (mRoomList.contains(item))
 			return;
 
 		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
@@ -349,7 +349,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				"\"masterDataTimestamp\":" + System.currentTimeMillis() + "," +
 				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
 				"}]");
-		requestQueue.add(request);
+		mRequestQueue.add(request);
 
 		refreshRoomList();
 	}
@@ -357,13 +357,13 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	private void executeRequestQueue() {
 		reload();
 
-		if (requestQueue.size() > 0 && requestQueue.get(0).getStatus() == AsyncTask.Status.PENDING)
-			requestQueue.get(0).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		if (mRequestQueue.size() > 0 && mRequestQueue.get(0).getStatus() == AsyncTask.Status.PENDING)
+			mRequestQueue.get(0).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
 	public int getCurrentHourIndex() {
-		if (currentHourIndex > 0)
-			return currentHourIndex + hourIndexOffset;
+		if (mCurrentHourIndex > 0)
+			return mCurrentHourIndex + mHourIndexOffset;
 
 		int index = 0;
 
@@ -406,25 +406,25 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			index = 0;
 
 		Log.d("RoomFinder", "Current Hour Index: " + index);
-		currentHourIndex = Math.max(index, 0);
-		return currentHourIndex + hourIndexOffset;
+		mCurrentHourIndex = Math.max(index, 0);
+		return mCurrentHourIndex + mHourIndexOffset;
 	}
 
 	public void deleteItem(final int position) {
 		new AlertDialog.Builder(this)
-				.setTitle(getString(R.string.delete_item_title, roomList.get(position).getName()))
+				.setTitle(getString(R.string.delete_item_title, mRoomList.get(position).getName()))
 				.setMessage(R.string.delete_item_text)
 				.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						try {
-							if (deleteItem(roomList.get(position).getName())) {
-								roomList.remove(position);
-								roomAdapter.notifyItemRemoved(position);
+							if (deleteItem(mRoomList.get(position).getName())) {
+								mRoomList.remove(position);
+								mRoomAdapter.notifyItemRemoved(position);
 								refreshRoomList();
 							}
 						} catch (IOException e) {
-							Snackbar.make(recyclerView, getString(R.string.snackbar_error,
+							Snackbar.make(mRecyclerView, getString(R.string.snackbar_error,
 									e.getMessage()),
 									Snackbar.LENGTH_LONG).setAction("OK", null).show();
 						}
@@ -441,13 +441,13 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private boolean deleteItem(final String name) throws IOException {
-		File inputFile = new File(getFilesDir(), "roomList.txt");
-		File tempFile = new File(getFilesDir(), "roomList.txt.tmp");
+		File inputFile = new File(getFilesDir(), "mRoomList.txt");
+		File tempFile = new File(getFilesDir(), "mRoomList.txt.tmp");
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
-				openFileInput("roomList.txt"), "UTF-8"));
+				openFileInput("mRoomList.txt"), "UTF-8"));
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-				openFileOutput("roomList.txt.tmp", MODE_APPEND), "UTF-8"));
+				openFileOutput("mRoomList.txt.tmp", MODE_APPEND), "UTF-8"));
 
 		String currentLine;
 
@@ -481,7 +481,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						refreshItemData(position);
-						roomAdapter.notifyDataSetChanged();
+						mRoomAdapter.notifyDataSetChanged();
 						executeRequestQueue();
 						dialog.dismiss();
 					}
@@ -489,10 +489,10 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				.setNeutralButton(R.string.refresh_all_items, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						for (int i = 0; i < roomList.size(); i++)
-							if (roomList.get(i).isOutdated())
+						for (int i = 0; i < mRoomList.size(); i++)
+							if (mRoomList.get(i).isOutdated())
 								refreshItemData(i);
-						roomAdapter.notifyDataSetChanged();
+						mRoomAdapter.notifyDataSetChanged();
 						executeRequestQueue();
 						dialog.dismiss();
 					}
@@ -508,18 +508,18 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void refreshItemData(final int position) {
-		roomList.get(position).setLoading();
+		mRoomList.get(position).setLoading();
 
 		final int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
 				.format(getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 		final SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
-		final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
+		final ElementName elementName = new ElementName(ROOM).setUserDataList(mUserDataList);
 
 		Request request = new Request(prefs.getString("url", null),
-				roomList.get(position).getName());
+				mRoomList.get(position).getName());
 		request.setSchool(prefs.getString("school", null));
 		request.setParams("[{\"id\":\"" + elementName.findFieldByValue("name",
-				roomList.get(position).getName(), "id") + "\"," +
+				mRoomList.get(position).getName(), "id") + "\"," +
 				"\"type\":\"" + getElemTypeName(ROOM) + "\"," +
 				"\"startDate\":" + startDateFromWeek + "," +
 				"\"endDate\":" + addDaysToInt(startDateFromWeek, 4) + "," +
@@ -527,17 +527,17 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
 				"}]");
 		request.refreshOnly();
-		requestQueue.add(request);
-		refreshingItems.add(roomList.get(position).getName());
+		mRequestQueue.add(request);
+		mRefreshingItems.add(mRoomList.get(position).getName());
 	}
 
 	@Override
 	public void onClick(final View v) {
-		int itemPosition = recyclerView.getChildLayoutPosition(v);
-		AdapterItemRoomFinder item = roomList.get(itemPosition);
+		int itemPosition = mRecyclerView.getChildLayoutPosition(v);
+		AdapterItemRoomFinder item = mRoomList.get(itemPosition);
 
 		Intent intent = new Intent();
-		final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
+		final ElementName elementName = new ElementName(ROOM).setUserDataList(mUserDataList);
 		intent.putExtra("elemId", (int) elementName.findFieldByValue("name", item.getName(), "id"));
 		intent.putExtra("elemType", ROOM);
 		intent.putExtra("displayName", getString(R.string.title_room, item.getName()));
@@ -546,17 +546,17 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void displayCurrentHour() {
-		if (currentHour == null)
-			currentHour = (TextView) findViewById(R.id.tvCurrentHour);
+		if (mCurrentHour == null)
+			mCurrentHour = (TextView) findViewById(R.id.tvCurrentHour);
 
-		if (hourIndexOffset < 0)
-			currentHour.setText(getResources().getQuantityString(R.plurals.hour_index_last,
-					Math.abs(hourIndexOffset), Math.abs(hourIndexOffset)));
-		else if (hourIndexOffset > 0)
-			currentHour.setText(getResources().getQuantityString(R.plurals.hour_index_next,
-					hourIndexOffset, hourIndexOffset));
+		if (mHourIndexOffset < 0)
+			mCurrentHour.setText(getResources().getQuantityString(R.plurals.hour_index_last,
+					Math.abs(mHourIndexOffset), Math.abs(mHourIndexOffset)));
+		else if (mHourIndexOffset > 0)
+			mCurrentHour.setText(getResources().getQuantityString(R.plurals.hour_index_next,
+					mHourIndexOffset, mHourIndexOffset));
 		else
-			currentHour.setText(getString(R.string.hour_index_current));
+			mCurrentHour.setText(getString(R.string.hour_index_current));
 	}
 
 	private class Request extends AsyncTask<Void, Void, String> {
@@ -629,7 +629,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				JSONObject jsonObj = new JSONObject(result);
 				if (jsonObj.has("error")) {
 					Log.w("error", jsonObj.toString());
-					Snackbar.make(recyclerView,
+					Snackbar.make(mRecyclerView,
 							getString(R.string.snackbar_error, jsonObj.getJSONObject("error")
 									.getString("message")), Snackbar.LENGTH_LONG)
 							.setAction("OK", null).show();
@@ -638,7 +638,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					timetable.setFromJsonObject(jsonObj.getJSONObject("result")
 							.getJSONObject("timetable"));
 
-					timetable.prepareData(userDataList);
+					timetable.prepareData(mUserDataList);
 					TimegridUnitManager unitManager = new TimegridUnitManager();
 					try {
 						unitManager.setList(new JSONObject(new ListManager(getApplication())
@@ -685,8 +685,8 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 							deleteItem(displayName);
 
 						BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-								openFileOutput("roomList.txt", MODE_APPEND), "UTF-8"));
-						writer.write(requestQueue.get(0).getDisplayName());
+								openFileOutput("mRoomList.txt", MODE_APPEND), "UTF-8"));
+						writer.write(mRequestQueue.get(0).getDisplayName());
 						writer.newLine();
 						writer.write(binaryData.toString());
 						writer.newLine();
@@ -697,7 +697,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					}
 
 					if (refreshOnly)
-						refreshingItems.remove(0);
+						mRefreshingItems.remove(0);
 
 					reload();
 					refreshRoomList();
@@ -705,7 +705,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			} catch (JSONException | IOException e) {
 				e.printStackTrace();
 			}
-			requestQueue.remove(0);
+			mRequestQueue.remove(0);
 			executeRequestQueue();
 		}
 
