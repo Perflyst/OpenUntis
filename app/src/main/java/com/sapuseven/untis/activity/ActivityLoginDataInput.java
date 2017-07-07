@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -49,93 +50,99 @@ import static com.sapuseven.untis.utils.Constants.LoginDataInput.REQUEST_ID_CONN
 import static com.sapuseven.untis.utils.Constants.LoginDataInput.REQUEST_ID_LOAD;
 
 public class ActivityLoginDataInput extends AppCompatActivity {
-	private RelativeLayout rlConnectionStatus;
-	private ProgressBar pbConnectionStatus;
-	private ImageView ivConnectionStatusSuccess;
-	private ImageView ivConnectionStatusFailed;
-	private TextView tvConnectionStatus;
+	private RelativeLayout mRlConnectionStatus;
+	private ProgressBar mPbConnectionStatus;
+	private ImageView mIvConnectionStatusSuccess;
+	private ImageView mIvConnectionStatusFailed;
+	private TextView mTvConnectionStatus;
 
-	private RelativeLayout rlLoadingStatus;
-	private ProgressBar pbLoadingStatus;
-	private ImageView ivLoadingStatusSuccess;
-	private ImageView ivLoadingStatusFailed;
-	private TextView tvLoadingStatus;
+	private RelativeLayout mRlLoadingStatus;
+	private ProgressBar mPbLoadingStatus;
+	private ImageView mIvLoadingStatusSuccess;
+	private ImageView mIvLoadingStatusFailed;
+	private TextView mTvLoadingStatus;
 
-	private AutoCompleteTextView etUrl;
-	private EditText etSchool;
-	private EditText etUser;
-	private EditText etKey;
-	private Button btnLogin;
+	private AutoCompleteTextView mEtUrl;
+	private EditText mEtSchool;
+	private EditText mEtUser;
+	private EditText mEtKey;
+	private Button mBtnLogin;
 
-	private makeRequest request;
+	private LoginRequest mRequest;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login_data_input);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		if (getSupportActionBar() != null)
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-		btnLogin = (Button) findViewById(R.id.btnLogin);
-		etUrl = (AutoCompleteTextView) findViewById(R.id.etUrl);
-		etSchool = (EditText) findViewById(R.id.etSchool);
-		etUser = (EditText) findViewById(R.id.etUser);
-		etKey = (EditText) findViewById(R.id.etKey);
+		mBtnLogin = findViewById(R.id.btnLogin);
+		mEtUrl = findViewById(R.id.etUrl);
+		mEtSchool = findViewById(R.id.etSchool);
+		mEtUser = findViewById(R.id.etUser);
+		mEtKey = findViewById(R.id.etKey);
 
-		btnLogin.setOnClickListener(new View.OnClickListener() {
+		mBtnLogin.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				boolean error = false;
-				if (etUrl.getText().length() == 0) {
-					etUrl.setError(getString(R.string.error_field_empty));
-					error = true;
+				EditText error = null;
+				if (mEtUser.getText().length() == 0) {
+					mEtUser.setError(getString(R.string.error_field_empty));
+					error = mEtUser;
 				}
-				if (etSchool.getText().length() == 0) {
-					etSchool.setError(getString(R.string.error_field_empty));
-					error = true;
+				if (mEtSchool.getText().length() == 0) {
+					mEtSchool.setError(getString(R.string.error_field_empty));
+					error = mEtSchool;
 				}
-				if (etUser.getText().length() == 0) {
-					etUser.setError(getString(R.string.error_field_empty));
-					error = true;
+				if (mEtUrl.getText().length() == 0) {
+					mEtUrl.setError(getString(R.string.error_field_empty));
+					error = mEtUrl;
+				} else if (!Patterns.DOMAIN_NAME.matcher(mEtUrl.getText()).matches()) {
+					mEtUrl.setError(getString(R.string.error_invalid_url));
+					error = mEtUrl;
 				}
-				if (!error) {
+
+				if (error == null)
 					loadData();
-				}
+				else
+					error.requestFocus();
 			}
 		});
 
-		rlConnectionStatus = (RelativeLayout) findViewById(R.id.rlConnectionStatus);
-		pbConnectionStatus = (ProgressBar) findViewById(R.id.pbConnectionStatus);
-		ivConnectionStatusSuccess = (ImageView) findViewById(R.id.ivConnectionStatusSuccess);
-		ivConnectionStatusFailed = (ImageView) findViewById(R.id.ivConnectionStatusFailed);
-		tvConnectionStatus = (TextView) findViewById(R.id.tvConnectionStatus);
+		mRlConnectionStatus = findViewById(R.id.rlConnectionStatus);
+		mPbConnectionStatus = findViewById(R.id.pbConnectionStatus);
+		mIvConnectionStatusSuccess = findViewById(R.id.ivConnectionStatusSuccess);
+		mIvConnectionStatusFailed = findViewById(R.id.ivConnectionStatusFailed);
+		mTvConnectionStatus = findViewById(R.id.tvConnectionStatus);
 
-		rlLoadingStatus = (RelativeLayout) findViewById(R.id.rlLoadingStatus);
-		pbLoadingStatus = (ProgressBar) findViewById(R.id.pbLoadingStatus);
-		ivLoadingStatusSuccess = (ImageView) findViewById(R.id.ivLoadingStatusSuccess);
-		ivLoadingStatusFailed = (ImageView) findViewById(R.id.ivLoadingStatusFailed);
-		tvLoadingStatus = (TextView) findViewById(R.id.tvLoadingStatus);
+		mRlLoadingStatus = findViewById(R.id.rlLoadingStatus);
+		mPbLoadingStatus = findViewById(R.id.pbLoadingStatus);
+		mIvLoadingStatusSuccess = findViewById(R.id.ivLoadingStatusSuccess);
+		mIvLoadingStatusFailed = findViewById(R.id.ivLoadingStatusFailed);
+		mTvLoadingStatus = findViewById(R.id.tvLoadingStatus);
 
-		rlConnectionStatus.setVisibility(View.GONE);
-		rlLoadingStatus.setVisibility(View.GONE);
+		mRlConnectionStatus.setVisibility(View.GONE);
+		mRlLoadingStatus.setVisibility(View.GONE);
 
 		String[] servers = getResources().getStringArray(R.array.webuntis_servers);
-		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, servers);
-		etUrl.setAdapter(adapter);
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
+				servers);
+		mEtUrl.setAdapter(adapter);
 
 		Uri appLinkData = getIntent().getData();
 
 		if (appLinkData != null) {
 			if (appLinkData.getQueryParameter("url") != null)
-				etUrl.setText(appLinkData.getQueryParameter("url"));
+				mEtUrl.setText(appLinkData.getQueryParameter("url"));
 			if (appLinkData.getQueryParameter("school") != null)
-				etSchool.setText(appLinkData.getQueryParameter("school"));
+				mEtSchool.setText(appLinkData.getQueryParameter("school"));
 			if (appLinkData.getQueryParameter("user") != null)
-				etUser.setText(appLinkData.getQueryParameter("user"));
+				mEtUser.setText(appLinkData.getQueryParameter("user"));
 			if (appLinkData.getQueryParameter("key") != null)
-				etKey.setText(appLinkData.getQueryParameter("key"));
+				mEtKey.setText(appLinkData.getQueryParameter("key"));
 		}
 	}
 
@@ -145,46 +152,47 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		SharedPreferences prefs = this.getSharedPreferences("loginDataInputBackup", MODE_PRIVATE);
 		Uri uri = getIntent().getData();
 		if (uri != null) {
-			etUrl.setText(uri.getQueryParameter("url"));
-			etSchool.setText(uri.getQueryParameter("school"));
-			etUser.setText(uri.getQueryParameter("user"));
-			etKey.setText(uri.getQueryParameter("key"));
+			mEtUrl.setText(uri.getQueryParameter("url"));
+			mEtSchool.setText(uri.getQueryParameter("school"));
+			mEtUser.setText(uri.getQueryParameter("user"));
+			mEtKey.setText(uri.getQueryParameter("key"));
 		} else if (prefs != null) {
-			etUrl.setText(prefs.getString("etUrl", ""));
-			etSchool.setText(prefs.getString("etSchool", ""));
-			etUser.setText(prefs.getString("etUser", ""));
-			etKey.setText(prefs.getString("etKey", ""));
+			mEtUrl.setText(prefs.getString("etUrl", ""));
+			mEtSchool.setText(prefs.getString("etSchool", ""));
+			mEtUser.setText(prefs.getString("etUser", ""));
+			mEtKey.setText(prefs.getString("etKey", ""));
 		}
 		setElementsEnabled(true);
 	}
 
 	@Override
 	public void onPause() {
-		if (request != null && request.getStatus().equals(AsyncTask.Status.RUNNING)) {
-			request.cancel(true);
+		if (mRequest != null && mRequest.getStatus().equals(AsyncTask.Status.RUNNING)) {
+			mRequest.cancel(true);
 		}
 
 		SharedPreferences prefs = this.getSharedPreferences("loginDataInputBackup", MODE_PRIVATE);
 		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString("etUrl", etUrl.getText().toString());
-		editor.putString("etSchool", etSchool.getText().toString());
-		editor.putString("etUser", etUser.getText().toString());
-		editor.putString("etKey", etKey.getText().toString());
+		editor.putString("etUrl", mEtUrl.getText().toString());
+		editor.putString("etSchool", mEtSchool.getText().toString());
+		editor.putString("etUser", mEtUser.getText().toString());
+		editor.putString("etKey", mEtKey.getText().toString());
 		editor.apply();
 
 		super.onPause();
 	}
 
 	private void loadData() {
-		rlLoadingStatus.setVisibility(View.GONE);
-		rlConnectionStatus.setVisibility(View.VISIBLE);
-		tvConnectionStatus.setText(getString(R.string.connecting));
-		ivConnectionStatusFailed.setVisibility(View.GONE);
-		ivConnectionStatusSuccess.setVisibility(View.GONE);
-		pbConnectionStatus.setVisibility(View.VISIBLE);
-		request = new makeRequest(etUrl.getText().toString() + "/WebUntis/jsonrpc_intern.do?school=" + etSchool.getText().toString());
-		request.setId(REQUEST_ID_CONNECT);
-		request.execute();
+		mRlLoadingStatus.setVisibility(View.GONE);
+		mRlConnectionStatus.setVisibility(View.VISIBLE);
+		mTvConnectionStatus.setText(getString(R.string.connecting));
+		mIvConnectionStatusFailed.setVisibility(View.GONE);
+		mIvConnectionStatusSuccess.setVisibility(View.GONE);
+		mPbConnectionStatus.setVisibility(View.VISIBLE);
+		mRequest = new LoginRequest(mEtUrl.getText().toString() + "/WebUntis/jsonrpc_intern.do" +
+				"?school=" + mEtSchool.getText().toString());
+		mRequest.setId(REQUEST_ID_CONNECT);
+		mRequest.execute();
 	}
 
 	private void saveCredentials(String url, String school, String user, String key) {
@@ -199,7 +207,7 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 
 	@Override
 	public void onBackPressed() {
-		btnLogin.setEnabled(false);
+		mBtnLogin.setEnabled(false);
 		super.onBackPressed();
 	}
 
@@ -209,14 +217,14 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 	}
 
 	private void setElementsEnabled(boolean enabled) {
-		etUrl.setEnabled(enabled);
-		etSchool.setEnabled(enabled);
-		etUser.setEnabled(enabled);
-		etKey.setEnabled(enabled);
-		btnLogin.setEnabled(enabled);
+		mEtUrl.setEnabled(enabled);
+		mEtSchool.setEnabled(enabled);
+		mEtUser.setEnabled(enabled);
+		mEtKey.setEnabled(enabled);
+		mBtnLogin.setEnabled(enabled);
 	}
 
-	private class makeRequest extends AsyncTask<Void, Void, String> {
+	private class LoginRequest extends AsyncTask<Void, Void, String> {
 		private static final String jsonrpc = "2.0";
 		private final String url;
 		private final String method = "getUserData2017";
@@ -224,11 +232,8 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		private String params = "[]";
 		private String json;
 
-		makeRequest(String url) {
-			if (url.contains("://"))
-				this.url = url;
-			else
-				this.url = DEFAULT_PROTOCOL + url;
+		LoginRequest(String url) {
+			this.url = DEFAULT_PROTOCOL + url;
 		}
 
 		@Override
@@ -266,13 +271,16 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 					httpResponse = httpclient.execute(httpPost);
 				} catch (IOException e) {
 					e.printStackTrace();
-					return "{\"id\":\"" + id + "\",\"error\":{\"code\":" + ERROR_CODE_NO_SERVER_FOUND + "," +
+					return "{\"id\":\"" + id + "\",\"error\":{\"code\":"
+							+ ERROR_CODE_NO_SERVER_FOUND + "," +
 							"\"message\":" + "\"" + e.getMessage().replace("\"", "\\\"") + "\"}}";
 				}
 
 				if (httpResponse.getStatusLine().getStatusCode() != 200) {
-					Log.e("BetterUntis", "Server responded with code " + httpResponse.getStatusLine().getStatusCode());
-					return "{\"id\":\"" + id + "\",\"error\":{\"code\":" + ERROR_CODE_WEBUNTIS_NOT_INSTALLED + ",\"message\":" +
+					Log.e("BetterUntis", "Server responded with code "
+							+ httpResponse.getStatusLine().getStatusCode());
+					return "{\"id\":\"" + id + "\",\"error\":{\"code\":"
+							+ ERROR_CODE_WEBUNTIS_NOT_INSTALLED + ",\"message\":" +
 							"\"WebUntis is not installed on the specified server!\"}}";
 				}
 
@@ -282,12 +290,14 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 					result = inputStreamToString(inputStream);
 				} catch (IOException e) {
 					e.printStackTrace();
-					return "{\"id\":\"" + id + "\",\"error\":{\"code\":" + ERROR_CODE_WEBUNTIS_NOT_INSTALLED + ",\"message\":" +
+					return "{\"id\":\"" + id + "\",\"error\":{\"code\":"
+							+ ERROR_CODE_WEBUNTIS_NOT_INSTALLED + ",\"message\":" +
 							"\"WebUntis is not installed on the specified server!\"}}";
 				}
 			} catch (JSONException | UnsupportedEncodingException e) {
 				e.printStackTrace();
-				result = "{\"id\":\"" + id + "\",\"error\":{\"code\":" + ERROR_CODE_UNKNOWN + ",\"message\":" +
+				result = "{\"id\":\"" + id + "\",\"error\":{\"code\":"
+						+ ERROR_CODE_UNKNOWN + ",\"message\":" +
 						"\"An unknown error occurred.\"}}";
 			}
 
@@ -301,64 +311,70 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 
 				if (id.equals(REQUEST_ID_CONNECT) &&
 						data.optJSONObject("error").optInt("code") != ERROR_CODE_NO_SERVER_FOUND &&
-						data.optJSONObject("error").optInt("code") != ERROR_CODE_INVALID_SCHOOLNAME) {
-					pbConnectionStatus.setVisibility(View.GONE);
-					ivConnectionStatusSuccess.setVisibility(View.VISIBLE);
-					tvConnectionStatus.setText(getString(R.string.connected));
-					rlLoadingStatus.setVisibility(View.VISIBLE);
-					tvLoadingStatus.setText(getString(R.string.loading_data));
-					ivLoadingStatusFailed.setVisibility(View.GONE);
-					ivLoadingStatusSuccess.setVisibility(View.GONE);
-					pbLoadingStatus.setVisibility(View.VISIBLE);
-					request = new makeRequest(etUrl.getText().toString() + PATH + "?school=" + etSchool.getText().toString());
-					request.setId(REQUEST_ID_LOAD);
-					request.setParams("[{" + getAuthElement(etUser.getText().toString(), etKey.getText().toString()) + "}]");
-					request.execute();
+						data.optJSONObject("error").optInt("code")
+								!= ERROR_CODE_INVALID_SCHOOLNAME) {
+					mPbConnectionStatus.setVisibility(View.GONE);
+					mIvConnectionStatusSuccess.setVisibility(View.VISIBLE);
+					mTvConnectionStatus.setText(getString(R.string.connected));
+					mRlLoadingStatus.setVisibility(View.VISIBLE);
+					mTvLoadingStatus.setText(getString(R.string.loading_data));
+					mIvLoadingStatusFailed.setVisibility(View.GONE);
+					mIvLoadingStatusSuccess.setVisibility(View.GONE);
+					mPbLoadingStatus.setVisibility(View.VISIBLE);
+					mRequest = new LoginRequest(mEtUrl.getText().toString() + PATH
+							+ "?school=" + mEtSchool.getText().toString());
+					mRequest.setId(REQUEST_ID_LOAD);
+					mRequest.setParams("[{" + getAuthElement(mEtUser.getText().toString(),
+							mEtKey.getText().toString()) + "}]");
+					mRequest.execute();
 				}
 				if (!data.has("error")) {
-					pbLoadingStatus.setVisibility(View.GONE);
-					ivLoadingStatusSuccess.setVisibility(View.VISIBLE);
-					tvLoadingStatus.setText(getString(R.string.data_loaded));
-					saveCredentials(etUrl.getText().toString(), etSchool.getText().toString(), etUser.getText().toString(), etKey.getText().toString());
+					mPbLoadingStatus.setVisibility(View.GONE);
+					mIvLoadingStatusSuccess.setVisibility(View.VISIBLE);
+					mTvLoadingStatus.setText(getString(R.string.data_loaded));
+					saveCredentials(mEtUrl.getText().toString(), mEtSchool.getText().toString(),
+							mEtUser.getText().toString(), mEtKey.getText().toString());
 					saveData(data.optJSONObject("result"));
 					finish();
 				} else {
 					if (id.equals(REQUEST_ID_CONNECT) &&
-							(data.optJSONObject("error").optInt("code") == ERROR_CODE_NO_SERVER_FOUND ||
-									data.optJSONObject("error").optInt("code") == ERROR_CODE_INVALID_SCHOOLNAME)) {
-						pbConnectionStatus.setVisibility(View.GONE);
-						ivConnectionStatusFailed.setVisibility(View.VISIBLE);
+							(data.optJSONObject("error").optInt("code")
+									== ERROR_CODE_NO_SERVER_FOUND ||
+									data.optJSONObject("error").optInt("code")
+											== ERROR_CODE_INVALID_SCHOOLNAME)) {
+						mPbConnectionStatus.setVisibility(View.GONE);
+						mIvConnectionStatusFailed.setVisibility(View.VISIBLE);
 
 						switch (data.optJSONObject("error").optInt("code")) {
 							case ERROR_CODE_NO_SERVER_FOUND:
-								tvConnectionStatus.setText(R.string.invalid_server_url);
+								mTvConnectionStatus.setText(R.string.invalid_server_url);
 								break;
 							case ERROR_CODE_INVALID_SCHOOLNAME:
-								tvConnectionStatus.setText(R.string.invalid_school);
+								mTvConnectionStatus.setText(R.string.invalid_school);
 								break;
 							default:
-								tvConnectionStatus.setText(R.string.unknown_error);
+								mTvConnectionStatus.setText(R.string.unknown_error);
 								break;
 						}
 
 						setElementsEnabled(true);
 					} else if (id.equals(REQUEST_ID_LOAD)) {
-						pbLoadingStatus.setVisibility(View.GONE);
-						ivLoadingStatusFailed.setVisibility(View.VISIBLE);
+						mPbLoadingStatus.setVisibility(View.GONE);
+						mIvLoadingStatusFailed.setVisibility(View.VISIBLE);
 
 						switch (data.optJSONObject("error").optInt("code")) {
 							case ERROR_CODE_INVALID_CLIENT_TIME:
-								tvLoadingStatus.setText(R.string.invalid_time_settings);
+								mTvLoadingStatus.setText(R.string.invalid_time_settings);
 								break;
 							case ERROR_CODE_INVALID_CREDENTIALS:
-								tvLoadingStatus.setText(R.string.invalid_credentials);
+								mTvLoadingStatus.setText(R.string.invalid_credentials);
 								break;
 							case ERROR_CODE_WEBUNTIS_NOT_INSTALLED:
-								tvLoadingStatus.setText(R.string.server_webuntis_not_installed);
+								mTvLoadingStatus.setText(R.string.server_webuntis_not_installed);
 								break;
 							case ERROR_CODE_UNKNOWN:
 							default:
-								tvLoadingStatus.setText(R.string.unknown_error);
+								mTvLoadingStatus.setText(R.string.unknown_error);
 								break;
 						}
 
@@ -367,9 +383,9 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
-				pbConnectionStatus.setVisibility(View.GONE);
-				ivConnectionStatusFailed.setVisibility(View.VISIBLE);
-				tvConnectionStatus.setText(R.string.unknown_error);
+				mPbConnectionStatus.setVisibility(View.GONE);
+				mIvConnectionStatusFailed.setVisibility(View.VISIBLE);
+				mTvConnectionStatus.setText(R.string.unknown_error);
 				setElementsEnabled(true);
 			}
 		}

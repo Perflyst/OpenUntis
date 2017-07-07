@@ -29,8 +29,7 @@
 				android:completionThreshold="1"
 				android:ems="10"
 				android:hint="@string/field_url"
-				android:inputType="textUri"
-				android:paddingRight="50dp"/>
+				android:inputType="textUri"/>
 
 		</android.support.design.widget.TextInputLayout>
 
@@ -95,7 +94,8 @@
 				android:layout_width="16dp"
 				android:layout_height="16dp"
 				android:layout_centerVertical="true"
-				android:layout_marginLeft="8dp"/>
+				android:layout_marginLeft="8dp"
+				android:layout_marginStart="8dp"/>
 
 			<ImageView
 				android:id="@+id/ivConnectionStatusSuccess"
@@ -103,6 +103,7 @@
 				android:layout_height="16dp"
 				android:layout_centerVertical="true"
 				android:layout_marginLeft="8dp"
+				android:layout_marginStart="8dp"
 				android:contentDescription="@string/success"
 				android:visibility="gone"
 				app:srcCompat="@drawable/ic_check"/>
@@ -113,6 +114,7 @@
 				android:layout_height="16dp"
 				android:layout_centerVertical="true"
 				android:layout_marginLeft="8dp"
+				android:layout_marginStart="8dp"
 				android:contentDescription="@string/failed"
 				android:visibility="gone"
 				app:srcCompat="@drawable/ic_failed"/>
@@ -123,6 +125,7 @@
 				android:layout_height="wrap_content"
 				android:layout_centerVertical="true"
 				android:layout_marginLeft="32dp"
+				android:layout_marginStart="32dp"
 				android:text="@string/connecting"/>
 
 		</RelativeLayout>
@@ -138,7 +141,8 @@
 				android:layout_width="16dp"
 				android:layout_height="16dp"
 				android:layout_centerVertical="true"
-				android:layout_marginLeft="8dp"/>
+				android:layout_marginLeft="8dp"
+				android:layout_marginStart="8dp"/>
 
 			<ImageView
 				android:id="@+id/ivLoadingStatusSuccess"
@@ -146,6 +150,7 @@
 				android:layout_height="16dp"
 				android:layout_centerVertical="true"
 				android:layout_marginLeft="8dp"
+				android:layout_marginStart="8dp"
 				android:contentDescription="@string/success"
 				android:visibility="gone"
 				app:srcCompat="@drawable/ic_check"/>
@@ -156,6 +161,7 @@
 				android:layout_height="16dp"
 				android:layout_centerVertical="true"
 				android:layout_marginLeft="8dp"
+				android:layout_marginStart="8dp"
 				android:contentDescription="@string/failed"
 				android:visibility="gone"
 				app:srcCompat="@drawable/ic_failed"/>
@@ -166,6 +172,7 @@
 				android:layout_height="wrap_content"
 				android:layout_centerVertical="true"
 				android:layout_marginLeft="32dp"
+				android:layout_marginStart="32dp"
 				android:text="@string/connecting"/>
 
 		</RelativeLayout>
