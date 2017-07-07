@@ -60,9 +60,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import static com.sapuseven.untis.utils.Authentication.getAuthElement;
-import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_CANCELLED;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_EXAM;
-import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_IRREGULAR;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_REGULAR;
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
 import static com.sapuseven.untis.utils.ElementName.CLASS;
@@ -88,19 +86,28 @@ public class FragmentTimetable extends Fragment {
 
 	private static int manipulateColor(int color) {
 		int a = Color.alpha(color);
-		int r = Math.round(Color.red(color) * setTable.DARKNESS_FACTOR);
-		int g = Math.round(Color.green(color) * setTable.DARKNESS_FACTOR);
-		int b = Math.round(Color.blue(color) * setTable.DARKNESS_FACTOR);
+		int r = Math.round(Color.red(color) * TableSetup.DARKNESS_FACTOR);
+		int g = Math.round(Color.green(color) * TableSetup.DARKNESS_FACTOR);
+		int b = Math.round(Color.blue(color) * TableSetup.DARKNESS_FACTOR);
 		return Color.argb(a,
 				Math.min(r, 255),
 				Math.min(g, 255),
 				Math.min(b, 255));
 	}
 
+	@Contract(pure = true)
+	private static boolean isBetween(int date, int startDate, int endDate) {
+		return (date >= startDate && date <= endDate);
+	}
+
+	private static String getStringDateFromInt(int i) {
+		String str = Integer.toString(i);
+		return str.substring(0, 4) + "-" + str.substring(4, 6) + "-" + str.substring(6, 8);
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		// noinspection RestrictedApi
-		final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), getActivity().getTheme());
+		@SuppressLint("RestrictedApi") final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), getActivity().getTheme());
 		this.inflater = inflater.cloneInContext(contextThemeWrapper);
 		startDateOffset = getArguments().getInt("position") - 50;
 		ViewGroup rootView = (ViewGroup) this.inflater.inflate(R.layout.content_timetable, container, false);
@@ -115,8 +122,8 @@ public class FragmentTimetable extends Fragment {
 			e.printStackTrace();
 		}
 		dialog = new AlertDialog.Builder(getActivity()).create();
-		glTimetable = (GridLayout) rootView.findViewById(R.id.glTimetable);
-		pbLoading = (ProgressBar) main.findViewById(R.id.pbLoading);
+		glTimetable = rootView.findViewById(R.id.glTimetable);
+		pbLoading = main.findViewById(R.id.pbLoading);
 		if (!main.swipeRefresh.isRefreshing())
 			pbLoading.setVisibility(View.VISIBLE);
 		if (Math.abs(startDateOffset + 50 - main.currentViewPos) < 2)
@@ -160,14 +167,15 @@ public class FragmentTimetable extends Fragment {
 		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
 				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), startDateOffset * 7).getTime()));
 
-		Request request = new Request(prefs.getString("url", null));
+		Request request = new Request(this, prefs.getString("url", null));
 		request.setSchool(prefs.getString("school", null));
 		request.setParams("[{\"id\":\"" + main.sessionInfo.getElemId() + "\"," +
 				"\"type\":\"" + main.sessionInfo.getElemType() + "\"," +
 				"\"startDate\":" + startDateFromWeek + "," +
 				"\"endDate\":" + addDaysToInt(startDateFromWeek, 4) + "," +
 				"\"masterDataTimestamp\":" + System.currentTimeMillis() + "," +
-				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
+				getAuthElement(prefs.getString("user", ""),
+						prefs.getString("key", "")) +
 				"}]");
 		request.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
@@ -175,12 +183,13 @@ public class FragmentTimetable extends Fragment {
 	private void setTimetableData(JSONObject data) {
 		Timetable timetable = new Timetable();
 		timetable.setFromJsonObject(data.optJSONObject("timetable"));
-		new setTable().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, timetable);
+		new TableSetup(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, timetable);
 	}
 
 	private void showDetails(TimetableItemData timetableItemData) {
 		final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-		@SuppressLint("InflateParams") View view = inflater.inflate(R.layout.dialog_timetable_item_details, null);
+		@SuppressLint("InflateParams") View view =
+				inflater.inflate(R.layout.dialog_timetable_item_details, null);
 		if (timetableItemData.getTeachers(userDataList).isEmpty())
 			view.findViewById(R.id.llTeachers).setVisibility(View.GONE);
 		if (timetableItemData.getClasses(userDataList).isEmpty())
@@ -266,11 +275,11 @@ public class FragmentTimetable extends Fragment {
 				titleBuilder.append(", ").append(timetableItemData.getSubjects(userDataList).getLongNames().get(i));
 			}
 			String title = titleBuilder.toString();
-			if (timetableItemData.getCodes().contains(CODE_CANCELLED))
+			if (timetableItemData.isCancelled())
 				title = getString(R.string.lesson_cancelled, title);
-			if (timetableItemData.getCodes().contains(CODE_IRREGULAR))
+			if (timetableItemData.isIrregular())
 				title = getString(R.string.lesson_irregular, title);
-			if (timetableItemData.getCodes().contains(CODE_EXAM))
+			if (timetableItemData.isExam())
 				title = getString(R.string.lesson_test, title);
 			dialog.setTitle(title);
 		}
@@ -314,11 +323,6 @@ public class FragmentTimetable extends Fragment {
 		return (int) (dp * scale + 0.5f);
 	}
 
-	@Contract(pure = true)
-	private boolean isBetween(int date, int startDate, int endDate) {
-		return (date >= startDate && date <= endDate);
-	}
-
 	@SuppressWarnings("SameParameterValue")
 	@NonNull
 	private String fixedLength(String str, int length, char fillChar) {
@@ -330,69 +334,83 @@ public class FragmentTimetable extends Fragment {
 		return sb.toString();
 	}
 
-	private String getStringDateFromInt(int i) {
-		String str = Integer.toString(i);
-		return str.substring(0, 4) + "-" + str.substring(4, 6) + "-" + str.substring(6, 8);
-	}
-
-	private class setTable extends AsyncTask<Timetable, Void, Void> {
+	private static class TableSetup extends AsyncTask<Timetable, Void, Void> {
 		private static final float DARKNESS_FACTOR = 0.8f;
+		private final FragmentTimetable context;
 		TimegridUnitManager unitManager;
 
 		int dimY;
 		int dimX;
 		View[][] views;
 
+		TableSetup(FragmentTimetable context) {
+			this.context = context;
+		}
+
 		@SuppressLint("InflateParams")
 		@Override
 		protected Void doInBackground(Timetable... timetable) {
-			timetable[0].prepareData(userDataList);
+			timetable[0].prepareData(context.userDataList);
 			ArrayList<TimetableItemData> timetableData = timetable[0].getData();
 			JSONArray holidays = new JSONArray();
 			try {
 				unitManager = new TimegridUnitManager();
-				unitManager.setList(new JSONObject(listManager.readList("userData", false)).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
-				holidays = new JSONObject(listManager.readList("userData", false)).getJSONObject("masterData").getJSONArray("holidays");
+				unitManager.setList(new JSONObject(context.listManager.readList("userData", false))
+						.getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
+				holidays = new JSONObject(context.listManager.readList("userData", false))
+						.getJSONObject("masterData").getJSONArray("holidays");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			dimY = unitManager.getUnitCount();
 			dimX = unitManager.getNumberOfDays();
-			result = new TimetableItemData[dimY][dimX];
+			context.result = new TimetableItemData[dimY][dimX];
 			views = new View[dimY][dimX];
 
 			for (int x = 0; x < dimY; x++) {
 				for (int y = 0; y < dimX; y++) {
 					try {
-						result[x][y] = new TimetableItemData();
-						String startDateTime = getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" + fixedLength(unitManager.getUnits().get(x).getDisplayStartTime(), 5, '0') + "Z";
+						context.result[x][y] = new TimetableItemData();
+						String startDateTime = getStringDateFromInt(
+								addDaysToInt(context.startDateFromWeek, y)) + "T"
+								+ context.fixedLength(unitManager.getUnits().get(x)
+								.getDisplayStartTime(), 5, '0') + "Z";
 						int index = timetable[0].indexOf(startDateTime, unitManager);
 						if (index != -1) {
-							result[x][y] = timetableData.get(index);
+							context.result[x][y] = timetableData.get(index);
 						} else {
 							for (int i = 0; i < holidays.length(); i++) {
-								if (isBetween(addDaysToInt(startDateFromWeek, y),
-										Integer.parseInt(holidays.optJSONObject(i).optString("startDate").replace("-", "")),
-										Integer.parseInt(holidays.optJSONObject(i).optString("endDate").replace("-", "")))) {
+								if (isBetween(addDaysToInt(context.startDateFromWeek, y),
+										Integer.parseInt(holidays.optJSONObject(i)
+												.optString("startDate")
+												.replace("-", "")),
+										Integer.parseInt(holidays.optJSONObject(i)
+												.optString("endDate")
+												.replace("-", "")))) {
 									TimetableItemData data = new TimetableItemData();
 									data.addHoliday(holidays.optJSONObject(i).optInt("id"));
 									data.setFree();
-									result[x][y] = data;
+									context.result[x][y] = data;
 									break;
 								}
 							}
 						}
 
-						if (result[x][y].isFree())
-							views[x][y] = inflater.inflate(R.layout.table_item_free, null, false);
-						else if (result[x][y].getCodes().contains(CODE_CANCELLED))
-							views[x][y] = inflater.inflate(R.layout.table_item_cancelled, null, false);
-						else if (result[x][y].getCodes().contains(CODE_IRREGULAR))
-							views[x][y] = inflater.inflate(R.layout.table_item_irregular, null, false);
-						else if (result[x][y].getCodes().contains(CODE_EXAM))
-							views[x][y] = inflater.inflate(R.layout.table_item_exam, null, false);
+						if (context.result[x][y].isFree())
+							views[x][y] = context.inflater
+									.inflate(R.layout.table_item_free, null, false);
+						else if (context.result[x][y].isCancelled())
+							views[x][y] = context.inflater
+									.inflate(R.layout.table_item_cancelled, null, false);
+						else if (context.result[x][y].isIrregular())
+							views[x][y] = context.inflater
+									.inflate(R.layout.table_item_irregular, null, false);
+						else if (context.result[x][y].isExam())
+							views[x][y] = context.inflater
+									.inflate(R.layout.table_item_exam, null, false);
 						else
-							views[x][y] = inflater.inflate(R.layout.table_item, null, false);
+							views[x][y] = context.inflater
+									.inflate(R.layout.table_item, null, false);
 					} catch (IndexOutOfBoundsException e) {
 						e.printStackTrace();
 					}
@@ -403,56 +421,93 @@ public class FragmentTimetable extends Fragment {
 
 		@Override
 		protected void onPostExecute(Void v) {
-			SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(main.getApplicationContext());
-			glTimetable.setColumnCount(dimX);
-			glTimetable.setRowCount(dimY);
+			SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(
+					context.main.getApplicationContext());
+			context.glTimetable.setColumnCount(dimX);
+			context.glTimetable.setRowCount(dimY);
 			for (int y = 0; y < dimX; y++) {
 				for (int x = 0; x < dimY; x++) {
 					int i = 1;
+					// merge multiple-hour-lessons
 					while (x + i < dimY
-							&& result[x][y].getTeachers(userDataList).getNames().equals(result[x + i][y].getTeachers(userDataList).getNames())
-							&& result[x][y].getRooms(userDataList).getNames().equals(result[x + i][y].getRooms(userDataList).getNames())
-							&& result[x][y].getSubjects(userDataList).getNames().equals(result[x + i][y].getSubjects(userDataList).getNames())
-							&& result[x][y].getCodes().equals(result[x + i][y].getCodes())
-							&& result[x][y].getInfo().equals(result[x + i][y].getInfo())
-							&& (!result[x][y].isEmpty(userDataList)))
+							&& context.result[x][y].getTeachers(context.userDataList).getNames()
+							.equals(context.result[x + i][y].getTeachers(context.userDataList)
+									.getNames())
+							&& context.result[x][y].getRooms(context.userDataList).getNames()
+							.equals(context.result[x + i][y].getRooms(context.userDataList)
+									.getNames())
+							&& context.result[x][y].getSubjects(context.userDataList).getNames()
+							.equals(context.result[x + i][y].getSubjects(context.userDataList)
+									.getNames())
+							&& context.result[x][y].getCodes().equals(context.result[x + i][y]
+							.getCodes())
+							&& context.result[x][y].getInfo().equals(context.result[x + i][y]
+							.getInfo())
+							&& (!context.result[x][y].isEmpty(context.userDataList)))
 						i++;
-					if (result[x + i - 1][y].getEndDateTime() != null)
-						result[x][y].setEndDateTime(result[x + i - 1][y].getEndDateTime());
+					if (context.result[x + i - 1][y].getEndDateTime() != null)
+						context.result[x][y].setEndDateTime(context.result[x + i - 1][y]
+								.getEndDateTime());
 					GridLayout.Spec row = GridLayout.spec(x, i);
 					GridLayout.Spec col = GridLayout.spec(y);
 					GridLayout.LayoutParams params = new GridLayout.LayoutParams(row, col);
-					params.height = dp2px(56) * i; // dp = height + divider!!
+					params.height = context.dp2px(56) * i; // dp = height + divider!!
 					if (y + 1 == dimX)
-						params.width = glTimetable.getWidth() - (glTimetable.getWidth() / glTimetable.getColumnCount()) * y;
+						params.width = context.glTimetable.getWidth() -
+								(context.glTimetable.getWidth() /
+										context.glTimetable.getColumnCount()) * y;
 					else
-						params.width = glTimetable.getWidth() / glTimetable.getColumnCount();
+						params.width = context.glTimetable.getWidth() /
+								context.glTimetable.getColumnCount();
 					views[x][y].setLayoutParams(params);
 					views[x][y].setId(Integer.parseInt("1" + x + "2" + y));
-					if (result[x][y].isFree()) {
-						((TextView) views[x][y].findViewById(R.id.textView1)).setText(result[x][y].getHolidays(userDataList).getLongName(ElementName.SHORT));
+
+					if (context.result[x][y].isFree()) {
+						((TextView) views[x][y].findViewById(R.id.textView1))
+								.setText(context.result[x][y].getHolidays(context.userDataList)
+										.getLongName(ElementName.SHORT));
 					} else {
-						if (SessionInfo.getElemTypeId(main.sessionInfo.getElemType()) == TEACHER)
-							((TextView) views[x][y].findViewById(R.id.textView1)).setText(result[x][y].getClasses(userDataList).getName(ElementName.SHORT));
+						if (SessionInfo.getElemTypeId(context.main.sessionInfo.getElemType())
+								== TEACHER)
+							((TextView) views[x][y].findViewById(R.id.textView1))
+									.setText(context.result[x][y].getClasses(context.userDataList)
+											.getName(ElementName.SHORT));
 						else
-							((TextView) views[x][y].findViewById(R.id.textView1)).setText(result[x][y].getTeachers(userDataList).getName(ElementName.SHORT));
+							((TextView) views[x][y].findViewById(R.id.textView1))
+									.setText(context.result[x][y].getTeachers(context.userDataList)
+											.getName(ElementName.SHORT));
 
-						if (SessionInfo.getElemTypeId(main.sessionInfo.getElemType()) == ROOM)
-							((TextView) views[x][y].findViewById(R.id.textView4)).setText(result[x][y].getClasses(userDataList).getName(ElementName.SHORT));
+						if (SessionInfo.getElemTypeId(context.main.sessionInfo.getElemType())
+								== ROOM)
+							((TextView) views[x][y].findViewById(R.id.textView4))
+									.setText(context.result[x][y].getClasses(context.userDataList)
+											.getName(ElementName.SHORT));
 						else
-							((TextView) views[x][y].findViewById(R.id.textView4)).setText(result[x][y].getRooms(userDataList).getName(ElementName.SHORT));
+							((TextView) views[x][y].findViewById(R.id.textView4))
+									.setText(context.result[x][y].getRooms(context.userDataList)
+											.getName(ElementName.SHORT));
 
-						((TextView) views[x][y].findViewById(R.id.textView5)).setText(result[x][y].getSubjects(userDataList).getName(ElementName.SHORT));
+						((TextView) views[x][y].findViewById(R.id.textView5))
+								.setText(context.result[x][y].getSubjects(context.userDataList)
+										.getName(ElementName.SHORT));
 					}
-					if (result[x][y].isEmpty(userDataList)) {
+
+					if (context.result[x][y].isEmpty(context.userDataList)
+							|| context.result[x][y].isCancelled()) {
 						if (showIndicatorForHour(sharedPrefs, x, y, dimY)) {
 							views[x][y].findViewById(R.id.statusView).setVisibility(View.VISIBLE);
 
-							((ImageView) views[x][y].findViewById(R.id.statusView)).setImageDrawable(
-									ActivityRoomFinder.getRoomStates(getActivity(), sharedPrefs.getString("preference_room_to_display_in_free_lessons", null))
+							((ImageView) views[x][y].findViewById(R.id.statusView))
+									.setImageDrawable(
+											ActivityRoomFinder.getRoomStates(context.getActivity(),
+													sharedPrefs.getString(
+															"preference_room_to_display_in_free_lessons",
+															null))
 											.charAt(y * dimY + x) == '1' ?
-											ContextCompat.getDrawable(getActivity(), R.drawable.ic_room_occupied) :
-											ContextCompat.getDrawable(getActivity(), R.drawable.ic_room_available));
+													ContextCompat.getDrawable(context.getActivity(),
+															R.drawable.ic_room_occupied) :
+													ContextCompat.getDrawable(context.getActivity(),
+															R.drawable.ic_room_available));
 						} else {
 							views[x][y].findViewById(R.id.vBackground).setVisibility(View.GONE);
 						}
@@ -464,128 +519,202 @@ public class FragmentTimetable extends Fragment {
 							for (int x = 0; x < views.length; x++) {
 								for (int y = 0; y < views[x].length; y++) {
 									if (view.getId() == views[x][y].getId()) {
-										showDetails(result[x][y]);
+										context.showDetails(context.result[x][y]);
 									}
 								}
 							}
 						}
 					});
-					if (!result[x][y].isFree() && result[x][y].getCodes().contains(CODE_REGULAR)) {
+
+					if (!context.result[x][y].isFree() && context.result[x][y].getCodes()
+							.contains(CODE_REGULAR)) {
 						GradientDrawable bottomShape = new GradientDrawable();
-						bottomShape.setCornerRadii(new float[]{dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2)});
-						if (!sharedPrefs.getBoolean("preference_use_default_background", false)) {
-							if (result[x][y].getCodes().contains("EXAM"))
-								bottomShape.setColor(sharedPrefs.getInt("preference_background_exam", 0xFFFFFF22));
+						bottomShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
+								context.dp2px(2), context.dp2px(2), context.dp2px(2),
+								context.dp2px(2), context.dp2px(2), context.dp2px(2)});
+						if (!sharedPrefs.getBoolean("preference_use_default_background",
+								false)) {
+							if (context.result[x][y].getCodes().contains("EXAM"))
+								bottomShape.setColor(sharedPrefs.getInt(
+										"preference_background_exam", 0xFFFFFF22));
 							else
-								bottomShape.setColor(sharedPrefs.getInt("preference_background_regular", 0xFFE0E0E0));
+								bottomShape.setColor(sharedPrefs.getInt(
+										"preference_background_regular", 0xFFE0E0E0));
 						} else {
-							bottomShape.setColor(result[x][y].getBackColor());
+							bottomShape.setColor(context.result[x][y].getBackColor());
 						}
 
 						GradientDrawable topShape = new GradientDrawable();
-						if (getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()) > 2)
-							topShape.setCornerRadii(new float[]{dp2px(2), dp2px(2), dp2px(2), dp2px(2), 0, 0, 0, 0});
+						if (getHeightPx(context.dp2px(56) * i, context.result[x][y]
+								.getStartDateTime(), context.result[x][y].getEndDateTime()) > 2)
+							topShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
+									context.dp2px(2), context.dp2px(2), 0, 0, 0, 0});
 						else
-							topShape.setCornerRadii(new float[]{dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2)});
-						if (!sharedPrefs.getBoolean("preference_use_default_background", false)) {
-							if (result[x][y].getCodes().contains(CODE_EXAM))
-								topShape.setColor(sharedPrefs.getInt("preference_background_exam_past", 0xFFEEEE00));
+							topShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
+									context.dp2px(2), context.dp2px(2), context.dp2px(2), context.dp2px(2), context.dp2px(2), context.dp2px(2)});
+						if (!sharedPrefs.getBoolean("preference_use_default_background",
+								false)) {
+							if (context.result[x][y].getCodes().contains(CODE_EXAM))
+								topShape.setColor(sharedPrefs.getInt(
+										"preference_background_exam_past", 0xFFEEEE00));
 							else
-								topShape.setColor(sharedPrefs.getInt("preference_background_regular_past", 0xFFBBBBBB));
+								topShape.setColor(sharedPrefs.getInt(
+										"preference_background_regular_past", 0xFFBBBBBB));
 						} else {
-							topShape.setColor(manipulateColor(result[x][y].getBackColor()));
+							topShape.setColor(manipulateColor(context.result[x][y].getBackColor()));
 						}
 
 						GradientDrawable divider = new GradientDrawable();
-						if (getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()) > 2)
-							divider.setCornerRadii(new float[]{dp2px(3), dp2px(3), dp2px(3), dp2px(3), 0, 0, 0, 0});
+						if (getHeightPx(context.dp2px(56) * i, context.result[x][y]
+								.getStartDateTime(), context.result[x][y].getEndDateTime()) > 2)
+							divider.setCornerRadii(new float[]{context.dp2px(3), context.dp2px(3),
+									context.dp2px(3), context.dp2px(3), 0, 0, 0, 0});
 						else
-							divider.setCornerRadii(new float[]{dp2px(3), dp2px(3), dp2px(3), dp2px(3), dp2px(3), dp2px(3), dp2px(3), dp2px(3)});
+							divider.setCornerRadii(new float[]{context.dp2px(3), context.dp2px(3),
+									context.dp2px(3), context.dp2px(3), context.dp2px(3),
+									context.dp2px(3), context.dp2px(3), context.dp2px(3)});
 						divider.setColor(sharedPrefs.getInt("preference_marker", 0xFFE00000));
 
 						Drawable[] layers = {bottomShape, divider, topShape};
 						LayerDrawable layerList = new LayerDrawable(layers);
 						layerList.setLayerInset(0, 0, 0, 0, 0);
-						layerList.setLayerInset(1, 0, 0, 0, max(getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()) - dp2px(2)));
-						layerList.setLayerInset(2, 0, 0, 0, getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()));
+						layerList.setLayerInset(1, 0, 0, 0, max(
+								getHeightPx(context.dp2px(56) * i,
+										context.result[x][y].getStartDateTime(),
+										context.result[x][y].getEndDateTime())
+										- context.dp2px(2)));
+						layerList.setLayerInset(2, 0, 0, 0,
+								getHeightPx(context.dp2px(56) * i,
+										context.result[x][y].getStartDateTime(),
+										context.result[x][y].getEndDateTime()));
 						views[x][y].findViewById(R.id.vBackground).setBackground(layerList);
-					} else if (result[x][y].isFree()) {
-						views[x][y].findViewById(R.id.vBackground).setBackgroundColor(sharedPrefs.getInt("preference_background_free", 0xFFBBBBFF));
-					} else if (!result[x][y].getCodes().contains("REGULAR") && !result[x][y].isFree() && result[x][y].getStartDateTime().length() > 0) {
+					} else if (context.result[x][y].isFree()) {
+						views[x][y].findViewById(R.id.vBackground)
+								.setBackgroundColor(sharedPrefs.getInt(
+										"preference_background_free", 0xFFBBBBFF));
+					} else if (!context.result[x][y].getCodes().contains("REGULAR")
+							&& !context.result[x][y].isFree()
+							&& context.result[x][y].getStartDateTime().length() > 0) {
 						GradientDrawable bottomShape = new GradientDrawable();
-						bottomShape.setCornerRadii(new float[]{dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2)});
-						if (!sharedPrefs.getBoolean("preference_use_default_background", false)) {
-							bottomShape.setColor(sharedPrefs.getInt("preference_background_irregular", 0xFFFFFFFF));
+						bottomShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
+								context.dp2px(2), context.dp2px(2), context.dp2px(2),
+								context.dp2px(2), context.dp2px(2), context.dp2px(2)});
+						if (!sharedPrefs.getBoolean("preference_use_default_background",
+								false)) {
+							bottomShape.setColor(sharedPrefs.getInt(
+									"preference_background_irregular", 0xFFFFFFFF));
 						} else {
-							bottomShape.setColor(result[x][y].getBackColor());
+							bottomShape.setColor(context.result[x][y].getBackColor());
 						}
 
 						GradientDrawable topShape = new GradientDrawable();
-						if (getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()) > 2)
-							topShape.setCornerRadii(new float[]{dp2px(2), dp2px(2), dp2px(2), dp2px(2), 0, 0, 0, 0});
+						if (getHeightPx(context.dp2px(56) * i,
+								context.result[x][y].getStartDateTime(),
+								context.result[x][y].getEndDateTime()) > 2)
+							topShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
+									context.dp2px(2), context.dp2px(2), 0, 0, 0, 0});
 						else
-							topShape.setCornerRadii(new float[]{dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2), dp2px(2)});
-						if (!sharedPrefs.getBoolean("preference_use_default_background", false)) {
-							topShape.setColor(sharedPrefs.getInt("preference_background_irregular_past", 0xFFEEEEEE));
+							topShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
+									context.dp2px(2), context.dp2px(2), context.dp2px(2),
+									context.dp2px(2), context.dp2px(2), context.dp2px(2)});
+						if (!sharedPrefs.getBoolean("preference_use_default_background",
+								false)) {
+							topShape.setColor(sharedPrefs.getInt(
+									"preference_background_irregular_past", 0xFFEEEEEE));
 						} else {
-							topShape.setColor(manipulateColor(result[x][y].getBackColor()));
+							topShape.setColor(manipulateColor(context.result[x][y].getBackColor()));
 						}
 
 						GradientDrawable divider = new GradientDrawable();
-						if (getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()) > 2)
-							divider.setCornerRadii(new float[]{dp2px(3), dp2px(3), dp2px(3), dp2px(3), 0, 0, 0, 0});
+						if (getHeightPx(context.dp2px(56) * i, context.result[x][y]
+								.getStartDateTime(), context.result[x][y].getEndDateTime()) > 2)
+							divider.setCornerRadii(new float[]{context.dp2px(3), context.dp2px(3),
+									context.dp2px(3), context.dp2px(3), 0, 0, 0, 0});
 						else
-							divider.setCornerRadii(new float[]{dp2px(3), dp2px(3), dp2px(3), dp2px(3), dp2px(3), dp2px(3), dp2px(3), dp2px(3)});
+							divider.setCornerRadii(new float[]{context.dp2px(3), context.dp2px(3),
+									context.dp2px(3), context.dp2px(3), context.dp2px(3),
+									context.dp2px(3), context.dp2px(3), context.dp2px(3)});
 						divider.setColor(sharedPrefs.getInt("preference_marker", 0xFFE00000));
 
 						Drawable[] layers = {bottomShape, divider, topShape};
 						LayerDrawable layerList = new LayerDrawable(layers);
 						layerList.setLayerInset(0, 0, 0, 0, 0);
-						layerList.setLayerInset(1, 0, 0, 0, max(getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()) - dp2px(2)));
-						layerList.setLayerInset(2, 0, 0, 0, getHeightPx(dp2px(56) * i, result[x][y].getStartDateTime(), result[x][y].getEndDateTime()));
+						layerList.setLayerInset(1, 0, 0, 0, max(
+								getHeightPx(context.dp2px(56) * i,
+										context.result[x][y].getStartDateTime(),
+										context.result[x][y].getEndDateTime()) - context.dp2px(2)));
+						layerList.setLayerInset(2, 0, 0, 0,
+								getHeightPx(context.dp2px(56) * i,
+										context.result[x][y].getStartDateTime(),
+										context.result[x][y].getEndDateTime()));
 						views[x][y].findViewById(R.id.vBackground).setBackground(layerList);
 					} else {
-						boolean showDivider = getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" + unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" + unitManager.getUnits().get(x).getEndTime() + "Z") < dp2px(56);
+						boolean showDivider = getHeightPx(context.dp2px(56) * i,
+								getStringDateFromInt(addDaysToInt(context.startDateFromWeek, y))
+										+ "T" + unitManager.getUnits().get(x).getStartTime() + "Z",
+								getStringDateFromInt(addDaysToInt(context.startDateFromWeek, y))
+										+ "T" + unitManager.getUnits().get(x).getEndTime() + "Z")
+								< context.dp2px(56);
 
 						LayerDrawable layerList;
 						if (showDivider) {
 							GradientDrawable divider = new GradientDrawable();
-							divider.setColor(sharedPrefs.getInt("preference_marker", 0xFFE00000));
+							divider.setColor(sharedPrefs.getInt(
+									"preference_marker", 0xFFE00000));
 							layerList = new LayerDrawable(new GradientDrawable[]{divider});
 							layerList.setLayerInset(0,
 									0,
-									dp2px(56) * i - getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" +
-											unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" +
-											unitManager.getUnits().get(x).getEndTime() + "Z"),
+									context.dp2px(56) * i - getHeightPx(context.dp2px(56) * i,
+											getStringDateFromInt(
+													addDaysToInt(context.startDateFromWeek, y))
+													+ "T"
+													+ unitManager.getUnits().get(x).getStartTime()
+													+ "Z",
+											getStringDateFromInt(
+													addDaysToInt(context.startDateFromWeek, y))
+													+ "T" +
+													unitManager.getUnits().get(x).getEndTime()
+													+ "Z"),
 									0,
-									max(getHeightPx(dp2px(56) * i, getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" +
-											unitManager.getUnits().get(x).getStartTime() + "Z", getStringDateFromInt(addDaysToInt(startDateFromWeek, y)) + "T" +
-											unitManager.getUnits().get(x).getEndTime() + "Z")) - dp2px(2));
+									max(getHeightPx(context.dp2px(56) * i,
+											getStringDateFromInt(
+													addDaysToInt(context.startDateFromWeek, y))
+													+ "T" +
+													unitManager.getUnits().get(x).getStartTime() + "Z",
+											getStringDateFromInt(
+													addDaysToInt(context.startDateFromWeek, y))
+													+ "T" +
+													unitManager.getUnits().get(x).getEndTime() + "Z"))
+											- context.dp2px(2));
 						} else {
 							layerList = new LayerDrawable(new GradientDrawable[]{});
 						}
 						views[x][y].setBackground(layerList);
 					}
 
-					glTimetable.addView(views[x][y], params);
+					context.glTimetable.addView(views[x][y], params);
 					if (i > 1)
 						x += i - 1;
 				}
 			}
-			if (startDateOffset + 50 - main.currentViewPos == 0)
-				main.stopRefreshing();
-			pbLoading.setVisibility(View.GONE);
+			if (context.startDateOffset + 50 - context.main.currentViewPos == 0)
+				context.main.stopRefreshing();
+			context.pbLoading.setVisibility(View.GONE);
 		}
 
-		private boolean showIndicatorForHour(SharedPreferences sharedPrefs, int x, int y, int hoursPerDay) {
-			if (getActivity() != null &&
-					!TextUtils.isEmpty(sharedPrefs.getString("preference_room_to_display_in_free_lessons", null)) &&
-					ActivityRoomFinder.getRooms(getActivity(), false)
-							.contains(sharedPrefs.getString("preference_room_to_display_in_free_lessons", null))) {
-				if (sharedPrefs.getBoolean("preference_room_to_display_in_free_lessons_trim", false)) {
+		private boolean showIndicatorForHour(SharedPreferences sharedPrefs, int x, int y,
+		                                     int hoursPerDay) {
+			if (context.getActivity() != null &&
+					!TextUtils.isEmpty(sharedPrefs.getString(
+							"preference_room_to_display_in_free_lessons", null)) &&
+					ActivityRoomFinder.getRooms(context.getActivity(), false)
+							.contains(sharedPrefs.getString(
+									"preference_room_to_display_in_free_lessons", null))) {
+				if (sharedPrefs.getBoolean(
+						"preference_room_to_display_in_free_lessons_trim", false)) {
 					int length = hoursPerDay;
 					while (length > 0) {
-						if (result[length - 1][y].isEmpty(userDataList))
+						if (context.result[length - 1][y].isEmpty(context.userDataList))
 							length--;
 						else
 							break;
@@ -631,15 +760,17 @@ public class FragmentTimetable extends Fragment {
 		}
 	}
 
-	private class Request extends AsyncTask<Void, Void, String> {
+	private static class Request extends AsyncTask<Void, Void, String> {
 		private static final String jsonrpc = "2.0";
 		private final String method = "getTimetable2017";
 		private final String id = ID_GET_TIMETABLE;
+		private final FragmentTimetable context;
 		private String url = "";
 		private String params = "{}";
 		private String school = "";
 
-		Request(String url) {
+		Request(FragmentTimetable context, String url) {
+			this.context = context;
 			this.url = "https://" + url + "/WebUntis/jsonrpc_intern.do";
 		}
 
@@ -653,9 +784,12 @@ public class FragmentTimetable extends Fragment {
 
 		@Override
 		protected String doInBackground(Void... p1) {
-			String fileName = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
-			if (listManager.exists(fileName, true))
-				return listManager.readList(fileName, true);
+			String fileName = context.main.sessionInfo.getElemType() + "-"
+					+ context.main.sessionInfo.getElemId() + "-"
+					+ context.startDateFromWeek + "-"
+					+ addDaysToInt(context.startDateFromWeek, 4);
+			if (context.listManager.exists(fileName, true))
+				return context.listManager.readList(fileName, true);
 
 			String result;
 			HttpURLConnection urlConnection = null;
@@ -688,7 +822,8 @@ public class FragmentTimetable extends Fragment {
 				else
 					result = "{}";
 			} catch (Exception e) {
-				result = "{\"id\":\"" + this.id + "\",\"error\":{\"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}}";
+				result = "{\"id\":\"" + this.id + "\",\"error\":{\"message\":\"" + e.getMessage()
+						.replace("\"", "\\\"") + "\"}}";
 			} finally {
 				if (urlConnection != null)
 					urlConnection.disconnect();
@@ -701,17 +836,25 @@ public class FragmentTimetable extends Fragment {
 			try {
 				JSONObject jsonObj = new JSONObject(result);
 				if (jsonObj.has("error")) {
-					if (Math.abs(startDateOffset + 50 - main.currentViewPos) == 0) {
-						if (getView() != null)
-							Snackbar.make(getView(), getString(R.string.snackbar_error, jsonObj.getJSONObject("error").getString("message")), Snackbar.LENGTH_LONG).setAction("OK", null).show();
+					if (Math.abs(context.startDateOffset + 50 - context.main.currentViewPos) == 0) {
+						if (context.getView() != null)
+							Snackbar.make(context.getView(),
+									context.getString(R.string.snackbar_error,
+											jsonObj.getJSONObject("error")
+													.getString("message")),
+									Snackbar.LENGTH_LONG)
+									.setAction("OK", null).show();
 						Log.w("error", jsonObj.toString());
-						pbLoading.setVisibility(View.GONE);
-						main.swipeRefresh.setRefreshing(false);
+						context.pbLoading.setVisibility(View.GONE);
+						context.main.swipeRefresh.setRefreshing(false);
 					}
 				} else if (jsonObj.has("result")) {
-					setTimetableData(jsonObj.getJSONObject("result"));
-					String fileName = main.sessionInfo.getElemType() + "-" + main.sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
-					listManager.saveList(fileName, result, true);
+					context.setTimetableData(jsonObj.getJSONObject("result"));
+					String fileName = context.main.sessionInfo.getElemType() + "-"
+							+ context.main.sessionInfo.getElemId() + "-"
+							+ context.startDateFromWeek + "-"
+							+ addDaysToInt(context.startDateFromWeek, 4);
+					context.listManager.saveList(fileName, result, true);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();

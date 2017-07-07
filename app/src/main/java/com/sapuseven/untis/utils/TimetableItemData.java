@@ -7,6 +7,8 @@ import java.util.ArrayList;
 
 import static android.graphics.Color.parseColor;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_CANCELLED;
+import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_EXAM;
+import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_IRREGULAR;
 import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.HOLIDAY;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
@@ -61,7 +63,7 @@ public class TimetableItemData {
 	}
 
 	private void addClass(int classId) {
-		if (codes.contains(CODE_CANCELLED) && this.classes.size() > 0)
+		if (isCancelled() && this.classes.size() > 0)
 			this.classes.remove(this.classes.size() - 1);
 		this.classes.add(classId);
 	}
@@ -74,7 +76,7 @@ public class TimetableItemData {
 	}
 
 	private void addSubject(int subject) {
-		if (codes.contains(CODE_CANCELLED) && this.subjects.size() > 0)
+		if (isCancelled() && this.subjects.size() > 0)
 			this.subjects.remove(this.subjects.size() - 1);
 		this.subjects.add(subject);
 	}
@@ -98,7 +100,7 @@ public class TimetableItemData {
 	}
 
 	private void addRoom(int room) {
-		if (codes.contains(CODE_CANCELLED) && this.rooms.size() > 0)
+		if (isCancelled() && this.rooms.size() > 0)
 			this.rooms.remove(this.rooms.size() - 1);
 		this.rooms.add(room);
 	}
@@ -199,5 +201,17 @@ public class TimetableItemData {
 
 	private void setInfo(String info) {
 		this.info = info;
+	}
+
+	public boolean isCancelled() {
+		return codes.contains(CODE_CANCELLED);
+	}
+
+	public boolean isIrregular() {
+		return codes.contains(CODE_IRREGULAR);
+	}
+
+	public boolean isExam() {
+		return codes.contains(CODE_EXAM);
 	}
 }
