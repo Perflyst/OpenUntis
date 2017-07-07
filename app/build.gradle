@@ -14,15 +14,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 android {
-	compileSdkVersion 25
-	buildToolsVersion "25.0.3"
+	compileSdkVersion 26
+	buildToolsVersion "26.0.0"
 	defaultConfig {
 		applicationId "com.sapuseven.untis"
 		minSdkVersion 16
-		targetSdkVersion 25
+		targetSdkVersion 26
 		versionCode 7
 		versionName "1.2.0"
-		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 		vectorDrawables.useSupportLibrary = true
 	}
 	buildTypes {
@@ -48,24 +47,19 @@ repositories {
 }
 
 dependencies {
-	compile fileTree(include: ['*.jar'], dir: 'libs')
-	androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-		exclude group: 'com.android.support', module: 'support-annotations'
-	})
 	compile project(':color-picker-view')
-	compile 'com.android.support:appcompat-v7:25.3.1'
-	compile 'com.android.support:design:25.3.1'
-	compile 'com.android.support:recyclerview-v7:25.3.1'
+	compile 'com.android.support:appcompat-v7:26.0.0-beta2'
+	compile 'com.android.support:design:26.0.0-beta2'
+	compile 'com.android.support:recyclerview-v7:26.0.0-beta2'
+	compile 'com.android.support:support-v4:26.0.0-beta2'
+	compile 'com.android.support:support-vector-drawable:26.0.0-beta2'
 	compile 'com.google.code.gson:gson:2.8.0'
-	compile 'com.android.support:support-v4:25.3.1'
-	compile 'com.android.support:support-vector-drawable:25.3.1'
 	compile 'commons-codec:commons-codec:1.6'
 	compile 'org.jetbrains:annotations-java5:15.0'
-	compile 'com.google.firebase:firebase-messaging:10.2.6'
+	compile 'com.google.firebase:firebase-messaging:11.0.2'
 	compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
 		transitive = true
 	}
-	testCompile 'junit:junit:4.12'
 }
 
 apply plugin: 'com.google.gms.google-services'
