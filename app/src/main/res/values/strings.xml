@@ -3,10 +3,11 @@
 	<string name="navigation_drawer_open">Open navigation drawer</string>
 	<string name="navigation_drawer_close">Close navigation drawer</string>
 	<string name="download_progress">%1$d.%2$s MB / %3$d.%4$s MB</string>
-	<string name="not_now"><u>Not now</u></string>
+	<string name="not_now">Not now</string>
 	<string name="nav_timetables">Timetables</string>
 	<string name="personal_timetable">Personal Timetable</string>
-	<string name="autoupdate_failed">Download failed. Please try again later.</string>
+	<string name="autoupdate_failed">Download failed.</string>
+	<string name="autoupdate_failed_small">Please try again later.</string>
 	<string name="autoupdate_try_again">Try again</string>
 	<string name="autoupdate_manual_update">Manual update</string>
 	<string name="timetable_no_time">00:00</string>
@@ -120,7 +121,7 @@
 	<string name="hint_search_rooms">Search for rooms…</string>
 	<string name="lesson_cancelled">%1$s (cancelled)</string>
 	<string name="lesson_irregular">%1$s (irregular)</string>
-	<string name="lesson_test">%1$s (test!)</string>
+	<string name="lesson_test">%1$s (exam!)</string>
 	<string name="snackbar_error">Error: %1$s</string>
 	<string name="snackbar_press_back_double">Press BACK twice to exit</string>
 	<string name="title_free_rooms">Free Rooms</string>
@@ -163,4 +164,6 @@
 	</plurals>
 	<string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"http://sapuseven.com\",\n  }\n}]</string>
 	<string name="title_teacher">%1$s %2$s</string>
+	<string name="error_invalid_url">Invalid URL!</string>
+	<string name="title_donators">Donations</string>
 </resources>

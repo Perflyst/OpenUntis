@@ -17,7 +17,8 @@
 	<string name="data_loaded">Daten geladen.</string>
 	<string name="invalid_time_settings">Ungültige Uhrzeit eingestellt!</string>
 	<string name="autoupdate_downloading">Bitte warten, die neueste App-Version wird heruntergeladen…</string>
-	<string name="autoupdate_failed">Herunterladen fehlgeschlagen. Bitte versuche es später erneut.</string>
+	<string name="autoupdate_failed">Herunterladen fehlgeschlagen.</string>
+	<string name="autoupdate_failed_small">Bitte versuche es später erneut.</string>
 	<string name="autoupdate_manual_update">Manuelle Aktualisierung</string>
 	<string name="autoupdate_outdated">Du benützt eine veraltete App-Version!</string>
 	<string name="autoupdate_try_again">Erneut versuchen</string>
@@ -30,7 +31,7 @@
 	<string name="loading_data">Lade Daten…</string>
 	<string name="navigation_drawer_close">Drawer schließen</string>
 	<string name="navigation_drawer_open">Drawer öffnen</string>
-	<string name="not_now"><u>Jetzt nicht</u></string>
+	<string name="not_now">Jetzt nicht</string>
 	<string name="rooms">Räume</string>
 	<string name="success">erfolgreich</string>
 	<string name="teachers">Lehrer</string>
