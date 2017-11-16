@@ -1,6 +1,6 @@
-package com.sapuseven.untis.utils;
+package com.sapuseven.untis.adapter;
 
-public class FeatureInfo {
+public class AdapterItemFeatures {
 	private String title;
 	private String desc;
 	private int likes;

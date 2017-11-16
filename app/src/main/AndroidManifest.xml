@@ -104,6 +104,16 @@
 				android:value="com.sapuseven.untis.activity.ActivityMain"/>
 		</activity>
 
+		<activity
+			android:name=".activity.ActivityDonators"
+			android:label="@string/title_donators"
+			android:parentActivityName=".activity.ActivityMain"
+			android:theme="@style/AppTheme">
+			<meta-data
+				android:name="android.support.PARENT_ACTIVITY"
+				android:value="com.sapuseven.untis.activity.ActivityMain"/>
+		</activity>
+
 		<meta-data
 			android:name="com.google.firebase.messaging.default_notification_icon"
 			android:resource="@drawable/ic_stat_timetable"/>

@@ -6,7 +6,7 @@
 			<group android:checkableBehavior="single">
 				<item
 					android:id="@+id/nav_show_personal"
-					android:icon="@drawable/ic_personal"
+					android:icon="@drawable/ic_prefs_personal"
 					android:title="@string/personal_timetable"/>
 				<item
 					android:id="@+id/nav_show_classes"
@@ -24,7 +24,9 @@
 		</menu>
 	</item>
 
-	<group android:checkableBehavior="none">
+	<group
+		android:id="@+id/nav_extra"
+		android:checkableBehavior="none">
 		<item
 			android:id="@+id/nav_free_rooms"
 			android:icon="@drawable/ic_search_rooms"
@@ -39,6 +41,16 @@
 			android:id="@+id/nav_settings"
 			android:icon="@drawable/ic_settings"
 			android:title="@string/settings">
+		</item>
+	</group>
+
+	<group
+		android:id="@+id/nav_social"
+		android:checkableBehavior="none">
+		<item
+			android:id="@+id/nav_donators"
+			android:icon="@drawable/ic_gift"
+			android:title="@string/title_donators">
 		</item>
 	</group>
 </menu>

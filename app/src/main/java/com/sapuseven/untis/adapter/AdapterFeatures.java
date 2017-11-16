@@ -15,7 +15,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sapuseven.untis.R;
-import com.sapuseven.untis.utils.FeatureInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,9 +35,9 @@ public class AdapterFeatures extends BaseAdapter {
 
 	private static LayoutInflater inflater = null;
 	private final Context context;
-	private final List<FeatureInfo> data;
+	private final List<AdapterItemFeatures> data;
 
-	public AdapterFeatures(Context context, List<FeatureInfo> data) {
+	public AdapterFeatures(Context context, List<AdapterItemFeatures> data) {
 		this.context = context;
 		this.data = data;
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -65,11 +64,11 @@ public class AdapterFeatures extends BaseAdapter {
 		View v = convertView;
 		if (v == null)
 			v = inflater.inflate(R.layout.list_item_features, parent, false);
-		final TextView tvHeader = (TextView) v.findViewById(R.id.tvTitle);
-		final TextView tvDesc = (TextView) v.findViewById(R.id.tvDesc);
-		final TextView tvLikes = (TextView) v.findViewById(R.id.tvLikes);
-		final ImageButton btnLike = (ImageButton) v.findViewById(R.id.btnLike);
-		final ImageButton btnDislike = (ImageButton) v.findViewById(R.id.btnDislike);
+		final TextView tvHeader = v.findViewById(R.id.tvTitle);
+		final TextView tvDesc = v.findViewById(R.id.tvDesc);
+		final TextView tvLikes = v.findViewById(R.id.tvLikes);
+		final ImageButton btnLike = v.findViewById(R.id.btnLike);
+		final ImageButton btnDislike = v.findViewById(R.id.btnDislike);
 		tvHeader.setText(data.get(position).getTitle());
 		tvDesc.setText(data.get(position).getDesc());
 		final int voteOffset = data.get(position).getHasVoted();
@@ -93,7 +92,7 @@ public class AdapterFeatures extends BaseAdapter {
 					DrawableCompat.setTint(btnLike.getDrawable(), colored);
 					DrawableCompat.setTint(btnDislike.getDrawable(), uncolored);
 					tvLikes.setText(Integer.toString(data.get(position).getLikes() - voteOffset + 1));
-					new vote().executeOnExecutor(THREAD_POOL_EXECUTOR, data.get(position).getId(), 1);
+					new Vote().executeOnExecutor(THREAD_POOL_EXECUTOR, data.get(position).getId(), 1);
 					data.get(position).setHasVoted(1);
 				}
 			}
@@ -111,7 +110,7 @@ public class AdapterFeatures extends BaseAdapter {
 					DrawableCompat.setTint(btnLike.getDrawable(), uncolored);
 					DrawableCompat.setTint(btnDislike.getDrawable(), colored);
 					tvLikes.setText(Integer.toString(data.get(position).getLikes() - voteOffset - 1));
-					new vote().executeOnExecutor(THREAD_POOL_EXECUTOR, data.get(position).getId(), -1);
+					new Vote().executeOnExecutor(THREAD_POOL_EXECUTOR, data.get(position).getId(), -1);
 					data.get(position).setHasVoted(-1);
 				}
 			}
@@ -134,13 +133,13 @@ public class AdapterFeatures extends BaseAdapter {
 		}
 	}
 
-	private class vote extends AsyncTask<Integer, Void, Boolean> {
+	private class Vote extends AsyncTask<Integer, Void, Boolean> {
 		@Override
 		protected Boolean doInBackground(Integer... integers) {
 			try {
 				SharedPreferences prefs = context.getSharedPreferences("login_data", MODE_PRIVATE);
 				String user = prefs.getString("user", "");
-				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php?method=addVoteToFeature&id=" + integers[0] + "&vote=" + integers[1] + "&name=" + user);
+				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php?method=addVoteToFeature&id=" + integers[0] + "&Vote=" + integers[1] + "&name=" + user);
 				HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 				BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
 				String str = readStream(in);

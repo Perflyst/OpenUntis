@@ -17,7 +17,7 @@ import android.widget.Toast;
 
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterFeatures;
-import com.sapuseven.untis.utils.FeatureInfo;
+import com.sapuseven.untis.adapter.AdapterItemFeatures;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,16 +43,16 @@ public class ActivityFeatures extends AppCompatActivity {
 
 		new loadList().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-		Button btnSuggestNew = (Button) findViewById(R.id.btnSuggestNew);
+		Button btnSuggestNew = findViewById(R.id.btnSuggestNew);
 		btnSuggestNew.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				final Dialog dialog = new Dialog(ActivityFeatures.this);
 				dialog.setContentView(R.layout.layout_suggest_new_feature);
 
-				final EditText etTitle = (EditText) dialog.findViewById(R.id.etTitle);
-				final EditText etDesc = (EditText) dialog.findViewById(R.id.etDesc);
-				Button btnSend = (Button) dialog.findViewById(R.id.btnSend);
+				final EditText etTitle = dialog.findViewById(R.id.etTitle);
+				final EditText etDesc = dialog.findViewById(R.id.etDesc);
+				Button btnSend = dialog.findViewById(R.id.btnSend);
 				btnSend.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -85,20 +85,20 @@ public class ActivityFeatures extends AppCompatActivity {
 		}
 	}
 
-	private class loadList extends AsyncTask<Void, Void, List<FeatureInfo>> {
+	private class loadList extends AsyncTask<Void, Void, List<AdapterItemFeatures>> {
 		ListView lvFeatures;
 		ProgressBar pbLoading;
 
 		@Override
 		protected void onPreExecute() {
-			lvFeatures = (ListView) findViewById(R.id.lvFeatures);
-			pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
+			lvFeatures = findViewById(R.id.lvFeatures);
+			pbLoading = findViewById(R.id.pbLoading);
 			pbLoading.setVisibility(View.VISIBLE);
 		}
 
 		@Override
-		protected List<FeatureInfo> doInBackground(Void... voids) {
-			final List<FeatureInfo> items = new ArrayList<>();
+		protected List<AdapterItemFeatures> doInBackground(Void... voids) {
+			final List<AdapterItemFeatures> items = new ArrayList<>();
 			try {
 				SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
 				String user = prefs.getString("user", "");
@@ -111,7 +111,7 @@ public class ActivityFeatures extends AppCompatActivity {
 				final JSONArray suggestedFeatures = list.optJSONObject("result")
 						.optJSONArray("suggestedFeatures");
 				for (int i = 0; i < suggestedFeatures.length(); i++) {
-					final FeatureInfo featureInfo = new FeatureInfo();
+					final AdapterItemFeatures featureInfo = new AdapterItemFeatures();
 					final JSONObject item = suggestedFeatures.optJSONObject(i);
 					featureInfo.setTitle(item.optString("title"));
 					featureInfo.setDesc(item.optString("desc"));
@@ -135,7 +135,7 @@ public class ActivityFeatures extends AppCompatActivity {
 		}
 
 		@Override
-		protected void onPostExecute(List<FeatureInfo> featureInfos) {
+		protected void onPostExecute(List<AdapterItemFeatures> featureInfos) {
 			pbLoading.setVisibility(View.GONE);
 			lvFeatures.setAdapter(new AdapterFeatures(ActivityFeatures.this, featureInfos));
 		}
