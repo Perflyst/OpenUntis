@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
@@ -38,7 +39,6 @@ import com.sapuseven.untis.adapter.AdapterRoomFinder;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
-import com.sapuseven.untis.utils.ThemeUtils;
 import com.sapuseven.untis.utils.TimegridUnitManager;
 import com.sapuseven.untis.utils.Timetable;
 
@@ -79,13 +79,13 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	private AlertDialog mDialog;
 	private ArrayList<AdapterItemRoomFinder> mRoomList;
 	private AdapterRoomFinder mRoomAdapter;
-	private int mCurrentHourIndex = -1;
+	private int mCurrentHourIndex = 0;
 	private int mHourIndexOffset;
 	private ArrayList<Request> mRequestQueue;
 	private ArrayList<String> mRefreshingItems;
 	private RecyclerView mRecyclerView;
 	private TextView mCurrentHour;
-	private int mMaxHourIndex;
+	private int mMaxHourIndex = 0;
 
 	public static ArrayList<String> getRooms(Context context, boolean includeDisable) {
 		ArrayList<String> roomList = new ArrayList<>();
@@ -95,7 +95,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					context.openFileInput("mRoomList.txt")));
+					context.openFileInput("roomList.txt")));
 			String name;
 			while ((name = reader.readLine()) != null) {
 				for (int i = 0; i < 2; i++)
@@ -112,7 +112,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	public static String getRoomStates(Context context, String name) {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					context.openFileInput("mRoomList.txt")));
+					context.openFileInput("roomList.txt")));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				if (line.equals(name))
@@ -139,7 +139,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			e.printStackTrace();
 		}
 
-		mRecyclerView = (RecyclerView) findViewById(R.id.lvRoomList);
+		mRecyclerView = findViewById(R.id.lvRoomList);
 		setupNoRoomsIndicator();
 		setupRoomList(mRecyclerView);
 		setupHourSelector();
@@ -165,17 +165,22 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				}
 			}
 		});
+
+		findViewById(R.id.tvCurrentHour).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mHourIndexOffset = 0;
+				refreshRoomList();
+			}
+		});
 	}
 
 	private void setupNoRoomsIndicator() {
-		TextView tv = (TextView) findViewById(R.id.tvNoRooms);
+		TextView tv = findViewById(R.id.tvNoRooms);
 		String text = tv.getText().toString();
 		if (text.contains("+")) {
 			SpannableString ss = new SpannableString(text);
-			Drawable img = ContextCompat.getDrawable(this, R.drawable.ic_add);
-
-			ThemeUtils.tintDrawable(this, img, R.attr.colorPrimary);
-
+			Drawable img = ContextCompat.getDrawable(this, R.drawable.ic_add_circle);
 			img.setBounds(0, 0, img.getIntrinsicWidth(), img.getIntrinsicHeight());
 			ss.setSpan(new ImageSpan(img, ImageSpan.ALIGN_BOTTOM),
 					text.indexOf("+"), text.indexOf("+") + 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
@@ -194,7 +199,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 
 		reload();
 
-		FloatingActionButton myFab = (FloatingActionButton) findViewById(R.id.fabAddRoomWatcher);
+		FloatingActionButton myFab = findViewById(R.id.fabAddRoomWatcher);
 		myFab.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				showItemList();
@@ -206,7 +211,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		mRoomList.clear();
 		try {
 			BufferedReader reader =
-					new BufferedReader(new InputStreamReader(openFileInput("mRoomList.txt")));
+					new BufferedReader(new InputStreamReader(openFileInput("roomList.txt")));
 			String name;
 			while ((name = reader.readLine()) != null) {
 				AdapterItemRoomFinder roomItem =
@@ -367,16 +372,18 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 
 		int index = 0;
 
-		TimegridUnitManager unitManager = new TimegridUnitManager();
+		JSONArray days = null;
 		try {
-			unitManager.setList(new JSONObject(new ListManager(getApplication())
+			days = new JSONObject(new ListManager(getApplication())
 					.readList("userData", false))
 					.getJSONObject("masterData")
 					.getJSONObject("timeGrid")
-					.getJSONArray("days"));
+					.getJSONArray("days");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
+		TimegridUnitManager unitManager = new TimegridUnitManager(days);
 
 		Calendar cNow = Calendar.getInstance();
 		Calendar cToCompare = Calendar.getInstance();
@@ -384,11 +391,11 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
 				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 
-		for (int i = 0; i < unitManager.getNumberOfDays() * unitManager.getUnitCount(); i++) {
-			String dateTime = addDaysToInt(startDateFromWeek, i / unitManager.getUnitCount(),
+		for (int i = 0; i < unitManager.getNumberOfDays() * unitManager.getMaxHoursPerDay(); i++) {
+			String dateTime = addDaysToInt(startDateFromWeek, i / unitManager.getMaxHoursPerDay(),
 					new SimpleDateFormat("yyyy-MM-dd'T'", Locale.US))
 					+ String.format("%1$5s", unitManager.getUnits().get(i % unitManager
-					.getUnitCount()).getDisplayEndTime()).replace(' ', '0') + "Z";
+					.getMaxHoursPerDay()).getDisplayEndTime()).replace(' ', '0') + "Z";
 
 			try {
 				cToCompare.setTime(DateOperations.parseFromISO(dateTime));
@@ -402,7 +409,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				break;
 		}
 
-		if (index == unitManager.getNumberOfDays() * unitManager.getUnitCount())
+		if (index == unitManager.getNumberOfDays() * unitManager.getMaxHoursPerDay())
 			index = 0;
 
 		Log.d("RoomFinder", "Current Hour Index: " + index);
@@ -441,13 +448,13 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private boolean deleteItem(final String name) throws IOException {
-		File inputFile = new File(getFilesDir(), "mRoomList.txt");
-		File tempFile = new File(getFilesDir(), "mRoomList.txt.tmp");
+		File inputFile = new File(getFilesDir(), "roomList.txt");
+		File tempFile = new File(getFilesDir(), "roomList.txt.tmp");
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
-				openFileInput("mRoomList.txt"), "UTF-8"));
+				openFileInput("roomList.txt"), "UTF-8"));
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-				openFileOutput("mRoomList.txt.tmp", MODE_APPEND), "UTF-8"));
+				openFileOutput("roomList.txt.tmp", MODE_APPEND), "UTF-8"));
 
 		String currentLine;
 
@@ -531,6 +538,20 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		mRefreshingItems.add(mRoomList.get(position).getName());
 	}
 
+	private void displayCurrentHour() {
+		if (mCurrentHour == null)
+			mCurrentHour = findViewById(R.id.tvCurrentHour);
+
+		if (mHourIndexOffset < 0)
+			mCurrentHour.setText(getResources().getQuantityString(R.plurals.hour_index_last,
+					Math.abs(mHourIndexOffset), Math.abs(mHourIndexOffset)));
+		else if (mHourIndexOffset > 0)
+			mCurrentHour.setText(getResources().getQuantityString(R.plurals.hour_index_next,
+					mHourIndexOffset, mHourIndexOffset));
+		else
+			mCurrentHour.setText(getString(R.string.hour_index_current));
+	}
+
 	@Override
 	public void onClick(final View v) {
 		int itemPosition = mRecyclerView.getChildLayoutPosition(v);
@@ -543,20 +564,6 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		intent.putExtra("displayName", getString(R.string.title_room, item.getName()));
 		setResult(RESULT_OK, intent);
 		finish();
-	}
-
-	private void displayCurrentHour() {
-		if (mCurrentHour == null)
-			mCurrentHour = (TextView) findViewById(R.id.tvCurrentHour);
-
-		if (mHourIndexOffset < 0)
-			mCurrentHour.setText(getResources().getQuantityString(R.plurals.hour_index_last,
-					Math.abs(mHourIndexOffset), Math.abs(mHourIndexOffset)));
-		else if (mHourIndexOffset > 0)
-			mCurrentHour.setText(getResources().getQuantityString(R.plurals.hour_index_next,
-					mHourIndexOffset, mHourIndexOffset));
-		else
-			mCurrentHour.setText(getString(R.string.hour_index_current));
 	}
 
 	private class Request extends AsyncTask<Void, Void, String> {
@@ -634,46 +641,30 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 									.getString("message")), Snackbar.LENGTH_LONG)
 							.setAction("OK", null).show();
 				} else if (jsonObj.has("result")) {
-					Timetable timetable = new Timetable();
-					timetable.setFromJsonObject(jsonObj.getJSONObject("result")
-							.getJSONObject("timetable"));
+					Timetable timetable = new Timetable(jsonObj.getJSONObject("result"), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
 
-					timetable.prepareData(mUserDataList);
-					TimegridUnitManager unitManager = new TimegridUnitManager();
+					JSONArray dayList = null;
 					try {
-						unitManager.setList(new JSONObject(new ListManager(getApplication())
+						dayList = new JSONObject(new ListManager(getApplication())
 								.readList("userData", false)).getJSONObject("masterData")
-								.getJSONObject("timeGrid").getJSONArray("days"));
+								.getJSONObject("timeGrid").getJSONArray("days");
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
-					boolean[] states = new boolean[unitManager.getNumberOfDays() *
-							unitManager.getUnitCount()];
+
+					TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
+
+					int days = unitManager.getNumberOfDays();
+					int hours = unitManager.getMaxHoursPerDay();
+
+					boolean[] states = new boolean[days * hours];
 
 					for (int i = 0; i < states.length; i++) {
-						try {
-							int startDateFromWeek = Integer.parseInt(
-									new SimpleDateFormat("yyyyMMdd", Locale.US)
-											.format(DateOperations
-													.getStartDateFromWeek(Calendar.getInstance(), 0)
-													.getTime()));
-							Calendar c = Calendar.getInstance();
-							SimpleDateFormat source = new SimpleDateFormat("yyyyMMdd", Locale.US);
-							c.setTime(source.parse(Integer.toString(
-									addDaysToInt(startDateFromWeek,
-											i / unitManager.getUnitCount()))));
-							String startDateTime = new SimpleDateFormat("yyyy-MM-dd'T'", Locale.US)
-									.format(c.getTime()) +
-									String.format("%1$5s", unitManager.getUnits()
-											.get(i % unitManager.getUnitCount())
-											.getDisplayStartTime()).replace(' ', '0') + "Z";
-							int index = timetable.indexOf(startDateTime, unitManager);
-							if (index != -1) {
-								states[i] = true;
-							}
-						} catch (IndexOutOfBoundsException | ParseException e) {
-							e.printStackTrace();
-						}
+						int day = i / hours;
+						int hour = i % hours;
+
+						if (timetable.getItems(day, hour).size() > 0)
+							states[day * hours + hour] = true;
 					}
 
 					StringBuilder binaryData = new StringBuilder();
@@ -685,7 +676,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 							deleteItem(displayName);
 
 						BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-								openFileOutput("mRoomList.txt", MODE_APPEND), "UTF-8"));
+								openFileOutput("roomList.txt", MODE_APPEND), "UTF-8"));
 						writer.write(mRequestQueue.get(0).getDisplayName());
 						writer.newLine();
 						writer.write(binaryData.toString());

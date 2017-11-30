@@ -16,7 +16,7 @@ public class StartupReceiver extends BroadcastReceiver {
 	@SuppressLint("UnsafeProtectedBroadcastReceiver")
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.d("BetterUntis", "StartupReceiver received");
+		Log.d("StartupReceiver", "StartupReceiver received");
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		if (!prefs.getBoolean("preference_notifications_enable", true))
 			return;

@@ -16,7 +16,17 @@
 		android:title="@string/title_free_rooms"/>
 
 	<header
-		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$InfosFragment"
+		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$TimetableFragment"
+		android:icon="@drawable/ic_prefs_timetable"
+		android:title="@string/pref_timetable"/>
+
+	<header
+		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$AccountFragment"
+		android:icon="@drawable/ic_prefs_personal"
+		android:title="@string/pref_account"/>
+
+	<header
+		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$AboutFragment"
 		android:icon="@drawable/ic_prefs_info"
 		android:title="@string/pref_infos"/>
 

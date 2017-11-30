@@ -19,12 +19,12 @@ import java.util.Calendar;
 public class NotificationReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, final Intent intent) {
-		Log.d("BetterUntis", "NotificationReceiver received. Extras:");
+		Log.d("NotificationReceiver", "NotificationReceiver received. Extras:");
 		if (intent.getExtras() != null)
 			for (String key : intent.getExtras().keySet()) {
 				Object value = intent.getExtras().get(key);
 				if (value != null)
-					Log.d("BetterUntis", String.format(" - %s=%s (%s)", key, value.toString(), value.getClass().getName()));
+					Log.d("NotificationReceiver", String.format(" - %s=%s (%s)", key, value.toString(), value.getClass().getName()));
 			}
 
 		final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -36,14 +36,14 @@ public class NotificationReceiver extends BroadcastReceiver {
 			return;
 
 		if (clear) {
-			Log.d("BetterUntis", "Attempting to cancel notification #" + intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)) + "...");
+			Log.d("NotificationReceiver", "Attempting to cancel notification #" + intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)) + "...");
 			notificationManager.cancel(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)));
 		} else {
 			PendingIntent pIntent = PendingIntent.getActivity(context, 0, new Intent(context, ActivityMain.class), 0);
 			Calendar endTime = Calendar.getInstance();
 			endTime.setTimeInMillis(intent.getLongExtra("endTime", System.currentTimeMillis()));
 			String title = context.getString(R.string.notification_title, endTime.get(Calendar.HOUR_OF_DAY), endTime.get(Calendar.MINUTE));
-			Log.d("BetterUntis", "notification delivered: Break until " + endTime.get(Calendar.HOUR_OF_DAY) + ":" + endTime.get(Calendar.MINUTE));
+			Log.d("NotificationReceiver", "notification delivered: Break until " + endTime.get(Calendar.HOUR_OF_DAY) + ":" + endTime.get(Calendar.MINUTE));
 
 			StringBuilder message = new StringBuilder();
 			if (prefs.getString("preference_notifications_visibility_subjects", "long").equals("long"))

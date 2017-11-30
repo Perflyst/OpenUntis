@@ -3,6 +3,7 @@ package com.sapuseven.untis.utils;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @SuppressWarnings("WeakerAccess")
@@ -15,13 +16,17 @@ public class ElementName {
 	public static final int HOLIDAY = 0x0006;
 	public static final boolean FULL = true;
 	public static final boolean SHORT = false;
-	private final ArrayList<String> names = new ArrayList<>();
-	private final ArrayList<String> longNames = new ArrayList<>();
-	private ArrayList<Integer> ids = new ArrayList<>();
+	private final List<String> names = new ArrayList<>();
+	private final List<String> longNames = new ArrayList<>();
+	private List<Integer> ids = new ArrayList<>();
 	private int type;
-	private JSONObject list;
+	private JSONObject userData;
 
 	ElementName() {
+	}
+
+	ElementName(JSONObject userDataList) {
+		this.userData = userDataList;
 	}
 
 	public ElementName(int type) {
@@ -47,14 +52,14 @@ public class ElementName {
 		}
 	}
 
-	public ElementName setUserDataList(JSONObject list) {
-		this.list = list;
+	public ElementName setUserDataList(JSONObject userDataList) {
+		this.userData = userDataList;
 		return this;
 	}
 
-	ElementName fromIdList(ArrayList<Integer> list, int elemType) {
-		if (this.list == null)
-			throw new RuntimeException("You have to provide a list via setUserDataList()!");
+	ElementName fromIdList(List<Integer> list, int elemType) {
+		if (this.userData == null)
+			throw new RuntimeException("You have to provide a unitList via setUserDataList()!");
 		type = elemType;
 		ids = list;
 		for (int i : list)
@@ -73,9 +78,9 @@ public class ElementName {
 	public Object findFieldByValue(String srcField, Object srcValue, String dstFieldName) {
 		if (srcField == null || srcValue == null || dstFieldName == null)
 			return null;
-		for (int i = 0; i < list.optJSONObject("masterData").optJSONArray(getTypeName(type)).length(); i++)
-			if (list.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(srcField).equals(srcValue))
-				return list.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(dstFieldName);
+		for (int i = 0; i < userData.optJSONObject("masterData").optJSONArray(getTypeName(type)).length(); i++)
+			if (userData.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(srcField).equals(srcValue))
+				return userData.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(dstFieldName);
 		throw new NoSuchElementException("Item not found");
 	}
 
@@ -127,15 +132,15 @@ public class ElementName {
 		}
 	}
 
-	ArrayList<Integer> getIds() {
+	List<Integer> getIds() {
 		return ids;
 	}
 
-	public ArrayList<String> getNames() {
+	public List<String> getNames() {
 		return names;
 	}
 
-	public ArrayList<String> getLongNames() {
+	public List<String> getLongNames() {
 		return longNames;
 	}
 }

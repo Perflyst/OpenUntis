@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<Preference
+		android:key="preference_info_app_version"
+		android:title="@string/app_version"/>
+
+	<Preference
+		android:key="preference_info_changelog"
+		android:title="@string/changelog"/>
+
+	<Preference
+		android:key="preference_info_contact_email"
+		android:summary="@string/contact_email"
+		android:title="@string/contact"/>
+
+	<PreferenceCategory
+		android:title="@string/preference_category_coming_soon">
+
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:enabled="false"
+			android:key="preference_send_stats"
+			android:summary="@string/preference_send_stats_desc"
+			android:title="@string/preference_send_stats"/>
+
+		<Preference
+			android:enabled="false"
+			android:key="preference_info_stats"
+			android:summary="@string/preference_info_stats_desc"
+			android:title="@string/preference_info_stats"/>
+
+	</PreferenceCategory>
+</PreferenceScreen>

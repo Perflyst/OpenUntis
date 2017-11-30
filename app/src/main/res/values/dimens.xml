@@ -9,6 +9,9 @@
 	<dimen name="header_height">48dp</dimen>
 	<dimen name="item_hour_times">11sp</dimen>
 	<dimen name="item_hour_index">15sp</dimen>
-	<dimen name="table_item_secondary">10sp</dimen>
-	<dimen name="table_item_primary">14sp</dimen>
+	<dimen name="table_item_default_primary_font_size">12sp</dimen>
+	<dimen name="table_item_default_secondary_font_size">10sp</dimen>
+	<dimen name="viewpager_indicator_space">4dp</dimen>
+	<dimen name="scroll_indicator_dot_size">6dp</dimen>
+	<dimen name="scroll_indicator_dot_size_active">8dp</dimen>
 </resources>

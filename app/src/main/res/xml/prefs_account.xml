@@ -1,0 +1,16 @@
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<Preference
+		android:key="preference_account_access_key"
+		android:title="@string/preference_account_access_key"/>
+
+	<Preference
+		android:key="preference_account_firebase_key"
+		android:title="@string/preference_account_firebase_key"/>
+
+	<Preference
+		android:key="preference_account_logout"
+		android:title="@string/logout"/>
+
+</PreferenceScreen>

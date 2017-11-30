@@ -1,9 +1,11 @@
 package com.sapuseven.untis.utils;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static android.graphics.Color.parseColor;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_CANCELLED;
@@ -19,17 +21,14 @@ public class TimetableItemData {
 	private final ArrayList<Integer> holidays = new ArrayList<>();
 	private String startDateTime = "";
 	private String endDateTime = "";
-	private String info = "";
-	private ArrayList<String> codes = new ArrayList<>();
-	private ArrayList<Integer> classes = new ArrayList<>();
-	private ArrayList<Integer> subjects = new ArrayList<>();
-	private ArrayList<Integer> teachers = new ArrayList<>();
-	private ArrayList<Integer> rooms = new ArrayList<>();
-	private boolean free;
+	private List<String> codes = new ArrayList<>();
+	private List<Integer> classes = new ArrayList<>();
+	private List<Integer> subjects = new ArrayList<>();
+	private List<Integer> teachers = new ArrayList<>();
+	private List<Integer> rooms = new ArrayList<>();
+	private List<String> infos = new ArrayList<>();
+	private boolean hidden;
 	private int backColor;
-
-	public TimetableItemData() {
-	}
 
 	TimetableItemData(JSONObject itemData) {
 		for (int i = 0; i < itemData.optJSONArray("elements").length(); i++) {
@@ -47,17 +46,39 @@ public class TimetableItemData {
 					addRoom(itemData.optJSONArray("elements").optJSONObject(i).optInt("id"));
 					break;
 			}
-			setStartDateTime(itemData.optString("startDateTime"));
-			setEndDateTime(itemData.optString("endDateTime"));
-			setCodes(itemData.optJSONArray("is"));
+		}
+		try {
+			setStartDateTime(itemData.getString("startDateTime"));
+			setEndDateTime(itemData.getString("endDateTime"));
+			setCodes(itemData.getJSONArray("is"));
 			setBackColor(itemData.optString("backColor", "#E0E0E0"));
-			setInfo(itemData.optJSONObject("text").optString("lesson", "")); // TODO: Show all three texts
+			setInfos(itemData.getJSONObject("text")); // TODO: Show all three texts
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
 	}
 
-	public ElementName getClasses(JSONObject list) {
+	private TimetableItemData() {
+	}
+
+	public static TimetableItemData combine(List<TimetableItemData> items,
+	                                        String startDateTime, String endDateTime) {
+		TimetableItemData newItem = new TimetableItemData();
+		for (TimetableItemData item : items) {
+			newItem.addClass(item.getClasses());
+			newItem.addSubject(item.getSubjects());
+			newItem.addTeacher(item.getTeachers());
+			newItem.addRoom(item.getRooms());
+			// TODO: Combine code as well
+		}
+		newItem.setStartDateTime(startDateTime);
+		newItem.setEndDateTime(endDateTime);
+		return newItem;
+	}
+
+	public ElementName getClasses(JSONObject userDataList) {
 		if (classes.size() > 0)
-			return new ElementName().setUserDataList(list).fromIdList(classes, CLASS);
+			return new ElementName(userDataList).fromIdList(classes, CLASS);
 		else
 			return new ElementName();
 	}
@@ -68,9 +89,9 @@ public class TimetableItemData {
 		this.classes.add(classId);
 	}
 
-	public ElementName getSubjects(JSONObject list) {
+	public ElementName getSubjects(JSONObject userDataList) {
 		if (subjects.size() > 0)
-			return new ElementName().setUserDataList(list).fromIdList(subjects, SUBJECT);
+			return new ElementName(userDataList).fromIdList(subjects, SUBJECT);
 		else
 			return new ElementName();
 	}
@@ -81,9 +102,9 @@ public class TimetableItemData {
 		this.subjects.add(subject);
 	}
 
-	public ElementName getTeachers(JSONObject list) {
+	public ElementName getTeachers(JSONObject userDataList) {
 		if (teachers.size() > 0)
-			return new ElementName().setUserDataList(list).fromIdList(teachers, TEACHER);
+			return new ElementName(userDataList).fromIdList(teachers, TEACHER);
 		else
 			return new ElementName();
 	}
@@ -92,9 +113,9 @@ public class TimetableItemData {
 		this.teachers.add(teacherId);
 	}
 
-	public ElementName getRooms(JSONObject list) {
+	public ElementName getRooms(JSONObject userDataList) {
 		if (rooms.size() > 0)
-			return new ElementName().setUserDataList(list).fromIdList(rooms, ROOM);
+			return new ElementName(userDataList).fromIdList(rooms, ROOM);
 		else
 			return new ElementName();
 	}
@@ -105,15 +126,11 @@ public class TimetableItemData {
 		this.rooms.add(room);
 	}
 
-	public ElementName getHolidays(JSONObject list) {
+	public ElementName getHolidays(JSONObject userDataList) {
 		if (holidays.size() > 0)
-			return new ElementName().setUserDataList(list).fromIdList(holidays, HOLIDAY);
+			return new ElementName(userDataList).fromIdList(holidays, HOLIDAY);
 		else
 			return new ElementName();
-	}
-
-	public void addHoliday(int holiday) {
-		this.holidays.add(holiday);
 	}
 
 	public String getStartDateTime() {
@@ -142,7 +159,7 @@ public class TimetableItemData {
 		this.endDateTime = sb.toString();
 	}
 
-	public ArrayList<String> getCodes() {
+	public List<String> getCodes() {
 		return codes;
 	}
 
@@ -152,39 +169,12 @@ public class TimetableItemData {
 				this.codes.add(codes.optString(i));
 	}
 
-	public boolean isEmpty(JSONObject list) {
-		return getSubjects(list).isEmpty() && getTeachers(list).isEmpty() && getRooms(list).isEmpty() && !isFree();
+	public boolean isHidden() {
+		return hidden;
 	}
 
-	void mergeWith(TimetableItemData timetableItemData2, JSONObject list) {
-		if (this.getCodes().contains(CODE_CANCELLED)) {
-			classes = timetableItemData2.getClasses(list).getIds();
-			subjects = timetableItemData2.getSubjects(list).getIds();
-			teachers = timetableItemData2.getTeachers(list).getIds();
-			rooms = timetableItemData2.getRooms(list).getIds();
-			codes = timetableItemData2.getCodes();
-			return;
-		}
-		for (int i = 0; i < timetableItemData2.getClasses(list).getIds().size(); i++)
-			if (!getClasses(list).getIds().contains(timetableItemData2.getClasses(list).getIds().get(i)))
-				addClass(timetableItemData2.getClasses(list).getIds().get(i));
-		for (int i = 0; i < timetableItemData2.getSubjects(list).getIds().size(); i++)
-			if (!getSubjects(list).getIds().contains(timetableItemData2.getSubjects(list).getIds().get(i)))
-				addSubject(timetableItemData2.getSubjects(list).getIds().get(i));
-		for (int i = 0; i < timetableItemData2.getTeachers(list).getIds().size(); i++)
-			if (!getTeachers(list).getIds().contains(timetableItemData2.getTeachers(list).getIds().get(i)))
-				addTeacher(timetableItemData2.getTeachers(list).getIds().get(i));
-		for (int i = 0; i < timetableItemData2.getRooms(list).getIds().size(); i++)
-			if (!getRooms(list).getIds().contains(timetableItemData2.getRooms(list).getIds().get(i)))
-				addRoom(timetableItemData2.getRooms(list).getIds().get(i));
-	}
-
-	public boolean isFree() {
-		return free;
-	}
-
-	public void setFree() {
-		this.free = true;
+	private void setHidden(boolean hidden) {
+		this.hidden = hidden;
 	}
 
 	public int getBackColor() {
@@ -195,12 +185,8 @@ public class TimetableItemData {
 		this.backColor = parseColor(backColor);
 	}
 
-	public String getInfo() {
-		return info;
-	}
-
-	private void setInfo(String info) {
-		this.info = info;
+	private void addInfo(String info) {
+		this.infos.add(info);
 	}
 
 	public boolean isCancelled() {
@@ -213,5 +199,78 @@ public class TimetableItemData {
 
 	public boolean isExam() {
 		return codes.contains(CODE_EXAM);
+	}
+
+	public boolean mergeWith(ArrayList<TimetableItemData> items) {
+		boolean merged = false;
+		for (int i = 0; i < items.size(); i++) {
+			TimetableItemData candidate = items.get(i);
+
+			if (this.equalsIgnoreTime(candidate)) {
+				setEndDateTime(candidate.getEndDateTime());
+				candidate.setHidden(true);
+				merged = true;
+			}
+		}
+		return merged;
+	}
+
+	private List<Integer> getClasses() {
+		return classes;
+	}
+
+	private List<Integer> getSubjects() {
+		return subjects;
+	}
+
+	private List<Integer> getTeachers() {
+		return teachers;
+	}
+
+	private List<Integer> getRooms() {
+		return rooms;
+	}
+
+	public List<String> getInfos() {
+		return infos;
+	}
+
+	private void setInfos(JSONObject infos) throws JSONException {
+		if (infos.optString("lesson").length() > 0)
+			addInfo(infos.getString("lesson"));
+		else if (infos.optString("substitution").length() > 0)
+			addInfo(infos.getString("substitution"));
+		else if (infos.optString("info").length() > 0)
+			addInfo(infos.getString("info"));
+	}
+
+	public boolean equalsIgnoreTime(TimetableItemData secondItem) {
+		return getTeachers().equals(secondItem.getTeachers())
+				&& getRooms().equals(secondItem.getRooms())
+				&& getClasses().equals(secondItem.getClasses())
+				&& getSubjects().equals(secondItem.getSubjects())
+				&& getCodes().equals(secondItem.getCodes())
+				&& getInfos().equals(secondItem.getInfos())
+				&& !isHidden();
+	}
+
+	private void addClass(List<Integer> classes) {
+		for (int singleClass : classes)
+			addClass(singleClass);
+	}
+
+	private void addSubject(List<Integer> subjects) {
+		for (int subject : subjects)
+			addSubject(subject);
+	}
+
+	private void addTeacher(List<Integer> teachers) {
+		for (int teacher : teachers)
+			addTeacher(teacher);
+	}
+
+	private void addRoom(List<Integer> rooms) {
+		for (int room : rooms)
+			addRoom(room);
 	}
 }

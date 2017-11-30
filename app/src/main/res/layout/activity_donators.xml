@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_margin="8dp"
+		android:baselineAligned="false"
+		android:gravity="bottom"
+		android:orientation="horizontal">
+
+		<include
+			android:id="@+id/vgSecond"
+			layout="@layout/donators_podium"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="0.3"/>
+
+		<include
+			android:id="@+id/vgFirst"
+			layout="@layout/donators_podium"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="0.4"/>
+
+		<include
+			android:id="@+id/vgThird"
+			layout="@layout/donators_podium"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="0.3"/>
+	</LinearLayout>
+
+	<ListView
+		android:id="@+id/lvTopDonators"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"/>
+</LinearLayout>

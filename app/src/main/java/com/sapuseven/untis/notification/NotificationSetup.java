@@ -32,13 +32,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
@@ -53,7 +50,7 @@ public class NotificationSetup extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(final Context context, Intent intent) {
-		Log.d("BetterUntis", "NotificationSetup received");
+		Log.d("NotificationSetup", "NotificationSetup received");
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		if (!prefs.getBoolean("preference_notifications_enable", true))
 			return;
@@ -80,14 +77,12 @@ public class NotificationSetup extends BroadcastReceiver {
 				"\"masterDataTimestamp\":" + System.currentTimeMillis() + "," +
 				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
 				"}]");
-		Log.d("BetterUntis", "Executing request...");
+		Log.d("NotificationSetup", "Executing request...");
 		request.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
 	private void setup(JSONObject data) {
 		Calendar c = Calendar.getInstance();
-		AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
 		JSONObject userDataList = new JSONObject();
 		try {
@@ -95,54 +90,55 @@ public class NotificationSetup extends BroadcastReceiver {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		Timetable timetable = new Timetable();
-		timetable.setFromJsonObject(data.optJSONObject("timetable"));
-		timetable.prepareData(userDataList);
-		ArrayList<TimetableItemData> timetableData = timetable.getData();
-		TimegridUnitManager unitManager = new TimegridUnitManager();
+
+		TimegridUnitManager unitManager;
 		try {
-			unitManager.setList(new JSONObject(listManager.readList("userData", false)).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
+			unitManager = new TimegridUnitManager(new JSONObject(listManager.readList("userData", false)).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
 		} catch (JSONException e) {
 			e.printStackTrace();
+			return;
 		}
 
-		int dim = unitManager.getUnitCount();
+		int day;
+		try {
+			day = unitManager.getDayIndex(c);
+		} catch (IndexOutOfBoundsException e) {
+			return;
+		}
+
+		AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+
+		if (alarmManager == null)
+			return; // TODO: Display a notification informing the user about this issue
+
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+		Timetable timetable = new Timetable(data, prefs);
+
+		int hoursPerDay = unitManager.getMaxHoursPerDay();
 		ArrayList<TimetableItemData> result = new ArrayList<>();
 
-		for (int x = 0; x < dim; x++) {
-			startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
-					.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
+		if (day >= hoursPerDay)
+			return;
 
-			Calendar hour = Calendar.getInstance();
-			try {
-				hour.setTime(new SimpleDateFormat("HH:mm", Locale.US).parse(unitManager.getUnits().get(x).getStartTime()));
-				c.set(Calendar.HOUR_OF_DAY, hour.get(Calendar.HOUR_OF_DAY));
-				c.set(Calendar.MINUTE, hour.get(Calendar.MINUTE));
+		for (int currentHourOfDay = 0; currentHourOfDay < hoursPerDay; currentHourOfDay++) {
+			int hour = currentHourOfDay % hoursPerDay;
 
-				String startDateTime = DateOperations.formatToISO(c.getTime());
-				int index = timetable.indexOf(startDateTime, unitManager);
-				if (index > 0)
-					result.add(timetableData.get(index));
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
+			if (timetable.getItems(day, hour).size() > 0)
+				result.add(TimetableItemData.combine(timetable.getItems(day, hour), timetable.getStartDateTime(day, hour), timetable.getEndDateTime(day, hour)));
 		}
 
 		if (!prefs.getBoolean("preference_notifications_in_multiple", false))
 			for (int x = 0; x < result.size(); x++) {
-				int j = 1;
-				while (x + j < result.size()
-						&& result.get(x).getTeachers(userDataList).getNames().equals(result.get(x + j).getTeachers(userDataList).getNames())
-						&& result.get(x).getRooms(userDataList).getNames().equals(result.get(x + j).getRooms(userDataList).getNames())
-						&& result.get(x).getSubjects(userDataList).getNames().equals(result.get(x + j).getSubjects(userDataList).getNames())
-						&& result.get(x).getCodes().equals(result.get(x + j).getCodes())
-						&& (!result.get(x).isEmpty(userDataList)))
-					j++;
-				if (dim > x + j - 1 && result.get(x + j - 1).getEndDateTime() != null)
-					result.get(x).setEndDateTime(result.get(x + j - 1).getEndDateTime());
+				while (x + 1 < result.size()
+						&& result.get(x).equalsIgnoreTime(result.get(x + 1))) {
+
+					result.get(x).setEndDateTime(result.get(x + 1).getEndDateTime());
+					result.remove(x + 1);
+				}
 			}
 
-		Set<String> unique = new HashSet<>();
+		/*Set<String> unique = new HashSet<>();
 		ArrayList<TimetableItemData> validLessons = new ArrayList<>();
 		for (TimetableItemData itemData : result) {
 			if (itemData.getEndDateTime().substring(4).replaceAll("[^0-9]", "").length() > 0) {
@@ -152,15 +148,15 @@ public class NotificationSetup extends BroadcastReceiver {
 					validLessons.add(itemData);
 				}
 			}
-		}
+		}*/
 
-		for (int j = 0; j < validLessons.size() - 1; j++) {
+		for (int j = 0; j < result.size() - 1; j++) {
 			Calendar c1 = Calendar.getInstance();
-			String endDateTime = validLessons.get(j).getEndDateTime();
+			String endDateTime = result.get(j).getEndDateTime();
 			c1.set(Integer.parseInt(endDateTime.substring(0, 4)), Integer.parseInt(endDateTime.substring(5, 7)) - 1, Integer.parseInt(endDateTime.substring(8, 10)), Integer.parseInt(endDateTime.substring(11, 13)), Integer.parseInt(endDateTime.substring(14, 16)));
 
 			Calendar c2 = Calendar.getInstance();
-			String startDateTime = validLessons.get(j + 1).getStartDateTime();
+			String startDateTime = result.get(j + 1).getStartDateTime();
 			c2.set(Integer.parseInt(startDateTime.substring(0, 4)), Integer.parseInt(startDateTime.substring(5, 7)) - 1, Integer.parseInt(startDateTime.substring(8, 10)), Integer.parseInt(startDateTime.substring(11, 13)), Integer.parseInt(startDateTime.substring(14, 16)));
 
 			if (c2.getTimeInMillis() > System.currentTimeMillis()) {
@@ -168,37 +164,37 @@ public class NotificationSetup extends BroadcastReceiver {
 						.putExtra("id", (int) (c2.getTimeInMillis() * 0.001))
 						.putExtra("startTime", c1.getTimeInMillis())
 						.putExtra("endTime", c2.getTimeInMillis())
-						.putExtra("nextSubject", validLessons.get(j + 1).getSubjects(userDataList).getName(ElementName.FULL))
-						.putExtra("nextSubjectLong", validLessons.get(j + 1).getSubjects(userDataList).getLongName(ElementName.FULL))
-						.putExtra("nextRoom", validLessons.get(j + 1).getRooms(userDataList).getName(ElementName.FULL))
-						.putExtra("nextRoomLong", validLessons.get(j + 1).getRooms(userDataList).getLongName(ElementName.FULL))
-						.putExtra("nextTeacher", validLessons.get(j + 1).getTeachers(userDataList).getName(ElementName.FULL))
-						.putExtra("nextTeacherLong", validLessons.get(j + 1).getTeachers(userDataList).getLongName(ElementName.FULL))
+						.putExtra("nextSubject", result.get(j + 1).getSubjects(userDataList).getName(ElementName.FULL))
+						.putExtra("nextSubjectLong", result.get(j + 1).getSubjects(userDataList).getLongName(ElementName.FULL))
+						.putExtra("nextRoom", result.get(j + 1).getRooms(userDataList).getName(ElementName.FULL))
+						.putExtra("nextRoomLong", result.get(j + 1).getRooms(userDataList).getLongName(ElementName.FULL))
+						.putExtra("nextTeacher", result.get(j + 1).getTeachers(userDataList).getName(ElementName.FULL))
+						.putExtra("nextTeacherLong", result.get(j + 1).getTeachers(userDataList).getLongName(ElementName.FULL))
 						.putExtra("clear", false);
-				PendingIntent pi1 = PendingIntent.getBroadcast(context, Integer.parseInt(validLessons.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")), i1, 0);
+				PendingIntent pi1 = PendingIntent.getBroadcast(context, Integer.parseInt(result.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")), i1, 0);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 					alarmManager.setExact(AlarmManager.RTC_WAKEUP, c1.getTimeInMillis(), pi1);
 				} else {
 					alarmManager.set(AlarmManager.RTC_WAKEUP, c1.getTimeInMillis(), pi1);
 				}
-				Log.d("BetterUntis", "notification scheduled at: " + c1.get(Calendar.HOUR_OF_DAY) + ":" + c1.get(Calendar.MINUTE) + "\nduration: " + (c2.getTimeInMillis() - c1.getTimeInMillis()) / 1000 / 60);
+				Log.d("NotificationSetup", "notification scheduled at: " + c1.get(Calendar.HOUR_OF_DAY) + ":" + c1.get(Calendar.MINUTE) + "\nduration: " + (c2.getTimeInMillis() - c1.getTimeInMillis()) / 1000 / 60);
 
 				Intent i2 = new Intent(context, NotificationReceiver.class)
 						.putExtra("id", (int) (c2.getTimeInMillis() * 0.001))
 						.putExtra("clear", true);
-				PendingIntent pi2 = PendingIntent.getBroadcast(context, Integer.parseInt(validLessons.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")) + 1, i2, 0);
+				PendingIntent pi2 = PendingIntent.getBroadcast(context, Integer.parseInt(result.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")) + 1, i2, 0);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 					alarmManager.setExact(AlarmManager.RTC_WAKEUP, c2.getTimeInMillis(), pi2);
 				} else {
 					alarmManager.set(AlarmManager.RTC_WAKEUP, c2.getTimeInMillis(), pi2);
 				}
-				Log.d("BetterUntis", "notification will be cancelled at " + c2.get(Calendar.HOUR_OF_DAY) + ":" + c2.get(Calendar.MINUTE));
+				Log.d("NotificationSetup", "notification will be cancelled at " + c2.get(Calendar.HOUR_OF_DAY) + ":" + c2.get(Calendar.MINUTE));
 			} else
-				Log.d("BetterUntis", "notification not scheduled at: " + c1.get(Calendar.HOUR_OF_DAY) + ":" + c1.get(Calendar.MINUTE));
+				Log.d("NotificationSetup", "notification not scheduled at: " + c1.get(Calendar.HOUR_OF_DAY) + ":" + c1.get(Calendar.MINUTE));
 		}
 	}
 
-	private class Request extends AsyncTask<Void, Void, String> {
+	private class Request extends AsyncTask<Void, Void, String> { // TODO: Create a separate class for this task and also use it in FragmentTimetable
 		private static final String jsonrpc = "2.0";
 		private final String method = "getTimetable2017";
 		private String url = "";
@@ -223,12 +219,10 @@ public class NotificationSetup extends BroadcastReceiver {
 		@Override
 		protected String doInBackground(Void... p1) {
 			String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
-			if (listManager.exists(fileName, true)) {
+			if (listManager.exists(fileName, true))
 				return listManager.readList(fileName, true);
-			}
 
 			InputStream inputStream;
-			String result;
 			try {
 				HttpClient httpclient = new DefaultHttpClient();
 				String url = this.url;
@@ -251,20 +245,22 @@ public class NotificationSetup extends BroadcastReceiver {
 
 				HttpResponse httpResponse = httpclient.execute(httpPost);
 				inputStream = httpResponse.getEntity().getContent();
-				if (inputStream != null)
-					result = inputStreamToString(inputStream);
-				else
-					result = "{}";
+				if (inputStream != null) {
+					JSONObject resultJson = new JSONObject(inputStreamToString(inputStream));
+					resultJson.put("timeModified", System.currentTimeMillis());
+					return resultJson.toString();
+				} else {
+					return "{}";
+				}
 
 			} catch (Exception e) {
-				result = "{\"id\":\"0\",\"error\":{\"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}}";
+				return "{\"id\":\"0\",\"error\":{\"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}}";
 			}
-			return result;
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
-			Log.d("BetterUntis", "Request executed, result: " + result.substring(0, Math.min(255, result.length())));
+			Log.d("NotificationSetup", "Request executed, result: " + result.substring(0, Math.min(255, result.length())));
 			try {
 				JSONObject jsonObj = new JSONObject(result);
 				if (jsonObj.has("result")) {

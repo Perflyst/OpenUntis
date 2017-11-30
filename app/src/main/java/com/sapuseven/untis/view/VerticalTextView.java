@@ -3,14 +3,13 @@ package com.sapuseven.untis.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.text.TextPaint;
-import android.util.AttributeSet;
 import android.view.Gravity;
 
 public class VerticalTextView extends android.support.v7.widget.AppCompatTextView {
 	private final boolean topDown;
 
-	public VerticalTextView(Context context, AttributeSet attrs) {
-		super(context, attrs);
+	public VerticalTextView(Context context) {
+		super(context);
 		final int gravity = getGravity();
 		if (Gravity.isVertical(gravity) && (gravity & Gravity.VERTICAL_GRAVITY_MASK) == Gravity.BOTTOM) {
 			setGravity((gravity & Gravity.HORIZONTAL_GRAVITY_MASK) | Gravity.TOP);

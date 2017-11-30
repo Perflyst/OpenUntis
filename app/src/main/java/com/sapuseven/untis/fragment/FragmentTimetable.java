@@ -1,25 +1,25 @@
 package com.sapuseven.untis.fragment;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.view.ContextThemeWrapper;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,20 +28,22 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.activity.ActivityMain;
 import com.sapuseven.untis.activity.ActivityRoomFinder;
+import com.sapuseven.untis.dialog.DialogItemDetailsFragment;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
-import com.sapuseven.untis.utils.TimegridUnitManager;
 import com.sapuseven.untis.utils.Timetable;
 import com.sapuseven.untis.utils.TimetableItemData;
+import com.sapuseven.untis.view.TimetableItemBackground;
+import com.sapuseven.untis.view.VerticalTextView;
 
-import org.jetbrains.annotations.Contract;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,26 +62,30 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import static com.sapuseven.untis.utils.Authentication.getAuthElement;
+import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_CANCELLED;
 import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_EXAM;
-import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_REGULAR;
+import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_IRREGULAR;
+import static com.sapuseven.untis.utils.Conversions.dp2px;
+import static com.sapuseven.untis.utils.Conversions.setScale;
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
 import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
+import static com.sapuseven.untis.utils.PreferenceUtils.getPrefBool;
+import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 
 public class FragmentTimetable extends Fragment {
 	public static final String ID_GET_TIMETABLE = "2";
 	private int startDateOffset;
 	private ListManager listManager;
-	private GridLayout glTimetable;
 	private ActivityMain main;
-	private float scale;
-	private TimetableItemData[][] result;
-	private AlertDialog dialog;
 	private ProgressBar pbLoading;
 	private JSONObject userDataList;
 	private LayoutInflater inflater;
 	private int startDateFromWeek;
+	private ViewGroup rootView;
+	private DialogItemDetailsFragment itemDetailsDialog;
+	private long lastRefresh = -1;
 
 	public FragmentTimetable() {
 	}
@@ -95,43 +101,34 @@ public class FragmentTimetable extends Fragment {
 				Math.min(b, 255));
 	}
 
-	@Contract(pure = true)
 	private static boolean isBetween(int date, int startDate, int endDate) {
 		return (date >= startDate && date <= endDate);
 	}
 
-	private static String getStringDateFromInt(int i) {
-		String str = Integer.toString(i);
-		return str.substring(0, 4) + "-" + str.substring(4, 6) + "-" + str.substring(6, 8);
-	}
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		@SuppressLint("RestrictedApi") final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), getActivity().getTheme());
+		@SuppressLint("RestrictedApi") final Context contextThemeWrapper =
+				new ContextThemeWrapper(getActivity(), getActivity().getTheme());
 		this.inflater = inflater.cloneInContext(contextThemeWrapper);
+
+		setScale(getContext());
+
 		startDateOffset = getArguments().getInt("position") - 50;
-		ViewGroup rootView = (ViewGroup) this.inflater.inflate(R.layout.content_timetable, container, false);
+		rootView = (ViewGroup) this.inflater.inflate(R.layout.content_timetable, container, false);
 		main = ((ActivityMain) getActivity());
-		scale = main.getResources().getDisplayMetrics().density;
 		if (main.sessionInfo == null)
 			main.sessionInfo = new SessionInfo();
 		listManager = new ListManager(main);
-		try {
-			userDataList = new JSONObject(listManager.readList("userData", false));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		dialog = new AlertDialog.Builder(getActivity()).create();
-		glTimetable = rootView.findViewById(R.id.glTimetable);
 		pbLoading = main.findViewById(R.id.pbLoading);
+
 		if (!main.swipeRefresh.isRefreshing())
 			pbLoading.setVisibility(View.VISIBLE);
 		if (Math.abs(startDateOffset + 50 - main.currentViewPos) < 2)
 			requestTimetable();
 
-
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		if (sharedPrefs.getBoolean("preference_dark_theme_amoled", false) && sharedPrefs.getBoolean("preference_dark_theme", false))
+		if (sharedPrefs.getBoolean("preference_dark_theme_amoled", false)
+				&& sharedPrefs.getBoolean("preference_dark_theme", false))
 			rootView.setBackgroundColor(Color.BLACK);
 
 		return rootView;
@@ -181,116 +178,24 @@ public class FragmentTimetable extends Fragment {
 	}
 
 	private void setTimetableData(JSONObject data) {
-		Timetable timetable = new Timetable();
-		timetable.setFromJsonObject(data.optJSONObject("timetable"));
-		new TableSetup(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, timetable);
+		try {
+			Timetable timetable = new Timetable(data, PreferenceManager.getDefaultSharedPreferences(getContext()));
+			new TableSetup(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, timetable);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			// TODO: Stop reloading, show error and report the response to the server
+		}
 	}
 
-	private void showDetails(TimetableItemData timetableItemData) {
-		final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-		@SuppressLint("InflateParams") View view =
-				inflater.inflate(R.layout.dialog_timetable_item_details, null);
-		if (timetableItemData.getTeachers(userDataList).isEmpty())
-			view.findViewById(R.id.llTeachers).setVisibility(View.GONE);
-		if (timetableItemData.getClasses(userDataList).isEmpty())
-			view.findViewById(R.id.llClasses).setVisibility(View.GONE);
-		if (timetableItemData.getRooms(userDataList).isEmpty())
-			view.findViewById(R.id.llRooms).setVisibility(View.GONE);
-		if (timetableItemData.getInfo().isEmpty())
-			view.findViewById(R.id.llInfo).setVisibility(View.GONE);
-
-		if ((timetableItemData.getTeachers(userDataList).isEmpty()
-				&& timetableItemData.getClasses(userDataList).isEmpty()
-				&& timetableItemData.getRooms(userDataList).isEmpty())
-				|| timetableItemData.isFree())
-			return;
-
-		int[] attrs = new int[]{android.R.attr.textColorPrimary};
-		TypedArray ta = main.obtainStyledAttributes(attrs);
-		int color = ta.getColor(0, 0);
-		ta.recycle();
-
-		((TextView) view.findViewById(R.id.tvInfo)).setText(timetableItemData.getInfo());
-
-		for (final String s : timetableItemData.getTeachers(userDataList).getNames()) {
-			final ElementName elementName = new ElementName(TEACHER).setUserDataList(userDataList);
-			TextView tv = new TextView(main.getApplicationContext());
-			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-			params.setMargins(0, 0, dp2px(12), 0);
-			tv.setText(s);
-			tv.setLayoutParams(params);
-			tv.setTextColor(color);
-			tv.setGravity(Gravity.CENTER_VERTICAL);
-			tv.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					if (elementName.findFieldByValue("name", s, "id") != null)
-						setTarget((Integer) elementName.findFieldByValue("name", s, "id"), TEACHER);
-				}
-			});
-			((LinearLayout) view.findViewById(R.id.llTeacherList)).addView(tv);
-		}
-
-		for (final String s : timetableItemData.getClasses(userDataList).getNames()) {
-			final ElementName elementName = new ElementName(CLASS).setUserDataList(userDataList);
-			TextView tv = new TextView(main.getApplicationContext());
-			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-			params.setMargins(0, 0, dp2px(12), 0);
-			tv.setText(s);
-			tv.setLayoutParams(params);
-			tv.setTextColor(color);
-			tv.setGravity(Gravity.CENTER_VERTICAL);
-			tv.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					if (elementName.findFieldByValue("name", s, "id") != null)
-						setTarget((Integer) elementName.findFieldByValue("name", s, "id"), CLASS);
-				}
-			});
-			((LinearLayout) view.findViewById(R.id.llClassList)).addView(tv);
-		}
-
-		for (final String s : timetableItemData.getRooms(userDataList).getNames()) {
-			final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
-			TextView tv = new TextView(main.getApplicationContext());
-			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-			params.setMargins(0, 0, dp2px(12), 0);
-			tv.setText(s);
-			tv.setLayoutParams(params);
-			tv.setTextColor(color);
-			tv.setGravity(Gravity.CENTER_VERTICAL);
-			tv.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					if (elementName.findFieldByValue("name", s, "id") != null)
-						setTarget((Integer) elementName.findFieldByValue("name", s, "id"), ROOM);
-				}
-			});
-			((LinearLayout) view.findViewById(R.id.llRoomList)).addView(tv);
-		}
-
-		if (timetableItemData.getSubjects(userDataList).getLongNames().size() > 0) {
-			StringBuilder titleBuilder = new StringBuilder(timetableItemData.getSubjects(userDataList).getLongNames().get(0));
-			for (int i = 1; i < timetableItemData.getSubjects(userDataList).getLongNames().size(); i++) {
-				titleBuilder.append(", ").append(timetableItemData.getSubjects(userDataList).getLongNames().get(i));
-			}
-			String title = titleBuilder.toString();
-			if (timetableItemData.isCancelled())
-				title = getString(R.string.lesson_cancelled, title);
-			if (timetableItemData.isIrregular())
-				title = getString(R.string.lesson_irregular, title);
-			if (timetableItemData.isExam())
-				title = getString(R.string.lesson_test, title);
-			dialog.setTitle(title);
-		}
-
-		dialog.setView(view);
-		this.dialog = dialog.create();
-		this.dialog.setCanceledOnTouchOutside(true);
-		this.dialog.show();
+	private void showDetails(ArrayList<TimetableItemData> timetableItemData) {
+		itemDetailsDialog = new DialogItemDetailsFragment();
+		itemDetailsDialog.show(getChildFragmentManager(), "dialog_timetable_item_details");
+		itemDetailsDialog.setFragment(this);
+		itemDetailsDialog.setMainActivity(main);
+		itemDetailsDialog.setItems(timetableItemData);
 	}
 
-	private void setTarget(int id, int type) {
+	void setTarget(int id, int type) {
 		final ElementName elementName = new ElementName(type).setUserDataList(userDataList);
 		main.sessionInfo.setElemId(id);
 		main.sessionInfo.setElemType(SessionInfo.getElemTypeName(type));
@@ -301,7 +206,9 @@ public class FragmentTimetable extends Fragment {
 					((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_classes);
 					break;
 				case TEACHER:
-					main.getSupportActionBar().setTitle(elementName.findFieldByValue("id", id, "firstName") + " " + elementName.findFieldByValue("id", id, "lastName"));
+					main.getSupportActionBar().setTitle(
+							elementName.findFieldByValue("id", id, "firstName") + " "
+									+ elementName.findFieldByValue("id", id, "lastName"));
 					((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_teachers);
 					break;
 				case ROOM:
@@ -313,451 +220,26 @@ public class FragmentTimetable extends Fragment {
 	}
 
 	private void refresh() {
-		if (dialog.isShowing())
-			dialog.dismiss();
+		if (itemDetailsDialog.isVisible())
+			itemDetailsDialog.dismiss();
 		main.refresh();
 	}
 
-	@Contract(pure = true)
-	private int dp2px(int dp) {
-		return (int) (dp * scale + 0.5f);
+	private boolean isCurrentWeek() {
+		return startDateOffset + 50 - main.currentViewPos == 0;
 	}
 
-	@SuppressWarnings("SameParameterValue")
-	@NonNull
-	private String fixedLength(String str, int length, char fillChar) {
-		StringBuilder sb = new StringBuilder();
-		while (sb.length() + str.length() < length) {
-			sb.append(fillChar);
-		}
-		sb.append(str);
-		return sb.toString();
+	private void setLastRefresh(long time) {
+		Log.d("FragmentTimetable", "LastRefresh change requested from " + lastRefresh + " to " + time + " for " + startDateFromWeek);
+		lastRefresh = time;
 	}
 
-	private static class TableSetup extends AsyncTask<Timetable, Void, Void> {
-		private static final float DARKNESS_FACTOR = 0.8f;
-		private final FragmentTimetable context;
-		TimegridUnitManager unitManager;
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		super.setUserVisibleHint(isVisibleToUser);
 
-		int dimY;
-		int dimX;
-		View[][] views;
-
-		TableSetup(FragmentTimetable context) {
-			this.context = context;
-		}
-
-		@SuppressLint("InflateParams")
-		@Override
-		protected Void doInBackground(Timetable... timetable) {
-			timetable[0].prepareData(context.userDataList);
-			ArrayList<TimetableItemData> timetableData = timetable[0].getData();
-			JSONArray holidays = new JSONArray();
-			try {
-				unitManager = new TimegridUnitManager();
-				unitManager.setList(new JSONObject(context.listManager.readList("userData", false))
-						.getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
-				holidays = new JSONObject(context.listManager.readList("userData", false))
-						.getJSONObject("masterData").getJSONArray("holidays");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			dimY = unitManager.getUnitCount();
-			dimX = unitManager.getNumberOfDays();
-			context.result = new TimetableItemData[dimY][dimX];
-			views = new View[dimY][dimX];
-
-			for (int x = 0; x < dimY; x++) {
-				for (int y = 0; y < dimX; y++) {
-					try {
-						context.result[x][y] = new TimetableItemData();
-						String startDateTime = getStringDateFromInt(
-								addDaysToInt(context.startDateFromWeek, y)) + "T"
-								+ context.fixedLength(unitManager.getUnits().get(x)
-								.getDisplayStartTime(), 5, '0') + "Z";
-						int index = timetable[0].indexOf(startDateTime, unitManager);
-						if (index != -1) {
-							context.result[x][y] = timetableData.get(index);
-						} else {
-							for (int i = 0; i < holidays.length(); i++) {
-								if (isBetween(addDaysToInt(context.startDateFromWeek, y),
-										Integer.parseInt(holidays.optJSONObject(i)
-												.optString("startDate")
-												.replace("-", "")),
-										Integer.parseInt(holidays.optJSONObject(i)
-												.optString("endDate")
-												.replace("-", "")))) {
-									TimetableItemData data = new TimetableItemData();
-									data.addHoliday(holidays.optJSONObject(i).optInt("id"));
-									data.setFree();
-									context.result[x][y] = data;
-									break;
-								}
-							}
-						}
-
-						if (context.result[x][y].isFree())
-							views[x][y] = context.inflater
-									.inflate(R.layout.table_item_free, null, false);
-						else if (context.result[x][y].isCancelled())
-							views[x][y] = context.inflater
-									.inflate(R.layout.table_item_cancelled, null, false);
-						else if (context.result[x][y].isIrregular())
-							views[x][y] = context.inflater
-									.inflate(R.layout.table_item_irregular, null, false);
-						else if (context.result[x][y].isExam())
-							views[x][y] = context.inflater
-									.inflate(R.layout.table_item_exam, null, false);
-						else
-							views[x][y] = context.inflater
-									.inflate(R.layout.table_item, null, false);
-					} catch (IndexOutOfBoundsException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void v) {
-			SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(
-					context.main.getApplicationContext());
-			context.glTimetable.setColumnCount(dimX);
-			context.glTimetable.setRowCount(dimY);
-			for (int y = 0; y < dimX; y++) {
-				for (int x = 0; x < dimY; x++) {
-					int i = 1;
-					// merge multiple-hour-lessons
-					while (x + i < dimY
-							&& context.result[x][y].getTeachers(context.userDataList).getNames()
-							.equals(context.result[x + i][y].getTeachers(context.userDataList)
-									.getNames())
-							&& context.result[x][y].getRooms(context.userDataList).getNames()
-							.equals(context.result[x + i][y].getRooms(context.userDataList)
-									.getNames())
-							&& context.result[x][y].getSubjects(context.userDataList).getNames()
-							.equals(context.result[x + i][y].getSubjects(context.userDataList)
-									.getNames())
-							&& context.result[x][y].getCodes().equals(context.result[x + i][y]
-							.getCodes())
-							&& context.result[x][y].getInfo().equals(context.result[x + i][y]
-							.getInfo())
-							&& (!context.result[x][y].isEmpty(context.userDataList)))
-						i++;
-					if (context.result[x + i - 1][y].getEndDateTime() != null)
-						context.result[x][y].setEndDateTime(context.result[x + i - 1][y]
-								.getEndDateTime());
-					GridLayout.Spec row = GridLayout.spec(x, i);
-					GridLayout.Spec col = GridLayout.spec(y);
-					GridLayout.LayoutParams params = new GridLayout.LayoutParams(row, col);
-					params.height = context.dp2px(56) * i; // dp = height + divider!!
-					if (y + 1 == dimX)
-						params.width = context.glTimetable.getWidth() -
-								(context.glTimetable.getWidth() /
-										context.glTimetable.getColumnCount()) * y;
-					else
-						params.width = context.glTimetable.getWidth() /
-								context.glTimetable.getColumnCount();
-					views[x][y].setLayoutParams(params);
-					views[x][y].setId(Integer.parseInt("1" + x + "2" + y));
-
-					if (context.result[x][y].isFree()) {
-						((TextView) views[x][y].findViewById(R.id.textView1))
-								.setText(context.result[x][y].getHolidays(context.userDataList)
-										.getLongName(ElementName.SHORT));
-					} else {
-						if (SessionInfo.getElemTypeId(context.main.sessionInfo.getElemType())
-								== TEACHER)
-							((TextView) views[x][y].findViewById(R.id.textView1))
-									.setText(context.result[x][y].getClasses(context.userDataList)
-											.getName(ElementName.SHORT));
-						else
-							((TextView) views[x][y].findViewById(R.id.textView1))
-									.setText(context.result[x][y].getTeachers(context.userDataList)
-											.getName(ElementName.SHORT));
-
-						if (SessionInfo.getElemTypeId(context.main.sessionInfo.getElemType())
-								== ROOM)
-							((TextView) views[x][y].findViewById(R.id.textView4))
-									.setText(context.result[x][y].getClasses(context.userDataList)
-											.getName(ElementName.SHORT));
-						else
-							((TextView) views[x][y].findViewById(R.id.textView4))
-									.setText(context.result[x][y].getRooms(context.userDataList)
-											.getName(ElementName.SHORT));
-
-						((TextView) views[x][y].findViewById(R.id.textView5))
-								.setText(context.result[x][y].getSubjects(context.userDataList)
-										.getName(ElementName.SHORT));
-					}
-
-					if (context.result[x][y].isEmpty(context.userDataList)
-							|| context.result[x][y].isCancelled()) {
-						if (showIndicatorForHour(sharedPrefs, x, y, dimY)) {
-							views[x][y].findViewById(R.id.statusView).setVisibility(View.VISIBLE);
-
-							((ImageView) views[x][y].findViewById(R.id.statusView))
-									.setImageDrawable(
-											ActivityRoomFinder.getRoomStates(context.getActivity(),
-													sharedPrefs.getString(
-															"preference_room_to_display_in_free_lessons",
-															null))
-											.charAt(y * dimY + x) == '1' ?
-													ContextCompat.getDrawable(context.getActivity(),
-															R.drawable.ic_room_occupied) :
-													ContextCompat.getDrawable(context.getActivity(),
-															R.drawable.ic_room_available));
-						} else {
-							views[x][y].findViewById(R.id.vBackground).setVisibility(View.GONE);
-						}
-					}
-
-					views[x][y].setOnClickListener(new View.OnClickListener() {
-						@Override
-						public void onClick(View view) {
-							for (int x = 0; x < views.length; x++) {
-								for (int y = 0; y < views[x].length; y++) {
-									if (view.getId() == views[x][y].getId()) {
-										context.showDetails(context.result[x][y]);
-									}
-								}
-							}
-						}
-					});
-
-					if (!context.result[x][y].isFree() && context.result[x][y].getCodes()
-							.contains(CODE_REGULAR)) {
-						GradientDrawable bottomShape = new GradientDrawable();
-						bottomShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
-								context.dp2px(2), context.dp2px(2), context.dp2px(2),
-								context.dp2px(2), context.dp2px(2), context.dp2px(2)});
-						if (!sharedPrefs.getBoolean("preference_use_default_background",
-								false)) {
-							if (context.result[x][y].getCodes().contains("EXAM"))
-								bottomShape.setColor(sharedPrefs.getInt(
-										"preference_background_exam", 0xFFFFFF22));
-							else
-								bottomShape.setColor(sharedPrefs.getInt(
-										"preference_background_regular", 0xFFE0E0E0));
-						} else {
-							bottomShape.setColor(context.result[x][y].getBackColor());
-						}
-
-						GradientDrawable topShape = new GradientDrawable();
-						if (getHeightPx(context.dp2px(56) * i, context.result[x][y]
-								.getStartDateTime(), context.result[x][y].getEndDateTime()) > 2)
-							topShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
-									context.dp2px(2), context.dp2px(2), 0, 0, 0, 0});
-						else
-							topShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
-									context.dp2px(2), context.dp2px(2), context.dp2px(2), context.dp2px(2), context.dp2px(2), context.dp2px(2)});
-						if (!sharedPrefs.getBoolean("preference_use_default_background",
-								false)) {
-							if (context.result[x][y].getCodes().contains(CODE_EXAM))
-								topShape.setColor(sharedPrefs.getInt(
-										"preference_background_exam_past", 0xFFEEEE00));
-							else
-								topShape.setColor(sharedPrefs.getInt(
-										"preference_background_regular_past", 0xFFBBBBBB));
-						} else {
-							topShape.setColor(manipulateColor(context.result[x][y].getBackColor()));
-						}
-
-						GradientDrawable divider = new GradientDrawable();
-						if (getHeightPx(context.dp2px(56) * i, context.result[x][y]
-								.getStartDateTime(), context.result[x][y].getEndDateTime()) > 2)
-							divider.setCornerRadii(new float[]{context.dp2px(3), context.dp2px(3),
-									context.dp2px(3), context.dp2px(3), 0, 0, 0, 0});
-						else
-							divider.setCornerRadii(new float[]{context.dp2px(3), context.dp2px(3),
-									context.dp2px(3), context.dp2px(3), context.dp2px(3),
-									context.dp2px(3), context.dp2px(3), context.dp2px(3)});
-						divider.setColor(sharedPrefs.getInt("preference_marker", 0xFFE00000));
-
-						Drawable[] layers = {bottomShape, divider, topShape};
-						LayerDrawable layerList = new LayerDrawable(layers);
-						layerList.setLayerInset(0, 0, 0, 0, 0);
-						layerList.setLayerInset(1, 0, 0, 0, max(
-								getHeightPx(context.dp2px(56) * i,
-										context.result[x][y].getStartDateTime(),
-										context.result[x][y].getEndDateTime())
-										- context.dp2px(2)));
-						layerList.setLayerInset(2, 0, 0, 0,
-								getHeightPx(context.dp2px(56) * i,
-										context.result[x][y].getStartDateTime(),
-										context.result[x][y].getEndDateTime()));
-						views[x][y].findViewById(R.id.vBackground).setBackground(layerList);
-					} else if (context.result[x][y].isFree()) {
-						views[x][y].findViewById(R.id.vBackground)
-								.setBackgroundColor(sharedPrefs.getInt(
-										"preference_background_free", 0xFFBBBBFF));
-					} else if (!context.result[x][y].getCodes().contains("REGULAR")
-							&& !context.result[x][y].isFree()
-							&& context.result[x][y].getStartDateTime().length() > 0) {
-						GradientDrawable bottomShape = new GradientDrawable();
-						bottomShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
-								context.dp2px(2), context.dp2px(2), context.dp2px(2),
-								context.dp2px(2), context.dp2px(2), context.dp2px(2)});
-						if (!sharedPrefs.getBoolean("preference_use_default_background",
-								false)) {
-							bottomShape.setColor(sharedPrefs.getInt(
-									"preference_background_irregular", 0xFFFFFFFF));
-						} else {
-							bottomShape.setColor(context.result[x][y].getBackColor());
-						}
-
-						GradientDrawable topShape = new GradientDrawable();
-						if (getHeightPx(context.dp2px(56) * i,
-								context.result[x][y].getStartDateTime(),
-								context.result[x][y].getEndDateTime()) > 2)
-							topShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
-									context.dp2px(2), context.dp2px(2), 0, 0, 0, 0});
-						else
-							topShape.setCornerRadii(new float[]{context.dp2px(2), context.dp2px(2),
-									context.dp2px(2), context.dp2px(2), context.dp2px(2),
-									context.dp2px(2), context.dp2px(2), context.dp2px(2)});
-						if (!sharedPrefs.getBoolean("preference_use_default_background",
-								false)) {
-							topShape.setColor(sharedPrefs.getInt(
-									"preference_background_irregular_past", 0xFFEEEEEE));
-						} else {
-							topShape.setColor(manipulateColor(context.result[x][y].getBackColor()));
-						}
-
-						GradientDrawable divider = new GradientDrawable();
-						if (getHeightPx(context.dp2px(56) * i, context.result[x][y]
-								.getStartDateTime(), context.result[x][y].getEndDateTime()) > 2)
-							divider.setCornerRadii(new float[]{context.dp2px(3), context.dp2px(3),
-									context.dp2px(3), context.dp2px(3), 0, 0, 0, 0});
-						else
-							divider.setCornerRadii(new float[]{context.dp2px(3), context.dp2px(3),
-									context.dp2px(3), context.dp2px(3), context.dp2px(3),
-									context.dp2px(3), context.dp2px(3), context.dp2px(3)});
-						divider.setColor(sharedPrefs.getInt("preference_marker", 0xFFE00000));
-
-						Drawable[] layers = {bottomShape, divider, topShape};
-						LayerDrawable layerList = new LayerDrawable(layers);
-						layerList.setLayerInset(0, 0, 0, 0, 0);
-						layerList.setLayerInset(1, 0, 0, 0, max(
-								getHeightPx(context.dp2px(56) * i,
-										context.result[x][y].getStartDateTime(),
-										context.result[x][y].getEndDateTime()) - context.dp2px(2)));
-						layerList.setLayerInset(2, 0, 0, 0,
-								getHeightPx(context.dp2px(56) * i,
-										context.result[x][y].getStartDateTime(),
-										context.result[x][y].getEndDateTime()));
-						views[x][y].findViewById(R.id.vBackground).setBackground(layerList);
-					} else {
-						boolean showDivider = getHeightPx(context.dp2px(56) * i,
-								getStringDateFromInt(addDaysToInt(context.startDateFromWeek, y))
-										+ "T" + unitManager.getUnits().get(x).getStartTime() + "Z",
-								getStringDateFromInt(addDaysToInt(context.startDateFromWeek, y))
-										+ "T" + unitManager.getUnits().get(x).getEndTime() + "Z")
-								< context.dp2px(56);
-
-						LayerDrawable layerList;
-						if (showDivider) {
-							GradientDrawable divider = new GradientDrawable();
-							divider.setColor(sharedPrefs.getInt(
-									"preference_marker", 0xFFE00000));
-							layerList = new LayerDrawable(new GradientDrawable[]{divider});
-							layerList.setLayerInset(0,
-									0,
-									context.dp2px(56) * i - getHeightPx(context.dp2px(56) * i,
-											getStringDateFromInt(
-													addDaysToInt(context.startDateFromWeek, y))
-													+ "T"
-													+ unitManager.getUnits().get(x).getStartTime()
-													+ "Z",
-											getStringDateFromInt(
-													addDaysToInt(context.startDateFromWeek, y))
-													+ "T" +
-													unitManager.getUnits().get(x).getEndTime()
-													+ "Z"),
-									0,
-									max(getHeightPx(context.dp2px(56) * i,
-											getStringDateFromInt(
-													addDaysToInt(context.startDateFromWeek, y))
-													+ "T" +
-													unitManager.getUnits().get(x).getStartTime() + "Z",
-											getStringDateFromInt(
-													addDaysToInt(context.startDateFromWeek, y))
-													+ "T" +
-													unitManager.getUnits().get(x).getEndTime() + "Z"))
-											- context.dp2px(2));
-						} else {
-							layerList = new LayerDrawable(new GradientDrawable[]{});
-						}
-						views[x][y].setBackground(layerList);
-					}
-
-					context.glTimetable.addView(views[x][y], params);
-					if (i > 1)
-						x += i - 1;
-				}
-			}
-			if (context.startDateOffset + 50 - context.main.currentViewPos == 0)
-				context.main.stopRefreshing();
-			context.pbLoading.setVisibility(View.GONE);
-		}
-
-		private boolean showIndicatorForHour(SharedPreferences sharedPrefs, int x, int y,
-		                                     int hoursPerDay) {
-			if (context.getActivity() != null &&
-					!TextUtils.isEmpty(sharedPrefs.getString(
-							"preference_room_to_display_in_free_lessons", null)) &&
-					ActivityRoomFinder.getRooms(context.getActivity(), false)
-							.contains(sharedPrefs.getString(
-									"preference_room_to_display_in_free_lessons", null))) {
-				if (sharedPrefs.getBoolean(
-						"preference_room_to_display_in_free_lessons_trim", false)) {
-					int length = hoursPerDay;
-					while (length > 0) {
-						if (context.result[length - 1][y].isEmpty(context.userDataList))
-							length--;
-						else
-							break;
-					}
-					return x < length;
-				} else
-					return true;
-			} else
-				return false;
-		}
-
-		private int max(int value) {
-			if (value < 0)
-				return 0;
-			return value;
-		}
-
-		private int getHeightPx(int elementHeightDp, String startDateTime, String endDateTime) {
-			if (startDateTime == null || endDateTime == null)
-				return 0;
-			Calendar cNow = Calendar.getInstance();
-
-			Calendar cStart = Calendar.getInstance();
-			Calendar cEnd = Calendar.getInstance();
-
-			try {
-				cStart.setTime(DateOperations.parseFromISO(startDateTime));
-				cEnd.setTime(DateOperations.parseFromISO(endDateTime));
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
-
-			if (cStart.getTimeInMillis() < cNow.getTimeInMillis() && cNow.getTimeInMillis() < cEnd.getTimeInMillis()) {
-				long diff = cEnd.getTimeInMillis() - cStart.getTimeInMillis();
-				long offset = cNow.getTimeInMillis() - cStart.getTimeInMillis();
-
-				float multiplier = (offset * 1.0f) / (diff * 1.0f);
-				return (int) (elementHeightDp - elementHeightDp * multiplier);
-			} else if (cStart.getTimeInMillis() < cNow.getTimeInMillis() && cEnd.getTimeInMillis() < cNow.getTimeInMillis())
-				return 0;
-			else
-				return elementHeightDp;
-		}
+		if (main != null && isVisibleToUser)
+			main.setLastRefresh(lastRefresh);
 	}
 
 	private static class Request extends AsyncTask<Void, Void, String> {
@@ -791,7 +273,6 @@ public class FragmentTimetable extends Fragment {
 			if (context.listManager.exists(fileName, true))
 				return context.listManager.readList(fileName, true);
 
-			String result;
 			HttpURLConnection urlConnection = null;
 			try {
 				String url = this.url;
@@ -817,18 +298,22 @@ public class FragmentTimetable extends Fragment {
 				wr.close();
 
 				int response = urlConnection.getResponseCode();
-				if (response >= 200 && response <= 399)
-					result = inputStreamToString(urlConnection.getInputStream());
-				else
-					result = "{}";
+
+				if (response >= 200 && response <= 399) {
+					JSONObject resultJson = new JSONObject(inputStreamToString(urlConnection.getInputStream()));
+					resultJson.put("timeModified", System.currentTimeMillis());
+					Log.e("FragmentTimetable", "New timeModified saved");
+					return resultJson.toString();
+				} else {
+					return "{}";
+				}
 			} catch (Exception e) {
-				result = "{\"id\":\"" + this.id + "\",\"error\":{\"message\":\"" + e.getMessage()
+				return "{\"id\":\"" + this.id + "\",\"error\":{\"message\":\"" + e.getMessage()
 						.replace("\"", "\\\"") + "\"}}";
 			} finally {
 				if (urlConnection != null)
 					urlConnection.disconnect();
 			}
-			return result;
 		}
 
 		@Override
@@ -849,12 +334,14 @@ public class FragmentTimetable extends Fragment {
 						context.main.swipeRefresh.setRefreshing(false);
 					}
 				} else if (jsonObj.has("result")) {
+					if (jsonObj.has("timeModified"))
+						context.setLastRefresh(jsonObj.getLong("timeModified"));
 					context.setTimetableData(jsonObj.getJSONObject("result"));
 					String fileName = context.main.sessionInfo.getElemType() + "-"
 							+ context.main.sessionInfo.getElemId() + "-"
 							+ context.startDateFromWeek + "-"
 							+ addDaysToInt(context.startDateFromWeek, 4);
-					context.listManager.saveList(fileName, result, true);
+					context.listManager.saveList(fileName, jsonObj.toString(), true);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -870,6 +357,454 @@ public class FragmentTimetable extends Fragment {
 
 			inputStream.close();
 			return result.toString();
+		}
+	}
+
+	private class TableSetup extends AsyncTask<Timetable, Void, Void> {
+		private static final float DARKNESS_FACTOR = 0.8f;
+		private final FragmentTimetable fragmentContext;
+		int rows;
+		int cols;
+		private GridLayout glTimetable;
+
+		TableSetup(FragmentTimetable context) {
+			this.fragmentContext = context;
+		}
+
+		@SuppressLint("InflateParams")
+		@Override
+		protected Void doInBackground(Timetable... timetable) {
+			Context context = this.fragmentContext.getContext();
+
+			if (context == null)
+				return null;
+
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(main);
+
+			rows = timetable[0].getHoursPerDay();
+			cols = timetable[0].getNumberOfDays() * 2;
+
+			glTimetable = new GridLayout(getContext());
+			glTimetable.setColumnCount(cols);
+			glTimetable.setRowCount(rows);
+			glTimetable.setOrientation(GridLayout.HORIZONTAL);
+
+			DisplayMetrics displayMetrics = new DisplayMetrics();
+
+			((Activity) getContext()).getWindowManager()
+					.getDefaultDisplay()
+					.getMetrics(displayMetrics);
+
+			int totalWidth = Math.round(displayMetrics.widthPixels
+					- getResources().getDimension(R.dimen.left_sidebar_width));
+			int dayWidth = totalWidth * 2 / cols;
+			int lastDayWidth = totalWidth - (cols / 2 - 1) * dayWidth;
+			int hourHeight = dp2px(60);
+
+			boolean alternatingDays = getPrefBool(context, prefs, "preference_alternating_days");
+			boolean alternatingHours = getPrefBool(context, prefs, "preference_alternating_hours");
+
+			int alternativeBackgroundColor = Color.WHITE;
+			if (isAdded())
+				alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_light);
+			if (getPrefBool(context, prefs, "preference_alternating_colors_use_custom"))
+				alternativeBackgroundColor = getPrefInt(context, prefs, "preference_alternating_color");
+			else if (prefs.getBoolean("preference_dark_theme", false) && isAdded())
+				alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_dark);
+
+			int defaultBackgroundColor = Color.WHITE;
+			if (isAdded())
+				defaultBackgroundColor = getResources().getColor(android.R.color.background_light);
+
+			int colorRegular = getPrefInt(context, prefs, "preference_background_regular");
+			int colorRegularPast = getPrefInt(context, prefs, "preference_background_regular_past");
+			int colorIrregular = getPrefInt(context, prefs, "preference_background_irregular");
+			int colorIrregularPast = getPrefInt(context, prefs, "preference_background_irregular_past");
+			int colorCancelled = getPrefInt(context, prefs, "preference_background_cancelled");
+			int colorCancelledPast = getPrefInt(context, prefs, "preference_background_cancelled_past");
+			int colorExam = getPrefInt(context, prefs, "preference_background_exam");
+			int colorExamPast = getPrefInt(context, prefs, "preference_background_exam_past");
+			int colorFree = getPrefInt(context, prefs, "preference_background_free");
+			int itemPadding = dp2px(getPrefInt(context, prefs, "preference_timetable_item_padding", true));
+			int cornerRadius = dp2px(getPrefInt(context, prefs, "preference_timetable_item_corner_radius", true));
+			int nameFontSize = getPrefInt(context, prefs, "preference_timetable_lesson_name_font_size", true);
+			int infoFontSize = getPrefInt(context, prefs, "preference_timetable_lesson_info_font_size", true);
+
+			boolean lightText = getPrefBool(context, prefs, "preference_timetable_item_text_light");
+			boolean centeredInfo = getPrefBool(context, prefs, "preference_timetable_centered_lesson_info");
+			boolean boldTitle = getPrefBool(context, prefs, "preference_timetable_bold_lesson_name");
+
+			TypedValue typedValue = new TypedValue();
+
+			TypedArray a = main.obtainStyledAttributes(typedValue.data, new int[]{
+					R.attr.colorPrimary,
+					R.attr.colorPrimaryDark,
+					android.R.attr.colorBackground
+			});
+
+			if (getPrefBool(context, prefs, "preference_dark_theme_amoled")
+					&& getPrefBool(context, prefs, "preference_dark_theme")) {
+				defaultBackgroundColor = Color.BLACK;
+			} else {
+				defaultBackgroundColor = a.getColor(2, defaultBackgroundColor);
+			}
+
+			if (getPrefBool(context, prefs, "preference_use_theme_background")) {
+				colorRegular = a.getColor(0, colorRegular);
+				colorRegularPast = a.getColor(1, colorRegularPast);
+			}
+
+			a.recycle();
+
+			for (int day = 0; day < cols / 2; day++) {
+				try {
+					userDataList = new JSONObject(listManager.readList("userData", false));
+					JSONArray holidays = userDataList.getJSONObject("masterData").getJSONArray("holidays");
+					LinearLayout holidayItem = null;
+					StringBuilder holidayLabelString = null;
+					for (int i = 0; i < holidays.length(); i++) {
+						if (isBetween(addDaysToInt(fragmentContext.startDateFromWeek, day),
+								Integer.parseInt(holidays.getJSONObject(i)
+										.getString("startDate")
+										.replace("-", "")),
+								Integer.parseInt(holidays.getJSONObject(i)
+										.getString("endDate")
+										.replace("-", "")))) {
+
+							if (holidayItem == null) {
+								holidayItem = new LinearLayout(context);
+
+								GridLayout.Spec rowSpec = GridLayout.spec(0, rows);
+								GridLayout.Spec colSpec = GridLayout.spec(day * 2, 2);
+								GridLayout.LayoutParams params = new GridLayout.LayoutParams(rowSpec, colSpec);
+								params.height = hourHeight * rows;
+								if (day * 2 == cols - 2)
+									params.width = lastDayWidth; // fill up all the remaining space to prevent a gap
+								else
+									params.width = dayWidth;
+
+								holidayItem.setLayoutParams(params);
+								holidayItem.setGravity(Gravity.CENTER_HORIZONTAL);
+							}
+
+							if (holidayLabelString == null) {
+								holidayLabelString = new StringBuilder(holidays.getJSONObject(i).getString("longName"));
+							} else {
+								holidayLabelString.append(getString(R.string.holiday_label_separator)).append(holidays.getJSONObject(i).getString("longName"));
+							}
+						}
+					}
+
+					if (holidayItem != null) {
+						VerticalTextView holidayLabel = new VerticalTextView(context);
+						LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
+								ViewGroup.LayoutParams.WRAP_CONTENT,
+								ViewGroup.LayoutParams.MATCH_PARENT);
+						labelParams.setMargins(0, dp2px(12), 0, 0);
+						holidayLabel.setLayoutParams(labelParams);
+						holidayLabel.setText(holidayLabelString);
+
+						holidayItem.setBackgroundColor(colorFree);
+						holidayItem.addView(holidayLabel);
+						glTimetable.addView(holidayItem);
+						continue;
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+
+				int lastHourIndex = 0;
+				for (int i = 0; i < rows; i++)
+					if (timetable[0].has(day, i))
+						lastHourIndex = i;
+
+				for (int hour = 0; hour < rows; hour++) {
+					final ArrayList<TimetableItemData> allItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour);
+					if (allItems.size() == 0) { // A free hour
+						LinearLayout emptyItem = new LinearLayout(context);
+
+						GridLayout.Spec rowSpec = GridLayout.spec(hour, 1);
+						GridLayout.Spec colSpec = GridLayout.spec(day * 2, 2);
+						GridLayout.LayoutParams params = new GridLayout.LayoutParams(rowSpec, colSpec);
+						params.height = hourHeight;
+						if (day * 2 == cols - 2)
+							params.width = lastDayWidth; // fill up all the remaining space to prevent a gap
+						else
+							params.width = dayWidth;
+
+						emptyItem.setLayoutParams(params);
+
+						if (shouldColorizeCell(day, hour, alternatingDays, alternatingHours))
+							emptyItem.setBackgroundColor(alternativeBackgroundColor);
+
+						if (shouldShowIndicatorForHour(prefs, hour, lastHourIndex)) {
+							ImageView indicator = new ImageView(context);
+
+							indicator.setImageDrawable(
+									ActivityRoomFinder.getRoomStates(getActivity(), prefs.getString("preference_room_to_display_in_free_lessons", null))
+											.charAt(day * rows + hour) == '1' ?
+											ContextCompat.getDrawable(getActivity(), R.drawable.ic_room_occupied) :
+											ContextCompat.getDrawable(getActivity(), R.drawable.ic_room_available));
+
+							LinearLayout.LayoutParams indicatorParams = new LinearLayout.LayoutParams(dp2px(16), dp2px(16));
+							indicatorParams.setMargins(dp2px(4), 0, 0, dp2px(4));
+							indicatorParams.gravity = Gravity.BOTTOM | Gravity.START;
+
+							indicator.setLayoutParams(indicatorParams);
+
+							emptyItem.addView(indicator);
+						}
+
+						glTimetable.addView(emptyItem);
+					}
+					for (int i = 0; i < allItems.size(); i++) { // An item
+						if (i >= 2)
+							continue;
+
+						final TimetableItemData item = allItems.get(i);
+
+						if (item.isHidden())
+							continue;
+
+						View view = this.fragmentContext.inflater
+								.inflate(R.layout.table_item, null, false);
+
+						TextView tvC = view.findViewById(R.id.tvC);
+						TextView tvTL = view.findViewById(R.id.tvTL);
+						TextView tvBR = view.findViewById(R.id.tvBR);
+
+						view.setPadding(itemPadding, itemPadding, itemPadding, itemPadding);
+
+						if (boldTitle)
+							((TextView) view.findViewById(R.id.tvC)).setTypeface(null, Typeface.BOLD);
+
+						if (centeredInfo) {
+							RelativeLayout.LayoutParams paramsTL = (RelativeLayout.LayoutParams) tvTL.getLayoutParams();
+							RelativeLayout.LayoutParams paramsBR = (RelativeLayout.LayoutParams) tvBR.getLayoutParams();
+							paramsTL.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
+							paramsTL.addRule(RelativeLayout.CENTER_HORIZONTAL);
+							paramsBR.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
+							paramsBR.addRule(RelativeLayout.CENTER_HORIZONTAL);
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+								paramsTL.addRule(RelativeLayout.ALIGN_PARENT_START, 0);
+								paramsBR.addRule(RelativeLayout.ALIGN_PARENT_END, 0);
+							}
+							tvTL.setLayoutParams(paramsTL);
+							tvBR.setLayoutParams(paramsBR);
+						}
+
+						if (isAdded()) {
+							tvC.setTextSize(nameFontSize);
+							tvTL.setTextSize(infoFontSize);
+							tvBR.setTextSize(infoFontSize);
+
+							int textColor;
+							if (lightText) {
+								textColor = getResources().getColor(android.R.color.primary_text_dark);
+							} else {
+								textColor = getResources().getColor(android.R.color.primary_text_light);
+							}
+
+							tvC.setTextColor(textColor);
+							tvTL.setTextColor(textColor);
+							tvBR.setTextColor(textColor);
+						}
+
+						int rowSpan = 1;
+						while (hour + rowSpan < rows) {
+							ArrayList<TimetableItemData> nextItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour + rowSpan);
+							if (item.mergeWith(nextItems)) {
+								rowSpan++;
+								timetable[0].addOffset(day, hour + rowSpan - 1);
+							} else {
+								break;
+							}
+						}
+
+						int colSpan = 2;
+
+						for (int j = 0; j < rowSpan; j++) {
+							ArrayList<TimetableItemData> nextItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour + j);
+							if (nextItems.size() >= 2)
+								colSpan = 1;
+						}
+
+						TimetableItemBackground vBackground = view.findViewById(R.id.vBackground);
+
+						GridLayout.Spec rowSpec = GridLayout.spec(hour, rowSpan);
+						GridLayout.Spec colSpec = GridLayout.spec(day * 2 + i + timetable[0].getOffset(day, hour), colSpan);
+						GridLayout.LayoutParams params = new GridLayout.LayoutParams(rowSpec, colSpec);
+						params.height = hourHeight * rowSpan;
+						if (day * 2 == cols - 2)
+							params.width = colSpan * lastDayWidth / 2; // fill up all the remaining space to prevent a gap
+						else
+							params.width = colSpan * dayWidth / 2;
+
+						view.setLayoutParams(params);
+
+						if (context == null)
+							return null;
+
+						if (!getPrefBool(context, prefs, "preference_use_default_background")) {
+							if (item.getCodes().contains(CODE_EXAM))
+								vBackground.setBottomColor(colorExam);
+							else if (item.getCodes().contains(CODE_IRREGULAR))
+								vBackground.setBottomColor(colorIrregular);
+							else if (item.getCodes().contains(CODE_CANCELLED))
+								vBackground.setBottomColor(colorCancelled);
+							else
+								vBackground.setBottomColor(colorRegular);
+						} else {
+							vBackground.setBottomColor(item.getBackColor());
+						}
+
+						if (!getPrefBool(context, prefs, "preference_use_default_background")) {
+							if (item.getCodes().contains(CODE_EXAM))
+								vBackground.setTopColor(colorExamPast);
+							else if (item.getCodes().contains(CODE_IRREGULAR))
+								vBackground.setTopColor(colorIrregularPast);
+							else if (item.getCodes().contains(CODE_CANCELLED))
+								vBackground.setTopColor(colorCancelledPast);
+							else
+								vBackground.setTopColor(colorRegularPast);
+						} else {
+							vBackground.setTopColor(manipulateColor(item.getBackColor()));
+						}
+
+						vBackground.setDividerColor(getPrefInt(context, prefs, "preference_marker"));
+
+						vBackground.setCornerRadius(cornerRadius);
+
+						int height = getHeightPx(hourHeight * rowSpan,
+								item.getStartDateTime(),
+								item.getEndDateTime());
+
+						vBackground.setDividerPosition(height);
+
+						if (i >= 1 && allItems.size() >= 3)
+							vBackground.setIndicatorColor(defaultBackgroundColor);
+
+						setupItemText(view, item);
+
+						view.setOnClickListener(new View.OnClickListener() {
+							@Override
+							public void onClick(View view) {
+								fragmentContext.showDetails(allItems);
+							}
+						});
+
+						try {
+							glTimetable.addView(view);
+						} catch (IllegalArgumentException e) {
+							e.printStackTrace();
+							Log.e("FragmentTimetable",
+									"View out of bounds at: Column: " + day +
+											", Row: " + hour +
+											", ColSpan: " + colSpan +
+											", RowSpan: " + rowSpan +
+											", Lesson: " + item.getSubjects(userDataList).getName(true));
+						}
+					}
+				}
+			}
+			return null;
+		}
+
+		private boolean shouldColorizeCell(int day, int hour, boolean alternatingDays, boolean alternatingHours) {
+			if (alternatingDays && alternatingHours)
+				return day % 2 == 0 ^ hour % 2 == 0;
+			else if (alternatingDays)
+				return day % 2 == 0;
+			else
+				return alternatingHours && hour % 2 == 0;
+		}
+
+		private void setupItemText(View view, TimetableItemData item) {
+			if (item.isHidden()) {
+				((TextView) view.findViewById(R.id.tvTL))
+						.setText(item.getHolidays(fragmentContext.userDataList)
+								.getLongName(ElementName.SHORT));
+			} else {
+				if (SessionInfo.getElemTypeId(fragmentContext.main.sessionInfo.getElemType())
+						== TEACHER)
+					((TextView) view.findViewById(R.id.tvTL))
+							.setText(item.getClasses(fragmentContext.userDataList)
+									.getName(ElementName.SHORT));
+				else
+					((TextView) view.findViewById(R.id.tvTL))
+							.setText(item.getTeachers(fragmentContext.userDataList)
+									.getName(ElementName.SHORT));
+
+				if (SessionInfo.getElemTypeId(fragmentContext.main.sessionInfo.getElemType())
+						== ROOM)
+					((TextView) view.findViewById(R.id.tvBR))
+							.setText(item.getClasses(fragmentContext.userDataList)
+									.getName(ElementName.SHORT));
+				else
+					((TextView) view.findViewById(R.id.tvBR))
+							.setText(item.getRooms(fragmentContext.userDataList)
+									.getName(ElementName.SHORT));
+
+				((TextView) view.findViewById(R.id.tvC))
+						.setText(item.getSubjects(fragmentContext.userDataList)
+								.getName(ElementName.SHORT));
+			}
+		}
+
+		@Override
+		protected void onPostExecute(Void v) {
+			if (glTimetable == null)
+				return;
+
+			((ViewGroup) rootView.findViewById(R.id.rlRoot)).addView(glTimetable, 0,
+					new ViewGroup.LayoutParams(
+							ViewGroup.LayoutParams.MATCH_PARENT,
+							ViewGroup.LayoutParams.MATCH_PARENT));
+
+			if (isCurrentWeek()) {
+				fragmentContext.main.stopRefreshing();
+				fragmentContext.main.setLastRefresh(lastRefresh);
+			}
+			fragmentContext.pbLoading.setVisibility(View.GONE);
+		}
+
+		private int getHeightPx(int elementHeightPx, String startDateTime, String endDateTime) {
+			if (startDateTime == null || endDateTime == null)
+				return 0;
+			Calendar cNow = Calendar.getInstance();
+
+			Calendar cStart = Calendar.getInstance();
+			Calendar cEnd = Calendar.getInstance();
+
+			try {
+				SimpleDateFormat sourceFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US);
+				cStart.setTime(sourceFormat.parse(startDateTime));
+				cEnd.setTime(sourceFormat.parse(endDateTime));
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return 0;
+			}
+
+			if (cStart.getTimeInMillis() < cNow.getTimeInMillis()
+					&& cNow.getTimeInMillis() < cEnd.getTimeInMillis()) {
+				long diff = cEnd.getTimeInMillis() - cStart.getTimeInMillis();
+				long offset = cNow.getTimeInMillis() - cStart.getTimeInMillis();
+
+				float multiplier = (offset * 1.0f) / (diff * 1.0f);
+				return (int) (elementHeightPx - elementHeightPx * multiplier);
+			} else if (cStart.getTimeInMillis() < cNow.getTimeInMillis()
+					&& cEnd.getTimeInMillis() < cNow.getTimeInMillis())
+				return 0;
+			else
+				return elementHeightPx;
+		}
+
+		private boolean shouldShowIndicatorForHour(SharedPreferences prefs, int currentHourIndex, int lastHourIndex) {
+			return getActivity() != null
+					&& !TextUtils.isEmpty(prefs.getString("preference_room_to_display_in_free_lessons", null))
+					&& ActivityRoomFinder.getRooms(getActivity(), false).contains(prefs.getString("preference_room_to_display_in_free_lessons", null))
+					&& (!prefs.getBoolean("preference_room_to_display_in_free_lessons_trim", false)
+					|| currentHourIndex < lastHourIndex);
 		}
 	}
 }

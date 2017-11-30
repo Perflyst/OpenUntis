@@ -1,59 +1,95 @@
 package com.sapuseven.untis.utils;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class TimegridUnitManager {
-	private JSONArray data;
-	private int length = -1;
+	private ArrayList<UnitData> unitList;
+	private JSONArray days;
+	private int numberOfDays = -1;
+	private int maxHoursPerDay = -1;
 
-	public void setList(JSONArray data) {
-		this.data = data;
+	public TimegridUnitManager(JSONArray days) {
+		if (days == null)
+			this.days = new JSONArray();
+		this.days = days;
 	}
 
 	public int getNumberOfDays() {
-		return data.length();
+		if (numberOfDays < 0)
+			calculateCounts();
+		return numberOfDays;
+	}
+
+	private void calculateCounts() {
+		numberOfDays = days.length();
+
+		for (int i = 0; i < days.length(); i++)
+			try {
+				maxHoursPerDay = Math.max(maxHoursPerDay, days.getJSONObject(i)
+						.getJSONArray("units").length());
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+	}
+
+	public int getMaxHoursPerDay() {
+		if (maxHoursPerDay < 0)
+			calculateCounts();
+		return maxHoursPerDay;
 	}
 
 	public ArrayList<UnitData> getUnits() {
-		ArrayList<UnitData> list = new ArrayList<>();
-		JSONArray units = data.optJSONObject(0).optJSONArray("units");
-		for (int i = 0; i < units.length(); i++) {
-			UnitData unitData = new UnitData();
-			unitData.setIndex(Integer.toString(i + 1));
-			unitData.setStartTime(units.optJSONObject(i).optString("startTime").substring(1));
-			unitData.setEndTime(units.optJSONObject(i).optString("endTime").substring(1));
+		if (unitList == null) {
+			unitList = new ArrayList<>();
+			try {
+				JSONArray units = days.getJSONObject(0).getJSONArray("units");
+				for (int i = 0; i < units.length(); i++) {
+					UnitData unitData = new UnitData(
+							units.getJSONObject(i).getString("startTime").substring(1),
+							units.getJSONObject(i).getString("endTime").substring(1)
+					);
 
-			list.add(unitData);
+					unitList.add(unitData);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
-		return list;
+
+		return unitList;
 	}
 
-	public int getUnitCount() {
-		if (length < 0)
-			length = data.optJSONObject(0).optJSONArray("units").length();
-		return length;
+	public int getDayIndex(Calendar c) throws IndexOutOfBoundsException {
+		try {
+			SimpleDateFormat dayFormat = new SimpleDateFormat("E", Locale.US);
+			for (int i = 0; i < days.length(); i++) {
+				String day = days.getJSONObject(i).getString("day");
+				if (day.equalsIgnoreCase(dayFormat.format(c.getTime())))
+					return i;
+			}
+			throw new IndexOutOfBoundsException("Day not in timetable");
+		} catch (JSONException e) {
+			throw new IndexOutOfBoundsException("Invalid userData!");
+		}
 	}
 
 	public class UnitData {
-		private String index;
-		private String startTime;
-		private String endTime;
+		private final String startTime;
+		private final String endTime;
 
-		public String getDisplayEndTime() {
-			String displayTime = endTime;
-			while (displayTime.charAt(0) == '0')
-				displayTime = displayTime.substring(1);
-			return displayTime;
-		}
-
-		public String getEndTime() {
-			return endTime;
-		}
-
-		void setEndTime(String endTime) {
+		private UnitData(String startTime, String endTime) {
+			this.startTime = startTime;
 			this.endTime = endTime;
+		}
+
+		public String getStartTime() {
+			return startTime;
 		}
 
 		public String getDisplayStartTime() {
@@ -63,20 +99,15 @@ public class TimegridUnitManager {
 			return displayTime;
 		}
 
-		public String getStartTime() {
-			return startTime;
+		public String getEndTime() {
+			return endTime;
 		}
 
-		void setStartTime(String startTime) {
-			this.startTime = startTime;
-		}
-
-		public String getIndex() {
-			return index;
-		}
-
-		void setIndex(String index) {
-			this.index = index;
+		public String getDisplayEndTime() {
+			String displayTime = endTime;
+			while (displayTime.charAt(0) == '0')
+				displayTime = displayTime.substring(1);
+			return displayTime;
 		}
 	}
 }

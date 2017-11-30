@@ -174,3 +174,4 @@ $RECYCLE.BIN/
 /keys.tar
 /app/fabric.properties
 /app/google-services.json
+/app/src/main/java/com/sapuseven/untis/activity/ActivityUserRegistration.java

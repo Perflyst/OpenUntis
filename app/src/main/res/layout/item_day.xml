@@ -1,37 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="horizontal">
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:gravity="center">
 
-	<RelativeLayout
-		android:layout_width="0dp"
-		android:layout_height="match_parent"
-		android:layout_weight="1"
-		android:gravity="center">
+	<TextView
+		android:id="@+id/tvDayOfWeek"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:textColor="?android:attr/textColorPrimary"
+		android:textSize="@dimen/text_size_day_of_week"
+		android:textStyle="bold"/>
 
-		<TextView
-			android:id="@+id/tvDayOfWeek"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_centerHorizontal="true"
-			android:textColor="?android:attr/textColorSecondary"
-			android:textSize="@dimen/text_size_day_of_week"
-			android:textStyle="bold"/>
-
-		<TextView
-			android:id="@+id/tvDateOfDay"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_below="@+id/tvDayOfWeek"
-			android:layout_centerHorizontal="true"
-			android:textColor="?android:attr/textColorSecondary"
-			android:textSize="@dimen/text_size_date_of_week"/>
-	</RelativeLayout>
-
-	<View
-		android:layout_width="1dp"
-		android:layout_height="match_parent"
-		android:background="?android:attr/listDivider"/>
-
-</LinearLayout>
+	<TextView
+		android:id="@+id/tvDateOfDay"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/tvDayOfWeek"
+		android:layout_centerHorizontal="true"
+		android:textColor="?android:attr/textColorSecondary"
+		android:textSize="@dimen/text_size_date_of_week"/>
+</RelativeLayout>

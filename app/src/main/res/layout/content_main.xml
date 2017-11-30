@@ -14,7 +14,8 @@
 		android:id="@+id/input_date"
 		android:layout_width="@dimen/left_sidebar_width"
 		android:layout_height="@dimen/header_height"
-		android:clickable="true">
+		android:clickable="true"
+		android:focusable="true">
 
 		<ImageView
 			android:id="@+id/ivSelectDate"
@@ -25,27 +26,16 @@
 			android:tint="@color/colorSecondary_text"
 			app:srcCompat="@drawable/ic_calendar"/>
 
-		<View
-			android:layout_width="1dp"
-			android:layout_height="match_parent"
-			android:layout_alignParentRight="true"
-			android:background="?android:attr/listDivider"/>
 	</RelativeLayout>
 
 	<android.support.v4.view.ViewPager
 		android:id="@+id/viewpagerHeader"
 		android:layout_width="match_parent"
 		android:layout_height="@dimen/header_height"
+		android:layout_toEndOf="@+id/input_date"
 		android:layout_toRightOf="@+id/input_date">
 
 	</android.support.v4.view.ViewPager>
-
-	<View
-		android:layout_width="match_parent"
-		android:layout_height="1dp"
-		android:layout_alignParentBottom="false"
-		android:layout_below="@+id/viewpagerHeader"
-		android:background="?android:attr/listDivider"/>
 
 	<android.support.v4.widget.SwipeRefreshLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
@@ -53,8 +43,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_below="@+id/viewpagerHeader"
-		android:layout_marginTop="1dp"
-		>
+		android:layout_marginTop="1dp">
 
 		<ScrollView
 			android:layout_width="match_parent"
@@ -74,35 +63,15 @@
 
 				</LinearLayout>
 
-				<View
-					android:layout_width="1dp"
-					android:layout_height="match_parent"
-					android:layout_marginLeft="-1dp"
-					android:background="?android:attr/listDivider"/>
-
 				<android.support.v4.view.ViewPager
 					android:id="@+id/viewpagerTimegrid"
 					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					>
+					android:layout_height="match_parent">
 
 				</android.support.v4.view.ViewPager>
 			</LinearLayout>
 		</ScrollView>
 	</android.support.v4.widget.SwipeRefreshLayout>
-
-	<TextView
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentBottom="true"
-		android:layout_alignParentEnd="true"
-		android:layout_alignParentRight="true"
-		android:paddingBottom="@dimen/activity_vertical_margin"
-		android:paddingLeft="@dimen/activity_horizontal_margin"
-		android:paddingRight="@dimen/activity_horizontal_margin"
-		android:paddingTop="@dimen/activity_vertical_margin"
-		android:text="@string/credits"
-		android:visibility="gone"/>
 
 	<ProgressBar
 		android:id="@+id/pbLoading"
@@ -110,7 +79,21 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
+		android:layout_alignParentEnd="true"
 		android:layout_alignParentRight="true"
 		android:layout_margin="8dp"/>
+
+	<TextView
+		android:id="@+id/tvLastRefresh"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentEnd="false"
+		android:layout_alignParentRight="false"
+		android:layout_marginLeft="@dimen/left_sidebar_width"
+		android:layout_marginStart="@dimen/left_sidebar_width"
+		android:padding="8dp"
+		android:text="@string/last_refreshed"
+		android:visibility="visible"/>
 
 </RelativeLayout>

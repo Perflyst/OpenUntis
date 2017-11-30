@@ -19,9 +19,11 @@ import android.widget.Toast;
 
 import com.github.danielnilsson9.colorpickerview.dialog.ColorPickerDialogFragment;
 import com.github.danielnilsson9.colorpickerview.preference.ColorPreference;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.sapuseven.untis.BuildConfig;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.utils.BetterToast;
+import com.sapuseven.untis.utils.ColorPreferenceList;
 import com.sapuseven.untis.utils.DisplayChangelog;
 import com.sapuseven.untis.utils.ListManager;
 
@@ -72,7 +74,9 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				|| StylingFragment.class.getName().equals(fragmentName)
 				|| NotificationsFragment.class.getName().equals(fragmentName)
 				|| RoomFinderFragment.class.getName().equals(fragmentName)
-				|| InfosFragment.class.getName().equals(fragmentName);
+				|| TimetableFragment.class.getName().equals(fragmentName)
+				|| AccountFragment.class.getName().equals(fragmentName)
+				|| AboutFragment.class.getName().equals(fragmentName);
 	}
 
 	@Override
@@ -98,16 +102,9 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 
 	public static class StylingFragment extends PreferenceFragment
 			implements ColorPickerDialogFragment.ColorPickerDialogListener {
-		static final int BACKGROUND_REGULAR_ID = 0;
-		static final int BACKGROUND_REGULAR_PAST_ID = 1;
-		static final int BACKGROUND_IRREGULAR_ID = 2;
-		static final int BACKGROUND_IRREGULAR_PAST_ID = 3;
-		static final int BACKGROUND_EXAM_ID = 4;
-		static final int BACKGROUND_EXAM_PAST_ID = 5;
-		static final int BACKGROUND_FREE_ID = 6;
-		static final int MARKER_ID = 7;
-		BetterToast toast;
+		private BetterToast toast;
 		private Preference.OnPreferenceClickListener resetColorsListener;
+		private ColorPreferenceList colorPrefs;
 
 		public StylingFragment() {
 		}
@@ -129,182 +126,105 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 					editor.remove("preference_background_exam_past").apply();
 					editor.remove("preference_background_irregular").apply();
 					editor.remove("preference_background_irregular_past").apply();
+					editor.remove("preference_background_cancelled").apply();
+					editor.remove("preference_background_cancelled_past").apply();
 					editor.remove("preference_background_free").apply();
 					editor.remove("preference_marker").apply();
 					toast.showToast(R.string.toast_colors_reset, Toast.LENGTH_LONG);
 					setPreferenceScreen(null);
 					addPreferencesFromResource(R.xml.prefs_styling);
-					setupColorPickers();
+					setupEverything();
 					restartOnExit(getActivity());
 					return true;
 				}
 			};
-			addChangeListeners();
+			setupEverything();
 		}
 
-		private void addChangeListeners() {
+		private void setupEverything() {
+			setupEnabledItemsOnThemeBackground(
+					getPreferenceManager().getSharedPreferences()
+							.getBoolean("preference_use_theme_background",
+									getResources().getBoolean(
+											getResources().getIdentifier("preference_use_theme_background_default", "bool", getActivity().getPackageName())
+									)
+							)
+			);
+			setupChangeListeners();
+		}
+
+		private void setupChangeListeners() {
 			setupColorPickers();
 
-			findPreference("preference_use_default_background").setOnPreferenceChangeListener(
-					new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					restartOnExit(getActivity());
-					return true;
-				}
-			});
+			String[] preferencesNeedingRefresh = new String[]{
+					"preference_alternating_days",
+					"preference_alternating_hours",
+					"preference_alternating_colors_use_custom",
+					"preference_timetable_item_text_light",
+					"preference_use_default_background",
+					"preference_use_theme_background",
+					"preference_timetable_colors_reset",
+					"preference_timetable_hide_cancelled",
+					"preference_theme",
+					"preference_dark_theme",
+					"preference_dark_theme_amoled"
+			};
 
-			findPreference("preference_timetable_colors_reset").setOnPreferenceChangeListener(
-					new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					restartOnExit(getActivity());
-					return true;
-				}
-			});
+			for (String prefKey : preferencesNeedingRefresh)
+				findPreference(prefKey).setOnPreferenceChangeListener(
+						new Preference.OnPreferenceChangeListener() {
+							@Override
+							public boolean onPreferenceChange(Preference preference, Object newValue) {
+								restartOnExit(getActivity());
+								return true;
+							}
+						});
 
-			findPreference("preference_theme").setOnPreferenceChangeListener(
+			findPreference("preference_use_theme_background").setOnPreferenceChangeListener(
 					new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					restartOnExit(getActivity());
-					return true;
-				}
-			});
+						@Override
+						public boolean onPreferenceChange(Preference preference, Object newValue) {
+							setupEnabledItemsOnThemeBackground((Boolean) newValue);
+							return true;
+						}
+					});
+		}
 
-			findPreference("preference_dark_theme").setOnPreferenceChangeListener(
-					new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					restartOnExit(getActivity());
-					return true;
-				}
-			});
-
-			findPreference("preference_dark_theme_amoled").setOnPreferenceChangeListener(
-					new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					restartOnExit(getActivity());
-					return true;
-				}
-			});
+		private void setupEnabledItemsOnThemeBackground(boolean preferenceStatus) {
+			findPreference("preference_background_regular").setEnabled(!preferenceStatus);
+			findPreference("preference_background_regular_past").setEnabled(!preferenceStatus);
 		}
 
 		private void setupColorPickers() {
-			ColorPreference preferenceBackgroundRegular =
-					(ColorPreference) findPreference("preference_background_regular");
-			preferenceBackgroundRegular.setOnShowDialogListener(
-					new ColorPreference.OnShowDialogListener() {
-				@Override
-				public void onShowColorPickerDialog(String title, int currentColor) {
-					new ColorPickerDialogFragment.Builder(BACKGROUND_REGULAR_ID, currentColor)
-							.title(title)
-							.showHexadecimalInput()
-							.build()
-							.show(getFragmentManager(), "preference_background_regular_dialog");
-				}
-			});
+			colorPrefs = new ColorPreferenceList();
+			colorPrefs.add("preference_background_regular");
+			colorPrefs.add("preference_background_regular_past");
+			colorPrefs.add("preference_background_irregular");
+			colorPrefs.add("preference_background_irregular_past");
+			colorPrefs.add("preference_background_cancelled");
+			colorPrefs.add("preference_background_cancelled_past");
+			colorPrefs.add("preference_background_exam");
+			colorPrefs.add("preference_background_exam_past");
+			colorPrefs.add("preference_background_free");
+			colorPrefs.add("preference_marker");
+			colorPrefs.add("preference_alternating_color");
 
-			ColorPreference preferenceBackgroundRegularPast =
-					(ColorPreference) findPreference("preference_background_regular_past");
-			preferenceBackgroundRegularPast.setOnShowDialogListener(
-					new ColorPreference.OnShowDialogListener() {
-				@Override
-				public void onShowColorPickerDialog(String title, int currentColor) {
-					new ColorPickerDialogFragment.Builder(BACKGROUND_REGULAR_PAST_ID, currentColor)
-							.title(title)
-							.showHexadecimalInput()
-							.build()
-							.show(getFragmentManager(),
-									"preference_background_regular_past_dialog");
-				}
-			});
+			for (int i = 0; i < colorPrefs.size(); i++) {
+				final String key = colorPrefs.getKey(i);
+				final int id = i;
+				((ColorPreference) findPreference(key)).setOnShowDialogListener(
+						new ColorPreference.OnShowDialogListener() {
+							@Override
+							public void onShowColorPickerDialog(String title, int currentColor) {
+								new ColorPickerDialogFragment.Builder(id, currentColor)
+										.title(title)
+										.showHexadecimalInput()
+										.build()
+										.show(getFragmentManager(), key + "_dialog");
+							}
+						});
+			}
 
-			ColorPreference preferenceBackgroundExam =
-					(ColorPreference) findPreference("preference_background_exam");
-			preferenceBackgroundExam.setOnShowDialogListener(
-					new ColorPreference.OnShowDialogListener() {
-				@Override
-				public void onShowColorPickerDialog(String title, int currentColor) {
-					new ColorPickerDialogFragment.Builder(BACKGROUND_EXAM_ID, currentColor)
-							.title(title)
-							.showHexadecimalInput()
-							.build()
-							.show(getFragmentManager(), "preference_background_exam_dialog");
-				}
-			});
-
-			ColorPreference preferenceBackgroundExamPast =
-					(ColorPreference) findPreference("preference_background_exam_past");
-			preferenceBackgroundExamPast.setOnShowDialogListener(
-					new ColorPreference.OnShowDialogListener() {
-				@Override
-				public void onShowColorPickerDialog(String title, int currentColor) {
-					new ColorPickerDialogFragment.Builder(BACKGROUND_EXAM_PAST_ID, currentColor)
-							.title(title)
-							.showHexadecimalInput()
-							.build()
-							.show(getFragmentManager(), "preference_background_exam_past_dialog");
-				}
-			});
-
-			ColorPreference preferenceBackgroundIrregular =
-					(ColorPreference) findPreference("preference_background_irregular");
-			preferenceBackgroundIrregular.setOnShowDialogListener(
-					new ColorPreference.OnShowDialogListener() {
-				@Override
-				public void onShowColorPickerDialog(String title, int currentColor) {
-					new ColorPickerDialogFragment.Builder(BACKGROUND_IRREGULAR_ID, currentColor)
-							.title(title)
-							.showHexadecimalInput()
-							.build()
-							.show(getFragmentManager(), "preference_background_irregular_dialog");
-				}
-			});
-
-			ColorPreference preferenceBackgroundIrregularPast =
-					(ColorPreference) findPreference("preference_background_irregular_past");
-			preferenceBackgroundIrregularPast.setOnShowDialogListener(
-					new ColorPreference.OnShowDialogListener() {
-				@Override
-				public void onShowColorPickerDialog(String title, int currentColor) {
-					new ColorPickerDialogFragment
-							.Builder(BACKGROUND_IRREGULAR_PAST_ID, currentColor)
-							.title(title)
-							.showHexadecimalInput()
-							.build()
-							.show(getFragmentManager(),
-									"preference_background_irregular_past_dialog");
-				}
-			});
-
-			ColorPreference preferenceBackgroundFree =
-					(ColorPreference) findPreference("preference_background_free");
-			preferenceBackgroundFree.setOnShowDialogListener(
-					new ColorPreference.OnShowDialogListener() {
-				@Override
-				public void onShowColorPickerDialog(String title, int currentColor) {
-					new ColorPickerDialogFragment.Builder(BACKGROUND_FREE_ID, currentColor)
-							.title(title)
-							.showHexadecimalInput()
-							.build()
-							.show(getFragmentManager(), "preference_background_free_dialog");
-				}
-			});
-
-			ColorPreference preferenceBackgroundMarker =
-					(ColorPreference) findPreference("preference_marker");
-			preferenceBackgroundMarker.setOnShowDialogListener(
-					new ColorPreference.OnShowDialogListener() {
-				@Override
-				public void onShowColorPickerDialog(String title, int currentColor) {
-					new ColorPickerDialogFragment.Builder(MARKER_ID, currentColor)
-							.title(title)
-							.showHexadecimalInput()
-							.build().show(getFragmentManager(), "preference_marker_dialog");
-				}
-			});
 			Preference reset = findPreference("preference_timetable_colors_reset");
 			reset.setOnPreferenceClickListener(resetColorsListener);
 		}
@@ -321,33 +241,8 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 
 		@Override
 		public void onColorSelected(int dialogId, int color) {
-			ColorPreference pref = null;
-			switch (dialogId) {
-				case BACKGROUND_REGULAR_ID:
-					pref = (ColorPreference) findPreference("preference_background_regular");
-					break;
-				case BACKGROUND_REGULAR_PAST_ID:
-					pref = (ColorPreference) findPreference("preference_background_regular_past");
-					break;
-				case BACKGROUND_EXAM_ID:
-					pref = (ColorPreference) findPreference("preference_background_exam");
-					break;
-				case BACKGROUND_EXAM_PAST_ID:
-					pref = (ColorPreference) findPreference("preference_background_exam_past");
-					break;
-				case BACKGROUND_IRREGULAR_ID:
-					pref = (ColorPreference) findPreference("preference_background_irregular");
-					break;
-				case BACKGROUND_IRREGULAR_PAST_ID:
-					pref = (ColorPreference) findPreference("preference_background_irregular_past");
-					break;
-				case BACKGROUND_FREE_ID:
-					pref = (ColorPreference) findPreference("preference_background_free");
-					break;
-				case MARKER_ID:
-					pref = (ColorPreference) findPreference("preference_marker");
-					break;
-			}
+			ColorPreference pref = (ColorPreference) findPreference(colorPrefs.getKey(dialogId));
+
 			if (pref != null) {
 				pref.saveValue(color);
 				restartOnExit(getActivity());
@@ -372,24 +267,24 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 
 			findPreference("preference_notifications_enable").setOnPreferenceClickListener(
 					new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					if (!preference.isEnabled())
-						((NotificationManager) getActivity()
-								.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
-					return true;
-				}
-			});
+						@Override
+						public boolean onPreferenceClick(Preference preference) {
+							if (!preference.isEnabled())
+								((NotificationManager) getActivity()
+										.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+							return true;
+						}
+					});
 
 			findPreference("preference_notifications_clear").setOnPreferenceClickListener(
 					new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					((NotificationManager) getActivity()
-							.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
-					return true;
-				}
-			});
+						@Override
+						public boolean onPreferenceClick(Preference preference) {
+							((NotificationManager) getActivity()
+									.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+							return true;
+						}
+					});
 		}
 
 		@Override
@@ -421,21 +316,21 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 
 			findPreference("preference_room_to_display_in_free_lessons")
 					.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					restartOnExit(getActivity());
-					return true;
-				}
-			});
+						@Override
+						public boolean onPreferenceChange(Preference preference, Object newValue) {
+							restartOnExit(getActivity());
+							return true;
+						}
+					});
 
 			findPreference("preference_room_to_display_in_free_lessons_trim")
 					.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					restartOnExit(getActivity());
-					return true;
-				}
-			});
+						@Override
+						public boolean onPreferenceChange(Preference preference, Object newValue) {
+							restartOnExit(getActivity());
+							return true;
+						}
+					});
 		}
 
 		@Override
@@ -450,33 +345,142 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 		}
 	}
 
-	public static class InfosFragment extends PreferenceFragment {
-		private int clicks;
+	public static class AccountFragment extends PreferenceFragment {
 		private BetterToast toast;
 
-		public InfosFragment() {
+		public AccountFragment() {
 		}
 
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			toast = new BetterToast(this.getActivity());
-			addPreferencesFromResource(R.xml.prefs_infos);
-			findPreference("preference_info_contact_email").setOnPreferenceClickListener(
-					new Preference.OnPreferenceClickListener() {
+			addPreferencesFromResource(R.xml.prefs_account);
+
+			final SharedPreferences prefs = getActivity()
+					.getSharedPreferences("login_data", MODE_PRIVATE);
+			Preference prefKey = findPreference("preference_account_access_key");
+			prefKey.setSummary(prefs.getString("key", "UNKNOWN"));
+			prefKey.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+				@Override
 				public boolean onPreferenceClick(Preference preference) {
-					SharedPreferences prefs = getActivity()
-							.getSharedPreferences("login_data", MODE_PRIVATE);
-					Intent i3 = new Intent(Intent.ACTION_SEND);
-					i3.setType("plain/text");
-					i3.putExtra(Intent.EXTRA_EMAIL,
-							new String[]{getString(R.string.contact_email)});
-					i3.putExtra(Intent.EXTRA_SUBJECT, "BetterUntis Feedback from user "
-							+ prefs.getString("user", "UNKNOWN"));
-					startActivity(Intent.createChooser(i3, getString(R.string.give_feedback)));
+					ClipboardManager clipboard = (ClipboardManager) getActivity()
+							.getSystemService(Context.CLIPBOARD_SERVICE);
+					ClipData clip = ClipData.newPlainText(getString(R.string.preference_account_access_key),
+							prefs.getString("key", "UNKNOWN"));
+					clipboard.setPrimaryClip(clip);
+					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
 					return true;
 				}
 			});
+
+			Preference prefFirebaseKey = findPreference("preference_account_firebase_key");
+			prefFirebaseKey.setSummary(FirebaseInstanceId.getInstance().getToken());
+			prefFirebaseKey.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					ClipboardManager clipboard = (ClipboardManager) getActivity()
+							.getSystemService(Context.CLIPBOARD_SERVICE);
+					ClipData clip = ClipData.newPlainText(getString(R.string.firebase_key),
+							FirebaseInstanceId.getInstance().getToken());
+					clipboard.setPrimaryClip(clip);
+					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
+					return true;
+				}
+			});
+
+			findPreference("preference_account_logout").setOnPreferenceClickListener(
+					new Preference.OnPreferenceClickListener() {
+						@Override
+						public boolean onPreferenceClick(Preference preference) {
+							getActivity().getSharedPreferences("login_data", MODE_PRIVATE)
+									.edit().clear().apply();
+							ListManager lm = new ListManager(getActivity());
+							lm.delete("userData", false);
+							restartApplication(getActivity());
+							return true;
+						}
+					});
+		}
+
+		@Override
+		public boolean onOptionsItemSelected(MenuItem item) {
+			int id = item.getItemId();
+			if (id == android.R.id.home) {
+				startActivity(new Intent(getActivity(), ActivityPreferences.class));
+				return true;
+			}
+
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	public static class TimetableFragment extends PreferenceFragment {
+		public TimetableFragment() {
+		}
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.prefs_timetable);
+
+			String[] preferencesNeedingRefresh = new String[]{
+					"preference_timetable_item_padding",
+					"preference_timetable_item_corner_radius",
+					"preference_timetable_centered_lesson_info",
+					"preference_timetable_bold_lesson_name",
+					"preference_timetable_lesson_name_font_size",
+					"preference_timetable_lesson_info_font_size"
+			};
+
+			for (String prefKey : preferencesNeedingRefresh)
+				findPreference(prefKey).setOnPreferenceChangeListener(
+						new Preference.OnPreferenceChangeListener() {
+							@Override
+							public boolean onPreferenceChange(Preference preference, Object newValue) {
+								restartOnExit(getActivity());
+								return true;
+							}
+						});
+		}
+
+		@Override
+		public boolean onOptionsItemSelected(MenuItem item) {
+			int id = item.getItemId();
+			if (id == android.R.id.home) {
+				startActivity(new Intent(getActivity(), ActivityPreferences.class));
+				return true;
+			}
+
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	public static class AboutFragment extends PreferenceFragment {
+		private int clicks;
+
+		public AboutFragment() {
+		}
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.prefs_about);
+			findPreference("preference_info_contact_email").setOnPreferenceClickListener(
+					new Preference.OnPreferenceClickListener() {
+						public boolean onPreferenceClick(Preference preference) {
+							SharedPreferences prefs = getActivity()
+									.getSharedPreferences("login_data", MODE_PRIVATE);
+							Intent i3 = new Intent(Intent.ACTION_SEND);
+							i3.setType("plain/text");
+							i3.putExtra(Intent.EXTRA_EMAIL,
+									new String[]{getString(R.string.contact_email)});
+							i3.putExtra(Intent.EXTRA_SUBJECT, "BetterUntis Feedback from user "
+									+ prefs.getString("user", "UNKNOWN"));
+							startActivity(Intent.createChooser(i3, getString(R.string.give_feedback)));
+							return true;
+						}
+					});
 
 			final Preference prefVersion = findPreference("preference_info_app_version");
 			prefVersion.setSummary(getString(R.string.app_version_full,
@@ -491,46 +495,34 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				}
 			});
 
-
 			findPreference("preference_info_changelog").setOnPreferenceClickListener(
 					new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					new DisplayChangelog(getActivity())
-							.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
-					return true;
-				}
-			});
+						@Override
+						public boolean onPreferenceClick(Preference preference) {
+							new DisplayChangelog(getActivity())
+									.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
+							return true;
+						}
+					});
 
-			final SharedPreferences prefs = getActivity()
-					.getSharedPreferences("login_data", MODE_PRIVATE);
-			Preference prefKey = findPreference("preference_info_access_key");
-			prefKey.setSummary(prefs.getString("key", "UNKNOWN"));
-			prefKey.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					ClipboardManager clipboard = (ClipboardManager) getActivity()
-							.getSystemService(Context.CLIPBOARD_SERVICE);
-					ClipData clip = ClipData.newPlainText(getString(R.string.access_key),
-							prefs.getString("key", "UNKNOWN"));
-					clipboard.setPrimaryClip(clip);
-					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
-					return true;
-				}
-			});
-
-			findPreference("preference_info_logout").setOnPreferenceClickListener(
+			findPreference("preference_send_stats").setOnPreferenceClickListener(
 					new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					getActivity().getSharedPreferences("login_data", MODE_PRIVATE)
-							.edit().clear().apply();
-					ListManager lm = new ListManager(getActivity());
-					lm.delete("userData", false);
-					restartApplication(getActivity());
-					return true;
-				}
-			});
+						@Override
+						public boolean onPreferenceClick(Preference preference) {
+							// TODO: Disable the Preference and send a request to the server with the current settings and the message to log out.
+							// After that re-enable the preference and show a toast like "You opted out".
+							return false;
+						}
+					});
+
+			findPreference("preference_info_stats").setOnPreferenceClickListener(
+					new Preference.OnPreferenceClickListener() {
+						@Override
+						public boolean onPreferenceClick(Preference preference) {
+							// TODO: Show a dialog with this information
+							return false;
+						}
+					});
 		}
 
 		@Override

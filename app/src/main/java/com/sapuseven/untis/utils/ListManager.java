@@ -1,6 +1,7 @@
 package com.sapuseven.untis.utils;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,11 +14,12 @@ public class ListManager {
 		this.context = context;
 	}
 
-	public void saveList(String name, String content, boolean useCache) {
+	public void saveList(String name, String content, boolean isCacheData) {
+		Log.d("ListManager", "Writing list " + name + (isCacheData ? " (using cache)" : ""));
 		try {
 			FileOutputStream outputStream;
-			if (useCache)
-				outputStream = new FileOutputStream(new File(context.getCacheDir(), name + ".json"));
+			if (isCacheData)
+				outputStream = new FileOutputStream(new File(getCacheDir(), name + ".json"));
 			else
 				outputStream = new FileOutputStream(new File(context.getFilesDir(), name + ".json"));
 			outputStream.write(content.getBytes());
@@ -27,12 +29,13 @@ public class ListManager {
 		}
 	}
 
-	public String readList(String name, boolean useCache) {
+	public String readList(String name, boolean isCacheData) {
+		Log.d("ListManager", "Reading list " + name + (isCacheData ? " (using cache)" : ""));
 		StringBuilder content = new StringBuilder();
 		try {
 			FileInputStream inputStream;
-			if (useCache)
-				inputStream = new FileInputStream(new File(context.getCacheDir(), name + ".json"));
+			if (isCacheData)
+				inputStream = new FileInputStream(new File(getCacheDir(), name + ".json"));
 			else
 				inputStream = new FileInputStream(new File(context.getFilesDir(), name + ".json"));
 			byte[] input = new byte[inputStream.available()];
@@ -46,21 +49,29 @@ public class ListManager {
 		return content.toString();
 	}
 
-	@SuppressWarnings("SameParameterValue")
-	public boolean exists(String name, boolean useCache) {
+	public boolean exists(String name, @SuppressWarnings("SameParameterValue") boolean useCaching) {
 		File file;
-		if (useCache)
-			file = new File(context.getCacheDir(), name + ".json");
+		if (useCaching)
+			file = new File(getCacheDir(), name + ".json");
 		else
 			file = new File(context.getFilesDir(), name + ".json");
 		return file.exists();
 	}
 
-	@SuppressWarnings("ResultOfMethodCallIgnored")
-	public void delete(String name, boolean useCache) {
-		if (useCache)
-			new File(context.getCacheDir(), name + ".json").delete();
-		else
-			new File(context.getFilesDir(), name + ".json").delete();
+	public void delete(String name, boolean isCacheData) {
+		Log.d("ListManager", "Deleting list " + name + (isCacheData ? " (using cache)" : ""));
+		if (isCacheData) {
+			if (!new File(getCacheDir(), name + ".json").delete()) {
+				Log.e(this.getClass().getSimpleName(), "Failed to delete " + name);
+			}
+		} else {
+			if (!new File(context.getFilesDir(), name + ".json").delete()) {
+				Log.e(this.getClass().getSimpleName(), "Failed to delete " + name);
+			}
+		}
+	}
+
+	private File getCacheDir() {
+		return context.getCacheDir();
 	}
 }

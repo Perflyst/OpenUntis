@@ -30,6 +30,8 @@ import java.util.Locale;
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
 import static com.sapuseven.untis.utils.DateOperations.getDayNameFromInt;
 import static com.sapuseven.untis.utils.DateOperations.getStringDateFromInt;
+import static com.sapuseven.untis.utils.PreferenceUtils.getPrefBool;
+import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 
 public class FragmentTimetableHeader extends Fragment {
 	private float scale;
@@ -42,41 +44,53 @@ public class FragmentTimetableHeader extends Fragment {
 		scale = getActivity().getResources().getDisplayMetrics().density;
 		int startDateOffset = getArguments().getInt("position") - 50;
 		ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.content_header, container, false);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
 
 		ListManager listManager = new ListManager(getContext());
-		TimegridUnitManager unitManager = null;
-		LinearLayout contentHeader = (LinearLayout) rootView.findViewById(R.id.header_content);
+		TimegridUnitManager unitManager;
+		LinearLayout contentHeader = rootView.findViewById(R.id.header_content);
+
+		boolean alternatingDays = prefs.getBoolean("preference_alternating_days", false);
+
+		int alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_light);
+		if (getPrefBool(this.getContext(), prefs, "preference_alternating_colors_use_custom"))
+			alternativeBackgroundColor = getPrefInt(this.getContext(), prefs, "preference_alternating_color");
+		else if (prefs.getBoolean("preference_dark_theme", false))
+			alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_dark);
 
 		try {
-			unitManager = new TimegridUnitManager();
-			unitManager.setList(new JSONObject(listManager.readList("userData", false)).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
+			unitManager = new TimegridUnitManager(new JSONObject(listManager.readList("userData", false)).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
+
+			int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+					.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), startDateOffset * 7).getTime()));
+
+			for (int i = 0; i < unitManager.getNumberOfDays(); i++) {
+				@SuppressLint("InflateParams") View day = getActivity().getLayoutInflater().inflate(R.layout.item_day, null);
+				day.setLayoutParams(new LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.MATCH_PARENT,
+						LinearLayout.LayoutParams.MATCH_PARENT,
+						1.0f));
+				((TextView) day.findViewById(R.id.tvDayOfWeek)).setText(getDayNameFromInt(addDaysToInt(startDateFromWeek, i)));
+				((TextView) day.findViewById(R.id.tvDateOfDay)).setText(getStringDateFromInt(addDaysToInt(startDateFromWeek, i)));
+
+				String date = String.valueOf(addDaysToInt(startDateFromWeek, i));
+				if (new SimpleDateFormat("yyyyMMdd", Locale.US).format(Calendar.getInstance().getTime()).equals(date)) {
+					GradientDrawable bottomShape = new GradientDrawable();
+					bottomShape.setColor(0xFFBBBBBB);
+
+					Drawable[] layers = {bottomShape};
+					LayerDrawable layerList = new LayerDrawable(layers);
+					layerList.setLayerInset(0, 0, dp2px(44), 0, 0);
+					day.setBackground(layerList);
+				}
+
+				if (alternatingDays && i % 2 == 0)
+					day.setBackgroundColor(alternativeBackgroundColor);
+
+				contentHeader.addView(day);
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
-		}
-
-		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
-				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), startDateOffset * 7).getTime()));
-
-		for (int i = 0; i < unitManager.getNumberOfDays(); i++) {
-			@SuppressLint("InflateParams") View day = getActivity().getLayoutInflater().inflate(R.layout.item_day, null);
-			day.setLayoutParams(new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.MATCH_PARENT,
-					LinearLayout.LayoutParams.MATCH_PARENT,
-					1.0f));
-			((TextView) day.findViewById(R.id.tvDayOfWeek)).setText(getDayNameFromInt(addDaysToInt(startDateFromWeek, i)));
-			((TextView) day.findViewById(R.id.tvDateOfDay)).setText(getStringDateFromInt(addDaysToInt(startDateFromWeek, i)));
-
-			String date = String.valueOf(addDaysToInt(startDateFromWeek, i));
-			if (new SimpleDateFormat("yyyyMMdd", Locale.US).format(Calendar.getInstance().getTime()).equals(date)) {
-				GradientDrawable bottomShape = new GradientDrawable();
-				bottomShape.setColor(0xFFBBBBBB);
-
-				Drawable[] layers = {bottomShape};
-				LayerDrawable layerList = new LayerDrawable(layers);
-				layerList.setLayerInset(0, 0, dp2px(44), 0, 0);
-				day.setBackground(layerList);
-			}
-			contentHeader.addView(day);
 		}
 
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());

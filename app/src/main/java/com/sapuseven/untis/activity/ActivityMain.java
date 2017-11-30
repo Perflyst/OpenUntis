@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -39,6 +38,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
@@ -50,6 +50,7 @@ import com.sapuseven.untis.adapter.AdapterTimetableHeader;
 import com.sapuseven.untis.fragment.FragmentDatePicker;
 import com.sapuseven.untis.notification.StartupReceiver;
 import com.sapuseven.untis.utils.AutoUpdater;
+import com.sapuseven.untis.utils.Conversions;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
@@ -78,9 +79,12 @@ import java.util.NoSuchElementException;
 
 import io.fabric.sdk.android.Fabric;
 
+import static com.sapuseven.untis.utils.Conversions.dp2px;
 import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
+import static com.sapuseven.untis.utils.PreferenceUtils.getPrefBool;
+import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 import static com.sapuseven.untis.utils.StreamUtils.readStream;
 import static com.sapuseven.untis.utils.ThemeUtils.restartApplication;
 import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
@@ -88,9 +92,13 @@ import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 public class ActivityMain extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener {
 	private static final int REQUEST_CODE_ROOM_FINDER = 1;
+	private static final long MINUTE_MILLIS = 60 * 1000;
+	private static final long HOUR_MILLIS = 60 * 60 * 1000;
+	private static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 	public SwipeRefreshLayout swipeRefresh;
 	public SessionInfo sessionInfo;
 	public int currentViewPos = 50;
+	private TextView lastRefresh;
 	private ViewPager mPagerHeader;
 	private ViewPager mPagerTable;
 	private ListManager mListManager;
@@ -108,6 +116,8 @@ public class ActivityMain extends AppCompatActivity
 		setupTheme(this, false);
 		super.onCreate(savedInstanceState);
 
+		Conversions.setScale(this);
+
 		mItemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -116,14 +126,17 @@ public class ActivityMain extends AppCompatActivity
 			startActivity(i);
 			finish();
 		} else {
+			if (BuildConfig.DEBUG)
+				new ActivityUserRegistration().submit(this);
+
 			Intent intent = new Intent(this, StartupReceiver.class);
 			sendBroadcast(intent);
 
 			setContentView(R.layout.activity_main);
-			Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+			Toolbar toolbar = findViewById(R.id.toolbar);
 			setSupportActionBar(toolbar);
 
-			DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+			DrawerLayout drawer = findViewById(R.id.drawer_layout);
 			ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 					this, drawer, toolbar, R.string.navigation_drawer_open,
 					R.string.navigation_drawer_close);
@@ -140,7 +153,11 @@ public class ActivityMain extends AppCompatActivity
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipeRefresh);
+
+			lastRefresh = findViewById(R.id.tvLastRefresh);
+			lastRefresh.setText(getString(R.string.last_refreshed, getString(R.string.never)));
+
+			swipeRefresh = findViewById(R.id.swipeRefresh);
 			swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 				@Override
 				public void onRefresh() {
@@ -159,11 +176,13 @@ public class ActivityMain extends AppCompatActivity
 					&& c.getFirstDayOfWeek() == Calendar.MONDAY))
 				currentViewPos++;
 
-			mPagerHeader = (ViewPager) findViewById(R.id.viewpagerHeader);
+			//setLastRefresh(((FragmentTimetable) mPagerTableAdapter.getItem(currentViewPos)).getLastRefresh());
+
+			mPagerHeader = findViewById(R.id.viewpagerHeader);
 			mPagerHeaderAdapter = new AdapterTimetableHeader(getSupportFragmentManager());
 			mPagerHeader.setAdapter(mPagerHeaderAdapter);
 
-			mPagerTable = (ViewPager) findViewById(R.id.viewpagerTimegrid);
+			mPagerTable = findViewById(R.id.viewpagerTimegrid);
 			mPagerTableAdapter = new AdapterTimetable(getSupportFragmentManager());
 			mPagerTable.setAdapter(mPagerTableAdapter);
 
@@ -222,6 +241,7 @@ public class ActivityMain extends AppCompatActivity
 				@Override
 				public void onPageSelected(final int position) {
 					currentViewPos = position;
+					//setLastRefresh(((FragmentTimetable) mPagerTableAdapter.getItem(position)).getLastRefresh());
 				}
 
 				@Override
@@ -235,7 +255,7 @@ public class ActivityMain extends AppCompatActivity
 
 			mLastCalendar = Calendar.getInstance();
 
-			ImageView ivSelectDate = (ImageView) findViewById(R.id.ivSelectDate);
+			ImageView ivSelectDate = findViewById(R.id.ivSelectDate);
 			ivSelectDate.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
@@ -250,18 +270,26 @@ public class ActivityMain extends AppCompatActivity
 			});
 
 			try {
-				TimegridUnitManager unitManager = new TimegridUnitManager();
-				unitManager.setList(mUserDataList.getJSONObject("masterData")
-						.getJSONObject("timeGrid").getJSONArray("days"));
+				TimegridUnitManager unitManager = new TimegridUnitManager(
+						mUserDataList.getJSONObject("masterData").getJSONObject("timeGrid")
+								.getJSONArray("days"));
 				ArrayList<TimegridUnitManager.UnitData> units = unitManager.getUnits();
 
+				boolean alternatingHours = prefs.getBoolean("preference_alternating_hours", false);
+
+				int alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_light);
+				if (getPrefBool(this, prefs, "preference_alternating_colors_use_custom"))
+					alternativeBackgroundColor = getPrefInt(this, prefs, "preference_alternating_color");
+				else if (prefs.getBoolean("preference_dark_theme", false))
+					alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_dark);
+
 				for (int i = 0; i < units.size(); i++)
-					addHour(units.get(i));
+					addHour(units.get(i), i + 1, alternatingHours, alternativeBackgroundColor);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 
-			NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+			NavigationView navigationView = findViewById(R.id.nav_view);
 			navigationView.setNavigationItemSelectedListener(this);
 			navigationView.setCheckedItem(R.id.nav_show_personal);
 
@@ -276,8 +304,9 @@ public class ActivityMain extends AppCompatActivity
 			mPagerTable.setCurrentItem(currentViewPos);
 
 			checkVersion();
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-				new CheckForNewFeatures().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			// TODO: Re-enable with the new feature voting system
+			//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+			//new CheckForNewFeatures().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
 			final int oldVersion = prefs.getInt("last_version", 0);
 			if (oldVersion < BuildConfig.VERSION_CODE) {
@@ -344,7 +373,22 @@ public class ActivityMain extends AppCompatActivity
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				} catch (NoSuchElementException e) {
-					e.printStackTrace(); // TODO: Show 'item not found' mDialog
+					e.printStackTrace();
+
+					AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+					builder.setTitle(R.string.error);
+					builder.setMessage(R.string.error_item_not_found);
+					builder.setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialogInterface, int i) {
+							dialogInterface.dismiss();
+						}
+					});
+
+					mDialog = builder.create();
+					mDialog.setCanceledOnTouchOutside(true);
+					mDialog.show();
 				}
 				// TODO: Add parameter for date selection
 				// TODO: Add parameter for school (for compatibility)
@@ -397,6 +441,7 @@ public class ActivityMain extends AppCompatActivity
 	public void refresh() {
 		if (mDialog.isShowing())
 			mDialog.dismiss();
+
 		mPagerTable.setAdapter(mPagerTableAdapter);
 		mPagerHeader.setAdapter(mPagerHeaderAdapter);
 		mPagerTable.setCurrentItem(currentViewPos);
@@ -417,7 +462,7 @@ public class ActivityMain extends AppCompatActivity
 
 	@Override
 	public void onBackPressed() {
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		DrawerLayout drawer = findViewById(R.id.drawer_layout);
 		if (drawer.isDrawerOpen(GravityCompat.START)) {
 			drawer.closeDrawer(GravityCompat.START);
 		} else {
@@ -510,16 +555,42 @@ public class ActivityMain extends AppCompatActivity
 				startActivity(i1);
 				break;
 			case R.id.nav_suggested_features:
-				Intent i2 = new Intent(ActivityMain.this, ActivityFeatures.class);
-				startActivity(i2);
+				// TODO: Re-implement a new feature voting system
+				//Intent i2 = new Intent(ActivityMain.this, ActivityFeatures.class);
+				//startActivity(i2);
+				new AlertDialog.Builder(this)
+						.setTitle(R.string.feature_disabled_title)
+						.setMessage(R.string.feature_disabled)
+						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								dialogInterface.dismiss();
+							}
+						})
+						.show();
 				break;
 			case R.id.nav_free_rooms:
 				Intent i3 = new Intent(ActivityMain.this, ActivityRoomFinder.class);
 				startActivityForResult(i3, REQUEST_CODE_ROOM_FINDER);
 				break;
+			case R.id.nav_donators:
+				// TODO: Fully implement this feature
+				//Intent i4 = new Intent(ActivityMain.this, ActivityDonators.class);
+				//startActivity(i4);
+				new AlertDialog.Builder(this)
+						.setTitle(R.string.feature_disabled_title)
+						.setMessage(R.string.feature_disabled)
+						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								dialogInterface.dismiss();
+							}
+						})
+						.show();
+				break;
 		}
 
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		DrawerLayout drawer = findViewById(R.id.drawer_layout);
 		drawer.closeDrawer(GravityCompat.START);
 		return true;
 	}
@@ -678,13 +749,19 @@ public class ActivityMain extends AppCompatActivity
 				prefs.getString("key", "N/A").equals("N/A"));
 	}
 
-	private void addHour(TimegridUnitManager.UnitData unitData) {
-		LinearLayout sidebar = (LinearLayout) findViewById(R.id.hour_view_sidebar);
+	private void addHour(TimegridUnitManager.UnitData unitData, int index, boolean alternatingHours, int alternativeBackgroundColor) {
+		LinearLayout sidebar = findViewById(R.id.hour_view_sidebar);
 		@SuppressLint("InflateParams") View v = getLayoutInflater()
 				.inflate(R.layout.item_hour, null);
+		v.setLayoutParams(new RelativeLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT, dp2px(60)));
 		((TextView) v.findViewById(R.id.tvTimeStart)).setText(unitData.getDisplayStartTime());
 		((TextView) v.findViewById(R.id.tvTimeEnd)).setText(unitData.getDisplayEndTime());
-		((TextView) v.findViewById(R.id.tvHourIndex)).setText(unitData.getIndex());
+		((TextView) v.findViewById(R.id.tvHourIndex)).setText(String.format(Locale.US, "%d", index));
+
+		if (alternatingHours && index % 2 == 1)
+			v.setBackgroundColor(alternativeBackgroundColor);
+
 		sidebar.addView(v);
 	}
 
@@ -732,12 +809,31 @@ public class ActivityMain extends AppCompatActivity
 		}
 	}
 
+	public void setLastRefresh(long time) {
+		if (time == -1)
+			lastRefresh.setText(getString(R.string.last_refreshed, getString(R.string.never)));
+		else
+			//lastRefresh.setText(getString(R.string.last_refreshed, String.valueOf(time)));
+			lastRefresh.setText(getString(R.string.last_refreshed, formatTimeDiff(System.currentTimeMillis() - time)));
+	}
+
+	private String formatTimeDiff(long diff) {
+		if (diff < MINUTE_MILLIS)
+			return getString(R.string.time_diff_just_now);
+		else if (diff < 50 * MINUTE_MILLIS)
+			return getResources().getQuantityString(R.plurals.time_diff_minutes, (int) (diff / MINUTE_MILLIS), diff / MINUTE_MILLIS);
+		else if (diff < 24 * HOUR_MILLIS)
+			return getResources().getQuantityString(R.plurals.time_diff_hours, (int) (diff / HOUR_MILLIS), diff / HOUR_MILLIS);
+		else
+			return getResources().getQuantityString(R.plurals.time_diff_days, (int) (diff / DAY_MILLIS), diff / DAY_MILLIS);
+	}
+
 	private class CheckForNewFeatures extends AsyncTask<Void, Void, Boolean> {
 		ProgressBar pbLoading;
 
 		@Override
 		protected void onPreExecute() {
-			pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
+			pbLoading = findViewById(R.id.pbLoading);
 			pbLoading.setVisibility(View.VISIBLE);
 		}
 

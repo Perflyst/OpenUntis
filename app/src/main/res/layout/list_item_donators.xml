@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+	<TextView
+		android:id="@+id/tvRank"
+		android:layout_width="32dp"
+		android:layout_height="wrap_content"
+		android:layout_centerVertical="true"
+		android:gravity="end"
+		android:text=""
+		android:textColor="?android:textColorSecondary"/>
+
+	<ImageView
+		android:id="@+id/ivAvatar"
+		android:layout_width="48dp"
+		android:layout_height="48dp"
+		android:layout_centerVertical="true"
+		android:layout_marginLeft="48dp"
+		android:layout_marginStart="48dp"
+		app:srcCompat="@drawable/ic_prefs_personal"/>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_centerVertical="true"
+		android:layout_marginEnd="8dp"
+		android:layout_marginLeft="112dp"
+		android:layout_marginRight="8dp"
+		android:layout_marginStart="112dp"
+		android:orientation="vertical">
+
+		<TextView
+			android:id="@+id/tvName"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/error"
+			android:textColor="?android:textColorPrimary"/>
+
+		<TextView
+			android:id="@+id/tvDonationAmount"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/error"
+			android:textColor="?attr/colorPrimary"/>
+
+	</LinearLayout>
+
+</RelativeLayout>

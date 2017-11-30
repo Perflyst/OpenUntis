@@ -6,69 +6,54 @@
 	android:layout_height="56dp"
 	android:orientation="vertical">
 
-	<View
-		android:layout_width="match_parent"
-		android:layout_height="1dp"
-		android:layout_alignParentBottom="true"
-		android:background="?android:attr/listDivider"/>
-
-	<View
-		android:layout_width="1dp"
-		android:layout_height="match_parent"
-		android:layout_alignParentEnd="true"
-		android:layout_alignParentRight="true"
-		android:background="?android:attr/listDivider"/>
-
-	<View
+	<com.sapuseven.untis.view.TimetableItemBackground
 		android:id="@+id/vBackground"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:layout_marginBottom="2dp"
-		android:layout_marginEnd="2dp"
-		android:layout_marginLeft="1dp"
-		android:layout_marginRight="2dp"
-		android:layout_marginStart="1dp"
-		android:layout_marginTop="1dp">
-	</View>
+		android:layout_height="match_parent">
+	</com.sapuseven.untis.view.TimetableItemBackground>
 
 	<TextView
-		android:id="@+id/textView1"
+		android:id="@+id/tvTL"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentLeft="true"
 		android:layout_alignParentStart="true"
 		android:layout_alignParentTop="true"
-		android:layout_marginLeft="6dp"
-		android:layout_marginStart="6dp"
+		android:layout_marginLeft="3dp"
+		android:layout_marginStart="3dp"
 		android:layout_marginTop="3dp"
+		android:ellipsize="end"
+		android:lines="1"
 		android:textColor="?android:attr/textColorSecondary"
-		android:textSize="@dimen/table_item_secondary"
-		/>
+		android:textSize="@dimen/table_item_default_secondary_font_size"/>
 
 	<TextView
-		android:id="@+id/textView4"
+		android:id="@+id/tvBR"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
 		android:layout_alignParentEnd="true"
 		android:layout_alignParentRight="true"
 		android:layout_marginBottom="3dp"
-		android:layout_marginEnd="6dp"
-		android:layout_marginRight="6dp"
+		android:layout_marginEnd="3dp"
+		android:layout_marginRight="3dp"
+		android:ellipsize="end"
+		android:lines="1"
 		android:textColor="?android:attr/textColorSecondary"
-		android:textSize="@dimen/table_item_secondary"/>
+		android:textSize="@dimen/table_item_default_secondary_font_size"/>
 
 	<TextView
-		android:id="@+id/textView5"
+		android:id="@+id/tvC"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_centerInParent="true"
+		android:ellipsize="end"
+		android:lines="1"
 		android:textColor="?android:attr/textColorPrimary"
-		android:textSize="@dimen/table_item_primary"
-		android:textStyle="bold"/>
+		android:textSize="@dimen/table_item_default_primary_font_size"/>
 
 	<ImageView
-		android:id="@+id/statusView"
+		android:id="@+id/ivStatus"
 		android:layout_width="16dp"
 		android:layout_height="16dp"
 		android:layout_alignParentBottom="true"
@@ -80,4 +65,5 @@
 		android:contentDescription="@string/room_availability_indicator"
 		android:visibility="gone"
 		app:srcCompat="@drawable/ic_room_available"/>
+
 </RelativeLayout>

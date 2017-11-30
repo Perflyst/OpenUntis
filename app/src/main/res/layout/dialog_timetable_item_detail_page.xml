@@ -2,17 +2,29 @@
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:gravity="center_vertical"
 	android:orientation="vertical"
 	android:padding="12dp">
+
+	<TextView
+		android:id="@+id/title"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="12dp"
+		android:paddingEnd="12dp"
+		android:paddingLeft="12dp"
+		android:paddingRight="12dp"
+		android:paddingStart="12dp"
+		android:textColor="?android:attr/textColorPrimary"
+		android:textSize="20sp"
+		android:textStyle="bold"/>
 
 	<LinearLayout
 		android:id="@+id/llTeachers"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_marginTop="12dp"
 		android:orientation="horizontal">
 
 		<ImageView
@@ -20,16 +32,20 @@
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
 			android:layout_marginEnd="24dp"
+			android:layout_marginLeft="12dp"
+			android:layout_marginRight="24dp"
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/teachers"
-			android:tint="?android:attr/textColorPrimary"
+			android:tint="@color/colorPrimary_text"
 			app:srcCompat="@drawable/ic_teacher"/>
 
 		<HorizontalScrollView
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:paddingEnd="12dp"
+			android:paddingLeft="0dp"
+			android:paddingRight="12dp"
 			android:paddingStart="0dp">
 
 			<LinearLayout
@@ -53,16 +69,20 @@
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
 			android:layout_marginEnd="24dp"
+			android:layout_marginLeft="12dp"
+			android:layout_marginRight="24dp"
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/classes"
-			android:tint="?android:attr/textColorPrimary"
+			android:tint="@color/colorPrimary_text"
 			app:srcCompat="@drawable/ic_classes"/>
 
 		<HorizontalScrollView
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:paddingEnd="12dp"
+			android:paddingLeft="0dp"
+			android:paddingRight="12dp"
 			android:paddingStart="0dp">
 
 			<LinearLayout
@@ -86,16 +106,20 @@
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
 			android:layout_marginEnd="24dp"
+			android:layout_marginLeft="12dp"
+			android:layout_marginRight="24dp"
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/rooms"
-			android:tint="?android:attr/textColorPrimary"
+			android:tint="@color/colorPrimary_text"
 			app:srcCompat="@drawable/ic_rooms"/>
 
 		<HorizontalScrollView
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:paddingEnd="12dp"
+			android:paddingLeft="0dp"
+			android:paddingRight="12dp"
 			android:paddingStart="0dp">
 
 			<LinearLayout
@@ -107,27 +131,4 @@
 			</LinearLayout>
 		</HorizontalScrollView>
 	</LinearLayout>
-
-	<LinearLayout
-		android:id="@+id/llInfo"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:orientation="horizontal">
-
-		<TextView
-			android:id="@+id/tvInfo"
-			android:layout_width="0dp"
-			android:layout_height="match_parent"
-			android:layout_weight="1"
-			android:drawablePadding="24dp"
-			android:drawableStart="@drawable/ic_info"
-			android:drawableTint="?android:attr/textColorPrimary"
-			android:gravity="center_vertical"
-			android:padding="12dp"
-			android:textColor="?android:attr/textColorPrimary"
-			android:tint="?android:attr/textColorPrimary"
-			tools:ignore="UnusedAttribute"/>
-
-	</LinearLayout>
-
 </LinearLayout>

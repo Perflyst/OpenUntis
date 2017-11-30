@@ -145,7 +145,7 @@ public class ActivityFeatures extends AppCompatActivity {
 		@Override
 		protected Boolean doInBackground(String... values) {
 			HttpURLConnection urlConnection = null;
-			JSONObject list = null;
+			JSONObject list;
 			try {
 				SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
 				String user = prefs.getString("user", "");

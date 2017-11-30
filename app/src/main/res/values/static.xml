@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<integer name="preference_alternating_color_default_light">0xFFEEEEEE</integer>
+	<integer name="preference_alternating_color_default_dark">0xFF363636</integer>
+</resources>

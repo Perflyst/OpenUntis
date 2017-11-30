@@ -98,12 +98,12 @@ public class AdapterRoomFinder extends RecyclerView.Adapter<AdapterRoomFinder.Vi
 		ViewHolder(View rootView) {
 			super(rootView);
 
-			tvName = (TextView) rootView.findViewById(R.id.tvName);
-			tvDetails = (TextView) rootView.findViewById(R.id.tvDetails);
-			ivState = (AppCompatImageView) rootView.findViewById(R.id.ivState);
-			pbState = (ProgressBar) rootView.findViewById(R.id.pbState);
-			btnDelete = (ImageButton) rootView.findViewById(R.id.btnDelete);
-			btnRoomExpired = (ImageButton) rootView.findViewById(R.id.btnRoomExpired);
+			tvName = rootView.findViewById(R.id.tvName);
+			tvDetails = rootView.findViewById(R.id.tvDetails);
+			ivState = rootView.findViewById(R.id.ivState);
+			pbState = rootView.findViewById(R.id.pbState);
+			btnDelete = rootView.findViewById(R.id.btnDelete);
+			btnRoomExpired = rootView.findViewById(R.id.btnRoomExpired);
 		}
 	}
 }
