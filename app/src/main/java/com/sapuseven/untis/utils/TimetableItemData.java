@@ -52,7 +52,7 @@ public class TimetableItemData {
 			setEndDateTime(itemData.getString("endDateTime"));
 			setCodes(itemData.getJSONArray("is"));
 			setBackColor(itemData.optString("backColor", "#E0E0E0"));
-			setInfos(itemData.getJSONObject("text")); // TODO: Show all three texts
+			setInfos(itemData.getJSONObject("text"));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
