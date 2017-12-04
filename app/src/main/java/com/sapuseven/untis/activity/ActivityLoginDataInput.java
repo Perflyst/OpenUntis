@@ -134,7 +134,7 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 
 		Uri appLinkData = getIntent().getData();
 
-		if (appLinkData != null) {
+		if (appLinkData != null && appLinkData.isHierarchical()) {
 			if (appLinkData.getQueryParameter("url") != null)
 				mEtUrl.setText(appLinkData.getQueryParameter("url"));
 			if (appLinkData.getQueryParameter("school") != null)
