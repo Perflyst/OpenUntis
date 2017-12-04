@@ -20,11 +20,11 @@ public class ActivityLogin extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		Button btnScanCode = (Button) findViewById(R.id.btnScanCode);
-		Button btnManualDataInput = (Button) findViewById(R.id.btnManualDataInput);
+		Button btnScanCode = findViewById(R.id.btnScanCode);
+		Button btnManualDataInput = findViewById(R.id.btnManualDataInput);
 
 		btnManualDataInput.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -41,12 +41,12 @@ public class ActivityLogin extends AppCompatActivity {
 					Intent intent = new Intent("com.google.zxing.client.android.SCAN");
 					intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
 					startActivityForResult(intent, REQUEST_SCAN_CODE);
-				} catch (ActivityNotFoundException ex1) {
+				} catch (ActivityNotFoundException | SecurityException e) {
 					try {
 						Intent i = new Intent(Intent.ACTION_VIEW);
 						i.setData(Uri.parse("market://details?id=com.google.zxing.client.android"));
 						startActivity(i);
-					} catch (ActivityNotFoundException ex2) {
+					} catch (ActivityNotFoundException e2) {
 						Intent i = new Intent(Intent.ACTION_VIEW);
 						i.setData(Uri.parse("https://sapuseven.com/scan_qr.php"));
 						startActivity(i);
