@@ -210,6 +210,10 @@
 	<string name="preference_info_stats_desc">Tap to view what data this app is collecting and sending to a server.</string>
 	<string name="preference_category_coming_soon">Coming soon</string>
 	<string name="alert">Alert</string>
+	<string name="title_share">Share</string>
+	<string name="recommendation_subject">Try out BetterUntis!</string>
+	<string name="recommendation_text">Tired of the default Untis Mobile app? Use BetterUntis! More information at https://sapuseven.com/apps/BetterUntis</string>
+	<string name="link_sending_caption">Share the link to %1$s via…</string>
 	<plurals name="time_diff_minutes">
 		<item quantity="one">a minute ago</item>
 		<item quantity="other">%d minutes ago</item>

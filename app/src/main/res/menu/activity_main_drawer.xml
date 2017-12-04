@@ -43,6 +43,11 @@
 		android:id="@+id/nav_social"
 		android:checkableBehavior="none">
 		<item
+			android:id="@+id/nav_share"
+			android:icon="@drawable/ic_share"
+			android:title="@string/title_share">
+		</item>
+		<item
 			android:id="@+id/nav_donators"
 			android:icon="@drawable/ic_gift"
 			android:title="@string/title_donators">

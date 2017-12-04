@@ -42,6 +42,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ShareEvent;
 import com.sapuseven.untis.BuildConfig;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterGridView;
@@ -95,6 +97,7 @@ public class ActivityMain extends AppCompatActivity
 	private static final long MINUTE_MILLIS = 60 * 1000;
 	private static final long HOUR_MILLIS = 60 * 60 * 1000;
 	private static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
+	private static final String CONTENT_ID_SHARE = "drawer-share";
 	public SwipeRefreshLayout swipeRefresh;
 	public SessionInfo sessionInfo;
 	public int currentViewPos = 50;
@@ -587,6 +590,19 @@ public class ActivityMain extends AppCompatActivity
 							}
 						})
 						.show();
+				break;
+			case R.id.nav_share:
+				Answers.getInstance().logShare(new ShareEvent()
+						.putMethod("Share via Intent")
+						.putContentName("Share the BetterUntis download link")
+						.putContentType("share")
+						.putContentId(CONTENT_ID_SHARE));
+
+				Intent i = new Intent(Intent.ACTION_SEND);
+				i.setType("text/plain");
+				i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.recommendation_subject));
+				i.putExtra(Intent.EXTRA_TEXT, getString(R.string.recommendation_text));
+				startActivity(Intent.createChooser(i, getString(R.string.link_sending_caption, getString(R.string.app_name))));
 				break;
 		}
 

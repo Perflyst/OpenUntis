@@ -34,6 +34,7 @@
 		</item>
 		<item
 			android:id="@+id/nav_suggested_features"
+			android:enabled="false"
 			android:icon="@drawable/ic_suggested_features"
 			android:title="@string/title_new_features">
 		</item>
@@ -48,7 +49,13 @@
 		android:id="@+id/nav_social"
 		android:checkableBehavior="none">
 		<item
+			android:id="@+id/nav_share"
+			android:icon="@drawable/ic_share"
+			android:title="@string/title_share">
+		</item>
+		<item
 			android:id="@+id/nav_donators"
+			android:enabled="false"
 			android:icon="@drawable/ic_gift"
 			android:title="@string/title_donators">
 		</item>
