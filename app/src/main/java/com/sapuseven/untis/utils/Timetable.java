@@ -63,7 +63,7 @@ public class Timetable {
 				c.setTime(date);
 
 				hourIndex = -1;
-				while (Integer.parseInt(item.getString("startDateTime")
+				while (hourIndex + 1 < hoursPerDay && Integer.parseInt(item.getString("startDateTime")
 						.substring(11, 16).replace(":", "")) >=
 						Integer.parseInt(units.get(hourIndex + 1).getStartTime()
 								.replace(":", ""))) {
