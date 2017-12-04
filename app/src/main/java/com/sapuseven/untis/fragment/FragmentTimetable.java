@@ -179,8 +179,10 @@ public class FragmentTimetable extends Fragment {
 
 	private void setTimetableData(JSONObject data) {
 		try {
-			Timetable timetable = new Timetable(data, PreferenceManager.getDefaultSharedPreferences(getContext()));
-			new TableSetup(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, timetable);
+			if (getContext() != null) {
+				Timetable timetable = new Timetable(data, PreferenceManager.getDefaultSharedPreferences(getContext()));
+				new TableSetup(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, timetable);
+			}
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 			// TODO: Stop reloading, show error and report the response to the server
