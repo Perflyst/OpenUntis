@@ -829,7 +829,6 @@ public class ActivityMain extends AppCompatActivity
 		if (time == -1)
 			lastRefresh.setText(getString(R.string.last_refreshed, getString(R.string.never)));
 		else
-			//lastRefresh.setText(getString(R.string.last_refreshed, String.valueOf(time)));
 			lastRefresh.setText(getString(R.string.last_refreshed, formatTimeDiff(System.currentTimeMillis() - time)));
 	}
 
