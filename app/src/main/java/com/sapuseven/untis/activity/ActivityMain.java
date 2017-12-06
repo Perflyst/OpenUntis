@@ -795,8 +795,11 @@ public class ActivityMain extends AppCompatActivity
 			return;
 		AutoUpdater au = new AutoUpdater() {
 			@Override
-			public void onAppVersionOutdated() {
+			public void onAppVersionOutdated(int oldVersion, String oldVersionName, int newVersion, String newVersionName) {
 				Intent intent = new Intent(getApplicationContext(), ActivityAppUpdate.class);
+				intent.putExtra("currentVersion", oldVersionName);
+				intent.putExtra("currentVersionCode", oldVersion);
+				intent.putExtra("newVersion", newVersionName);
 				startActivity(intent);
 				finish();
 			}

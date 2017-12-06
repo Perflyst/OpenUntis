@@ -46,7 +46,7 @@ public abstract class AutoUpdater {
 					e.printStackTrace();
 					return;
 				}
-				appVersion = pInfo.versionCode;
+				appVersion = pInfo.versionCode - 1;
 				JSONObject newVersion;
 				try {
 					newVersion = new JSONObject(readStream(in));
@@ -55,8 +55,14 @@ public abstract class AutoUpdater {
 					return;
 				}
 				urlConnection.disconnect();
-				if (newVersion.length() > 0 && newVersion.optJSONObject("result").optInt("versionCode") > appVersion)
-					onAppVersionOutdated();
+				try {
+					if (newVersion.length() > 0 && newVersion.getJSONObject("result").getInt("versionCode") > appVersion)
+						onAppVersionOutdated(appVersion, pInfo.versionName,
+								newVersion.getJSONObject("result").getInt("versionCode"),
+								newVersion.getJSONObject("result").getString("versionName"));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
 			}
 		}).start();
 	}
@@ -76,7 +82,7 @@ public abstract class AutoUpdater {
 		}
 	}
 
-	public abstract void onAppVersionOutdated();
+	public abstract void onAppVersionOutdated(int oldVersion, String oldVersionName, int newVersion, String newVersionName);
 
 	public void setPackageInfo(PackageManager pm, String packageName) throws PackageManager.NameNotFoundException {
 		pInfo = pm.getPackageInfo(packageName, 0);

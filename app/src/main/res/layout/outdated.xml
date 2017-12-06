@@ -13,7 +13,6 @@
 		android:orientation="vertical">
 
 		<TextView
-			android:id="@+id/textView"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_margin="16dp"
@@ -22,19 +21,75 @@
 			android:text="@string/autoupdate_outdated"
 			android:textAppearance="?android:attr/textAppearanceLarge"
 			android:textColor="?android:attr/textColorPrimary"/>
+
+		<TableLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_horizontal">
+
+			<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:id="@+id/tvCurrentVersionText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/current_version"/>
+
+				<TextView
+					android:id="@+id/tvCurrentVersion"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginLeft="6dp"
+					android:layout_marginStart="6dp"
+					android:textStyle="bold"/>
+			</TableRow>
+
+			<TableRow
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:id="@+id/tvNewVersionText"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/new_version"/>
+
+				<TextView
+					android:id="@+id/tvNewVersion"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginLeft="6dp"
+					android:layout_marginStart="6dp"
+					android:textStyle="bold"/>
+			</TableRow>
+
+		</TableLayout>
+
 	</LinearLayout>
 
-	<LinearLayout
+	<RelativeLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:gravity="end"
 		android:orientation="horizontal">
 
 		<Button
-			android:id="@+id/btnUpdateLater"
-			style="@style/Base.Widget.AppCompat.Button.Borderless"
+			android:id="@+id/btnViewChangelog"
+			style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:layout_alignParentLeft="true"
+			android:layout_alignParentStart="true"
+			android:text="@string/view_changelog"/>
+
+		<Button
+			android:id="@+id/btnUpdateLater"
+			style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_toLeftOf="@+id/btnUpdate"
+			android:layout_toStartOf="@+id/btnUpdate"
 			android:text="@string/not_now"/>
 
 		<Button
@@ -42,8 +97,10 @@
 			style="@style/Widget.AppCompat.Button.Borderless.Colored"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:layout_alignParentEnd="true"
+			android:layout_alignParentRight="true"
 			android:text="@string/btn_update"/>
-	</LinearLayout>
+	</RelativeLayout>
 
 </LinearLayout>
 

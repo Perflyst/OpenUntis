@@ -1,6 +1,5 @@
 package com.sapuseven.untis.utils;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
@@ -11,16 +10,34 @@ import com.sapuseven.untis.R;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import static com.sapuseven.untis.utils.StreamUtils.readStream;
 
 public class DisplayChangelog extends AsyncTask<Integer, Void, String> {
-	private final Context context;
+	AlertDialog dialog;
+	private WeakReference<Context> context;
 
 	public DisplayChangelog(Context context) {
-		this.context = context;
+		this.context = new WeakReference<>(context);
+	}
+
+	@Override
+	protected void onPreExecute() {
+		dialog = new AlertDialog.Builder(context.get())
+				.setTitle(R.string.changelog)
+				.setMessage(R.string.loading_data)
+				.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int id) {
+						cancel(true);
+						dialog.dismiss();
+					}
+				}).create();
+
+		dialog.show();
 	}
 
 	@Override
@@ -40,16 +57,7 @@ public class DisplayChangelog extends AsyncTask<Integer, Void, String> {
 
 	@Override
 	protected void onPostExecute(String content) {
-		if (!((Activity) context).isFinishing())
-			new AlertDialog.Builder(context)
-					.setTitle(R.string.changelog)
-					.setMessage(content.replace("<br>", "\n"))
-					.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int id) {
-							dialog.dismiss();
-						}
-					})
-					.show();
+		if (dialog.isShowing())
+			dialog.setMessage(content.replace("<br>", "\n"));
 	}
 }

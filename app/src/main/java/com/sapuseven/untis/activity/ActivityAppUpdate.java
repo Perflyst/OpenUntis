@@ -18,6 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.sapuseven.untis.R;
+import com.sapuseven.untis.utils.DisplayChangelog;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,8 +46,11 @@ public class ActivityAppUpdate extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.outdated);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		final Button btnNotNow = (Button) findViewById(R.id.btnUpdateLater);
-		final Button btnUpdate = (Button) findViewById(R.id.btnUpdate);
+		final Button btnNotNow = findViewById(R.id.btnUpdateLater);
+		final Button btnUpdate = findViewById(R.id.btnUpdate);
+		final Button btnViewChangelog = findViewById(R.id.btnViewChangelog);
+		final TextView tvCurrentVersion = findViewById(R.id.tvCurrentVersion);
+		final TextView tvNewVersion = findViewById(R.id.tvNewVersion);
 
 		btnNotNow.setOnClickListener(new OnClickListener() {
 			@Override
@@ -57,12 +61,13 @@ public class ActivityAppUpdate extends Activity {
 				finish();
 			}
 		});
+
 		btnUpdate.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				setContentView(R.layout.download);
-				mProgressBar = (ProgressBar) findViewById(R.id.pbDownload);
-				mTvProgress = (TextView) findViewById(R.id.tvDownload);
+				mProgressBar = findViewById(R.id.pbDownload);
+				mTvProgress = findViewById(R.id.tvDownload);
 
 				mDownloadTask = new DownloadTask();
 				mDownloadTask
@@ -75,13 +80,24 @@ public class ActivityAppUpdate extends Activity {
 				mTimeout.postDelayed(mRunnable, TIMEOUT);
 			}
 		});
+
+		btnViewChangelog.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				new DisplayChangelog(ActivityAppUpdate.this)
+						.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, getIntent().getIntExtra("currentVersionCode", 0));
+			}
+		});
+
+		tvCurrentVersion.setText(getIntent().getStringExtra("currentVersion"));
+		tvNewVersion.setText(getIntent().getStringExtra("newVersion"));
 	}
 
 	private void cancel() {
 		mDownloadTask.cancel(true);
 		setContentView(R.layout.download_failed);
-		Button try_again = (Button) findViewById(R.id.btnTryAgain);
-		Button manual = (Button) findViewById(R.id.btnManualUpdate);
+		Button try_again = findViewById(R.id.btnTryAgain);
+		Button manual = findViewById(R.id.btnManualUpdate);
 		try_again.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				recreate();
@@ -90,7 +106,7 @@ public class ActivityAppUpdate extends Activity {
 		manual.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-						Uri.parse("http://sapuseven.com/BetterUntis/download.php"));
+						Uri.parse("http://data.sapuseven.com/BetterUntis/download.php"));
 				startActivity(browserIntent);
 			}
 		});
@@ -123,7 +139,7 @@ public class ActivityAppUpdate extends Activity {
 
 				File dir = new File(context.getExternalCacheDir() + "/update");
 				if (!dir.exists() && !dir.mkdirs())
-					ActivityAppUpdate.this.cancel();
+					return "Failed to create update-dir";
 				mOutputFile = new File(dir, "from-v" + getPackageManager()
 						.getPackageInfo(getPackageName(), 0).versionCode + ".apk");
 				input = connection.getInputStream();
@@ -143,7 +159,6 @@ public class ActivityAppUpdate extends Activity {
 					output.write(data, 0, count);
 				}
 			} catch (Exception e) {
-				ActivityAppUpdate.this.cancel();
 				return e.toString();
 			} finally {
 				try {
@@ -201,7 +216,10 @@ public class ActivityAppUpdate extends Activity {
 
 		@Override
 		protected void onPostExecute(String s) {
+			mTimeout.removeCallbacks(mRunnable);
 			Log.d("ActivityAppUpdate", "DownloadTask exited with message \"" + s + "\"");
+			if (!s.equals("OK"))
+				ActivityAppUpdate.this.cancel();
 		}
 	}
 }
