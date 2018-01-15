@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.Filter;
 import android.widget.Filterable;
 
@@ -55,18 +54,15 @@ public class AdapterCheckBoxGridView extends BaseAdapter implements Filterable {
 		Holder holder = new Holder();
 		if (convertView == null)
 			convertView = inflater.inflate(R.layout.grid_view_item_checkboxes, parent, false);
-		holder.checkBox = (CheckBox) convertView.findViewById(R.id.checkbox);
+		holder.checkBox = convertView.findViewById(R.id.checkbox);
 		holder.checkBox.setText(filteredItems.get(position));
 		holder.checkBox.setOnCheckedChangeListener(null);
 		holder.checkBox.setChecked(selectedItems.contains(filteredItems.get(position)));
-		holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked && !selectedItems.contains(filteredItems.get(position)))
-					selectedItems.add(filteredItems.get(position));
-				else if (selectedItems.contains(filteredItems.get(position)))
-					selectedItems.remove(filteredItems.get(position));
-			}
+		holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+			if (isChecked && !selectedItems.contains(filteredItems.get(position)))
+				selectedItems.add(filteredItems.get(position));
+			else if (selectedItems.contains(filteredItems.get(position)))
+				selectedItems.remove(filteredItems.get(position));
 		});
 		return convertView;
 	}

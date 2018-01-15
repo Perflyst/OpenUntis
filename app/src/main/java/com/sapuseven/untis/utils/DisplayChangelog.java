@@ -1,7 +1,6 @@
 package com.sapuseven.untis.utils;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -17,7 +16,7 @@ import java.net.URL;
 import static com.sapuseven.untis.utils.StreamUtils.readStream;
 
 public class DisplayChangelog extends AsyncTask<Integer, Void, String> {
-	AlertDialog dialog;
+	private AlertDialog dialog;
 	private WeakReference<Context> context;
 
 	public DisplayChangelog(Context context) {
@@ -29,12 +28,9 @@ public class DisplayChangelog extends AsyncTask<Integer, Void, String> {
 		dialog = new AlertDialog.Builder(context.get())
 				.setTitle(R.string.changelog)
 				.setMessage(R.string.loading_data)
-				.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int id) {
-						cancel(true);
-						dialog.dismiss();
-					}
+				.setNegativeButton(R.string.close, (dialog, id) -> {
+					cancel(true);
+					dialog.dismiss();
 				}).create();
 
 		dialog.show();

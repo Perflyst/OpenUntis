@@ -2,7 +2,6 @@ package com.sapuseven.untis.activity;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.provider.Settings;
@@ -63,18 +62,15 @@ class ActivityUserRegistration {
 						AlertDialog.Builder builder = new AlertDialog.Builder(main)
 								.setTitle(result.getJSONObject("result").optString("title", main.getString(R.string.alert)))
 								.setMessage(result.getJSONObject("result").getString("message"))
-								.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialogInterface, int i) {
-										try {
-											if (result.getJSONObject("result").optBoolean("exit"))
-												main.finish();
-											else
-												dialogInterface.dismiss();
-										} catch (JSONException e) {
+								.setPositiveButton(R.string.ok, (dialogInterface, i) -> {
+									try {
+										if (result.getJSONObject("result").optBoolean("exit"))
+											main.finish();
+										else
 											dialogInterface.dismiss();
-											e.printStackTrace();
-										}
+									} catch (JSONException e) {
+										dialogInterface.dismiss();
+										e.printStackTrace();
 									}
 								})
 								.setCancelable(false);
@@ -85,12 +81,7 @@ class ActivityUserRegistration {
 							final Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
 							button.setEnabled(false);
 
-							new Handler().postDelayed(new Runnable() {
-								@Override
-								public void run() {
-									button.setEnabled(true);
-								}
-							}, result.getJSONObject("result").optInt("delay"));
+							new Handler().postDelayed(() -> button.setEnabled(true), result.getJSONObject("result").optInt("delay"));
 						}
 					}
 				} catch (JSONException e) {

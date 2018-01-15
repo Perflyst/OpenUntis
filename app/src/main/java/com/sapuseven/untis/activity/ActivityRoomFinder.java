@@ -1,7 +1,6 @@
 package com.sapuseven.untis.activity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
@@ -61,7 +60,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -146,32 +144,23 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void setupHourSelector() {
-		findViewById(R.id.btnNextHour).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (mCurrentHourIndex + mHourIndexOffset < mMaxHourIndex) {
-					mHourIndexOffset++;
-					refreshRoomList();
-				}
-			}
-		});
-
-		findViewById(R.id.btnPrevHour).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (mCurrentHourIndex + mHourIndexOffset > 0) {
-					mHourIndexOffset--;
-					refreshRoomList();
-				}
-			}
-		});
-
-		findViewById(R.id.tvCurrentHour).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				mHourIndexOffset = 0;
+		findViewById(R.id.btnNextHour).setOnClickListener(v -> {
+			if (mCurrentHourIndex + mHourIndexOffset < mMaxHourIndex) {
+				mHourIndexOffset++;
 				refreshRoomList();
 			}
+		});
+
+		findViewById(R.id.btnPrevHour).setOnClickListener(v -> {
+			if (mCurrentHourIndex + mHourIndexOffset > 0) {
+				mHourIndexOffset--;
+				refreshRoomList();
+			}
+		});
+
+		findViewById(R.id.tvCurrentHour).setOnClickListener(view -> {
+			mHourIndexOffset = 0;
+			refreshRoomList();
 		});
 	}
 
@@ -200,11 +189,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		reload();
 
 		FloatingActionButton myFab = findViewById(R.id.fabAddRoomWatcher);
-		myFab.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				showItemList();
-			}
-		});
+		myFab.setOnClickListener(v -> showItemList());
 	}
 
 	private void reload() {
@@ -259,12 +244,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			JSONArray roomList = mUserDataList.optJSONObject("masterData").optJSONArray("rooms");
 			for (int i = 0; i < roomList.length(); i++)
 				list.add(roomList.getJSONObject(i).getString("name"));
-			Collections.sort(list, new Comparator<String>() {
-				@Override
-				public int compare(String s1, String s2) {
-					return s1.compareToIgnoreCase(s2);
-				}
-			});
+			Collections.sort(list, (s1, s2) -> s1.compareToIgnoreCase(s2));
 
 			final AdapterCheckBoxGridView adapter = new AdapterCheckBoxGridView(this, list);
 			TextInputLayout titleContainer = new TextInputLayout(this);
@@ -303,15 +283,12 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					.inflate(R.layout.borderless_button, null);
 			selectAll.setText(R.string.add);
 			final ActivityRoomFinder context = this;
-			selectAll.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					for (String item : adapter.getSelectedItems())
-						addRoom(new AdapterItemRoomFinder(context, item, true),
-								(Integer) elementName.findFieldByValue("name", item, "id"));
-					mDialog.dismiss();
-					executeRequestQueue();
-				}
+			selectAll.setOnClickListener(v -> {
+				for (String item : adapter.getSelectedItems())
+					addRoom(new AdapterItemRoomFinder(context, item, true),
+							(Integer) elementName.findFieldByValue("name", item, "id"));
+				mDialog.dismiss();
+				executeRequestQueue();
 			});
 
 			content.addView(titleContainer);
@@ -327,12 +304,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			new AlertDialog.Builder(this)
 					.setTitle(getString(R.string.error))
 					.setMessage(e.getMessage())
-					.setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-						}
-					})
+					.setNeutralButton(R.string.ok, (dialog, which) -> dialog.dismiss())
 					.show();
 		}
 	}
@@ -421,28 +393,20 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		new AlertDialog.Builder(this)
 				.setTitle(getString(R.string.delete_item_title, mRoomList.get(position).getName()))
 				.setMessage(R.string.delete_item_text)
-				.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						try {
-							if (deleteItem(mRoomList.get(position).getName())) {
-								mRoomList.remove(position);
-								mRoomAdapter.notifyItemRemoved(position);
-								refreshRoomList();
-							}
-						} catch (IOException e) {
-							Snackbar.make(mRecyclerView, getString(R.string.snackbar_error,
-									e.getMessage()),
-									Snackbar.LENGTH_LONG).setAction("OK", null).show();
+				.setPositiveButton(R.string.yes, (dialog, which) -> {
+					try {
+						if (deleteItem(mRoomList.get(position).getName())) {
+							mRoomList.remove(position);
+							mRoomAdapter.notifyItemRemoved(position);
+							refreshRoomList();
 						}
+					} catch (IOException e) {
+						Snackbar.make(mRecyclerView, getString(R.string.snackbar_error,
+								e.getMessage()),
+								Snackbar.LENGTH_LONG).setAction("OK", null).show();
 					}
 				})
-				.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				})
+				.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss())
 				.create()
 				.show();
 	}
@@ -484,32 +448,21 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		new AlertDialog.Builder(this)
 				.setTitle(R.string.refresh_item_title)
 				.setMessage(getString(R.string.refresh_item_text))
-				.setPositiveButton(R.string.refresh_this_item, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						refreshItemData(position);
-						mRoomAdapter.notifyDataSetChanged();
-						executeRequestQueue();
-						dialog.dismiss();
-					}
+				.setPositiveButton(R.string.refresh_this_item, (dialog, which) -> {
+					refreshItemData(position);
+					mRoomAdapter.notifyDataSetChanged();
+					executeRequestQueue();
+					dialog.dismiss();
 				})
-				.setNeutralButton(R.string.refresh_all_items, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						for (int i = 0; i < mRoomList.size(); i++)
-							if (mRoomList.get(i).isOutdated())
-								refreshItemData(i);
-						mRoomAdapter.notifyDataSetChanged();
-						executeRequestQueue();
-						dialog.dismiss();
-					}
+				.setNeutralButton(R.string.refresh_all_items, (dialog, which) -> {
+					for (int i = 0; i < mRoomList.size(); i++)
+						if (mRoomList.get(i).isOutdated())
+							refreshItemData(i);
+					mRoomAdapter.notifyDataSetChanged();
+					executeRequestQueue();
+					dialog.dismiss();
 				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				})
+				.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
 				.create()
 				.show();
 	}

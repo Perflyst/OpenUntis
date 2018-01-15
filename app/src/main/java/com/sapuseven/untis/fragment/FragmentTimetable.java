@@ -688,12 +688,7 @@ public class FragmentTimetable extends Fragment {
 
 						setupItemText(view, item);
 
-						view.setOnClickListener(new View.OnClickListener() {
-							@Override
-							public void onClick(View view) {
-								fragmentContext.showDetails(allItems);
-							}
-						});
+						view.setOnClickListener(view1 -> fragmentContext.showDetails(allItems));
 
 						try {
 							glTimetable.addView(view);

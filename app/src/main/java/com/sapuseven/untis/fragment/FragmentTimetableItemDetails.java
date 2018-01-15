@@ -83,12 +83,9 @@ public class FragmentTimetableItemDetails extends Fragment {
 			tv.setLayoutParams(params);
 			tv.setTextColor(color);
 			tv.setGravity(Gravity.CENTER_VERTICAL);
-			tv.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					if (elementName.findFieldByValue("name", s, "id") != null)
-						setTarget((Integer) elementName.findFieldByValue("name", s, "id"), TEACHER);
-				}
+			tv.setOnClickListener(view -> {
+				if (elementName.findFieldByValue("name", s, "id") != null)
+					setTarget((Integer) elementName.findFieldByValue("name", s, "id"), TEACHER);
 			});
 			list.addView(tv);
 		}
@@ -105,13 +102,10 @@ public class FragmentTimetableItemDetails extends Fragment {
 			tv.setLayoutParams(params);
 			tv.setTextColor(color);
 			tv.setGravity(Gravity.CENTER_VERTICAL);
-			tv.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					if (elementName.findFieldByValue("name", s, "id") != null)
-						setTarget((Integer) elementName
-								.findFieldByValue("name", s, "id"), CLASS);
-				}
+			tv.setOnClickListener(view -> {
+				if (elementName.findFieldByValue("name", s, "id") != null)
+					setTarget((Integer) elementName
+							.findFieldByValue("name", s, "id"), CLASS);
 			});
 			list.addView(tv);
 		}
@@ -128,12 +122,9 @@ public class FragmentTimetableItemDetails extends Fragment {
 			tv.setLayoutParams(params);
 			tv.setTextColor(color);
 			tv.setGravity(Gravity.CENTER_VERTICAL);
-			tv.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					if (elementName.findFieldByValue("name", s, "id") != null)
-						setTarget((Integer) elementName.findFieldByValue("name", s, "id"), ROOM);
-				}
+			tv.setOnClickListener(view -> {
+				if (elementName.findFieldByValue("name", s, "id") != null)
+					setTarget((Integer) elementName.findFieldByValue("name", s, "id"), ROOM);
 			});
 			list.addView(tv);
 		}

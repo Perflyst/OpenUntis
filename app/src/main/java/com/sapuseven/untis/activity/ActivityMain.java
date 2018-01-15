@@ -33,7 +33,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -44,6 +43,8 @@ import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ShareEvent;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.sapuseven.untis.BuildConfig;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterGridView;
@@ -74,7 +75,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -112,6 +112,7 @@ public class ActivityMain extends AppCompatActivity
 	private JSONObject mUserDataList;
 	private long mLastBackPress;
 	private int mItemListMargins;
+	private FirebaseRemoteConfig firebaseRemoteConfig;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +121,13 @@ public class ActivityMain extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 
 		Conversions.setScale(this);
+
+		firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+		FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+				.setDeveloperModeEnabled(BuildConfig.DEBUG)
+				.build();
+		firebaseRemoteConfig.setConfigSettings(configSettings);
+		firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
 
 		mItemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
@@ -161,16 +169,13 @@ public class ActivityMain extends AppCompatActivity
 			lastRefresh.setText(getString(R.string.last_refreshed, getString(R.string.never)));
 
 			swipeRefresh = findViewById(R.id.swipeRefresh);
-			swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-				@Override
-				public void onRefresh() {
-					int startDate = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
-							.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(),
-									(currentViewPos - 50) * 7).getTime()));
-					mListManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
-							"-" + startDate + "-" + addDaysToInt(startDate, 4), true);
-					refresh();
-				}
+			swipeRefresh.setOnRefreshListener(() -> {
+				int startDate = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+						.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(),
+								(currentViewPos - 50) * 7).getTime()));
+				mListManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
+						"-" + startDate + "-" + addDaysToInt(startDate, 4), true);
+				refresh();
 			});
 
 			Calendar c = Calendar.getInstance();
@@ -189,16 +194,13 @@ public class ActivityMain extends AppCompatActivity
 			mPagerTableAdapter = new AdapterTimetable(getSupportFragmentManager());
 			mPagerTable.setAdapter(mPagerTableAdapter);
 
-			mPagerTable.setOnTouchListener(new View.OnTouchListener() {
-				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-					if (event.getAction() == MotionEvent.ACTION_MOVE
-							&& !swipeRefresh.isRefreshing())
-						swipeRefresh.setEnabled(false);
-					else if (!swipeRefresh.isRefreshing())
-						swipeRefresh.setEnabled(true);
-					return false;
-				}
+			mPagerTable.setOnTouchListener((v, event) -> {
+				if (event.getAction() == MotionEvent.ACTION_MOVE
+						&& !swipeRefresh.isRefreshing())
+					swipeRefresh.setEnabled(false);
+				else if (!swipeRefresh.isRefreshing())
+					swipeRefresh.setEnabled(true);
+				return false;
 			});
 
 			mPagerHeader.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -259,17 +261,14 @@ public class ActivityMain extends AppCompatActivity
 			mLastCalendar = Calendar.getInstance();
 
 			ImageView ivSelectDate = findViewById(R.id.ivSelectDate);
-			ivSelectDate.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					DialogFragment fragment = new FragmentDatePicker();
-					Bundle args = new Bundle();
-					args.putInt("year", mLastCalendar.get(Calendar.YEAR));
-					args.putInt("month", mLastCalendar.get(Calendar.MONTH));
-					args.putInt("day", mLastCalendar.get(Calendar.DAY_OF_MONTH));
-					fragment.setArguments(args);
-					fragment.show(getSupportFragmentManager(), "datePicker");
-				}
+			ivSelectDate.setOnClickListener(view -> {
+				DialogFragment fragment = new FragmentDatePicker();
+				Bundle args = new Bundle();
+				args.putInt("year", mLastCalendar.get(Calendar.YEAR));
+				args.putInt("month", mLastCalendar.get(Calendar.MONTH));
+				args.putInt("day", mLastCalendar.get(Calendar.DAY_OF_MONTH));
+				fragment.setArguments(args);
+				fragment.show(getSupportFragmentManager(), "datePicker");
 			});
 
 			try {
@@ -382,12 +381,7 @@ public class ActivityMain extends AppCompatActivity
 
 					builder.setTitle(R.string.error);
 					builder.setMessage(R.string.error_item_not_found);
-					builder.setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialogInterface, int i) {
-							dialogInterface.dismiss();
-						}
-					});
+					builder.setNeutralButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss());
 
 					mDialog = builder.create();
 					mDialog.setCanceledOnTouchOutside(true);
@@ -564,12 +558,7 @@ public class ActivityMain extends AppCompatActivity
 				new AlertDialog.Builder(this)
 						.setTitle(R.string.feature_disabled_title)
 						.setMessage(R.string.feature_disabled)
-						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialogInterface, int i) {
-								dialogInterface.dismiss();
-							}
-						})
+						.setPositiveButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss())
 						.show();
 				break;
 			case R.id.nav_free_rooms:
@@ -583,12 +572,7 @@ public class ActivityMain extends AppCompatActivity
 				new AlertDialog.Builder(this)
 						.setTitle(R.string.feature_disabled_title)
 						.setMessage(R.string.feature_disabled)
-						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialogInterface, int i) {
-								dialogInterface.dismiss();
-							}
-						})
+						.setPositiveButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss())
 						.show();
 				break;
 			case R.id.nav_share:
@@ -600,8 +584,8 @@ public class ActivityMain extends AppCompatActivity
 
 				Intent i = new Intent(Intent.ACTION_SEND);
 				i.setType("text/plain");
-				i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.recommendation_subject));
-				i.putExtra(Intent.EXTRA_TEXT, getString(R.string.recommendation_text));
+				i.putExtra(Intent.EXTRA_SUBJECT, firebaseRemoteConfig.getString("recommendation_subject"));
+				i.putExtra(Intent.EXTRA_TEXT, firebaseRemoteConfig.getString("recommendation_text"));
 				startActivity(Intent.createChooser(i, getString(R.string.link_sending_caption, getString(R.string.app_name))));
 				break;
 		}
@@ -625,28 +609,25 @@ public class ActivityMain extends AppCompatActivity
 
 	private void showItemList(final int elementType, @StringRes int searchFieldHint,
 	                          final int targetPageTitle, String masterDataField) {
-		DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel(DialogInterface dialogInterface) {
-				if (getSupportActionBar() != null)
-					getSupportActionBar().setTitle(sessionInfo.getDisplayName());
-				switch (sessionInfo.getElemType()) {
-					case "CLASS":
-						((NavigationView) findViewById(R.id.nav_view))
-								.setCheckedItem(R.id.nav_show_classes);
-						break;
-					case "TEACHER":
-						((NavigationView) findViewById(R.id.nav_view))
-								.setCheckedItem(R.id.nav_show_teachers);
-						break;
-					case "ROOM":
-						((NavigationView) findViewById(R.id.nav_view))
-								.setCheckedItem(R.id.nav_show_rooms);
-						break;
-					default:
-						((NavigationView) findViewById(R.id.nav_view))
-								.setCheckedItem(R.id.nav_show_personal);
-				}
+		DialogInterface.OnCancelListener cancelListener = dialogInterface -> {
+			if (getSupportActionBar() != null)
+				getSupportActionBar().setTitle(sessionInfo.getDisplayName());
+			switch (sessionInfo.getElemType()) {
+				case "CLASS":
+					((NavigationView) findViewById(R.id.nav_view))
+							.setCheckedItem(R.id.nav_show_classes);
+					break;
+				case "TEACHER":
+					((NavigationView) findViewById(R.id.nav_view))
+							.setCheckedItem(R.id.nav_show_teachers);
+					break;
+				case "ROOM":
+					((NavigationView) findViewById(R.id.nav_view))
+							.setCheckedItem(R.id.nav_show_rooms);
+					break;
+				default:
+					((NavigationView) findViewById(R.id.nav_view))
+							.setCheckedItem(R.id.nav_show_personal);
 			}
 		};
 
@@ -661,12 +642,7 @@ public class ActivityMain extends AppCompatActivity
 					.optJSONArray(masterDataField);
 			for (int i = 0; i < roomList.length(); i++)
 				list.add(roomList.getJSONObject(i).getString("name"));
-			Collections.sort(list, new Comparator<String>() {
-				@Override
-				public int compare(String s1, String s2) {
-					return s1.compareToIgnoreCase(s2);
-				}
-			});
+			Collections.sort(list, (s1, s2) -> s1.compareToIgnoreCase(s2));
 
 			final AdapterGridView adapter = new AdapterGridView(this, list);
 			TextInputLayout titleContainer = new TextInputLayout(this);
@@ -678,23 +654,20 @@ public class ActivityMain extends AppCompatActivity
 			GridView gridView = new GridView(this);
 			gridView.setAdapter(adapter);
 			gridView.setNumColumns(3);
-			gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					if (targetPageTitle == -1)
-						setTarget((int) elementName
-										.findFieldByValue("name", list.get(position), "id"),
-								elementType,
-								elementName.findFieldByValue("name",
-										list.get(position), "firstName") + " "
-										+ elementName.findFieldByValue("name", list.get(position),
-										"lastName"));
-					else
-						setTarget((Integer) elementName.findFieldByValue("name", list.get(position),
-								"id"),
-								elementType,
-								getString(targetPageTitle, list.get(position)));
-				}
+			gridView.setOnItemClickListener((parent, view, position, id) -> {
+				if (targetPageTitle == -1)
+					setTarget((int) elementName
+									.findFieldByValue("name", list.get(position), "id"),
+							elementType,
+							elementName.findFieldByValue("name",
+									list.get(position), "firstName") + " "
+									+ elementName.findFieldByValue("name", list.get(position),
+									"lastName"));
+				else
+					setTarget((Integer) elementName.findFieldByValue("name", list.get(position),
+							"id"),
+							elementType,
+							getString(targetPageTitle, list.get(position)));
 			});
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -877,12 +850,9 @@ public class ActivityMain extends AppCompatActivity
 		protected void onPostExecute(Boolean newFeatureAvailable) {
 			if (newFeatureAvailable) {
 				Snackbar.make(findViewById(R.id.content_main), R.string.new_feature_planned,
-						Snackbar.LENGTH_INDEFINITE).setAction(R.string.show, new View.OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						Intent i = new Intent(ActivityMain.this, ActivityFeatures.class);
-						startActivity(i);
-					}
+						Snackbar.LENGTH_INDEFINITE).setAction(R.string.show, view -> {
+					Intent i = new Intent(ActivityMain.this, ActivityFeatures.class);
+					startActivity(i);
 				}).show();
 			}
 		}

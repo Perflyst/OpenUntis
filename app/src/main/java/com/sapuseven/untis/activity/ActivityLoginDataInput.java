@@ -85,31 +85,28 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		mEtUser = findViewById(R.id.etUser);
 		mEtKey = findViewById(R.id.etKey);
 
-		mBtnLogin.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				EditText error = null;
-				if (mEtUser.getText().length() == 0) {
-					mEtUser.setError(getString(R.string.error_field_empty));
-					error = mEtUser;
-				}
-				if (mEtSchool.getText().length() == 0) {
-					mEtSchool.setError(getString(R.string.error_field_empty));
-					error = mEtSchool;
-				}
-				if (mEtUrl.getText().length() == 0) {
-					mEtUrl.setError(getString(R.string.error_field_empty));
-					error = mEtUrl;
-				} else if (!Patterns.DOMAIN_NAME.matcher(mEtUrl.getText()).matches()) {
-					mEtUrl.setError(getString(R.string.error_invalid_url));
-					error = mEtUrl;
-				}
-
-				if (error == null)
-					loadData();
-				else
-					error.requestFocus();
+		mBtnLogin.setOnClickListener(v -> {
+			EditText error = null;
+			if (mEtUser.getText().length() == 0) {
+				mEtUser.setError(getString(R.string.error_field_empty));
+				error = mEtUser;
 			}
+			if (mEtSchool.getText().length() == 0) {
+				mEtSchool.setError(getString(R.string.error_field_empty));
+				error = mEtSchool;
+			}
+			if (mEtUrl.getText().length() == 0) {
+				mEtUrl.setError(getString(R.string.error_field_empty));
+				error = mEtUrl;
+			} else if (!Patterns.DOMAIN_NAME.matcher(mEtUrl.getText()).matches()) {
+				mEtUrl.setError(getString(R.string.error_invalid_url));
+				error = mEtUrl;
+			}
+
+			if (error == null)
+				loadData();
+			else
+				error.requestFocus();
 		});
 
 		mRlConnectionStatus = findViewById(R.id.rlConnectionStatus);

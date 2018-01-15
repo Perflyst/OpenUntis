@@ -115,28 +115,25 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 			toast = new BetterToast(this.getActivity());
 			addPreferencesFromResource(R.xml.prefs_styling);
 			sStylingFragment = this;
-			resetColorsListener = new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					SharedPreferences.Editor editor = PreferenceManager
-							.getDefaultSharedPreferences(StylingFragment.this.getActivity()).edit();
-					editor.remove("preference_background_regular").apply();
-					editor.remove("preference_background_regular_past").apply();
-					editor.remove("preference_background_exam").apply();
-					editor.remove("preference_background_exam_past").apply();
-					editor.remove("preference_background_irregular").apply();
-					editor.remove("preference_background_irregular_past").apply();
-					editor.remove("preference_background_cancelled").apply();
-					editor.remove("preference_background_cancelled_past").apply();
-					editor.remove("preference_background_free").apply();
-					editor.remove("preference_marker").apply();
-					toast.showToast(R.string.toast_colors_reset, Toast.LENGTH_LONG);
-					setPreferenceScreen(null);
-					addPreferencesFromResource(R.xml.prefs_styling);
-					setupEverything();
-					restartOnExit(getActivity());
-					return true;
-				}
+			resetColorsListener = preference -> {
+				SharedPreferences.Editor editor = PreferenceManager
+						.getDefaultSharedPreferences(StylingFragment.this.getActivity()).edit();
+				editor.remove("preference_background_regular").apply();
+				editor.remove("preference_background_regular_past").apply();
+				editor.remove("preference_background_exam").apply();
+				editor.remove("preference_background_exam_past").apply();
+				editor.remove("preference_background_irregular").apply();
+				editor.remove("preference_background_irregular_past").apply();
+				editor.remove("preference_background_cancelled").apply();
+				editor.remove("preference_background_cancelled_past").apply();
+				editor.remove("preference_background_free").apply();
+				editor.remove("preference_marker").apply();
+				toast.showToast(R.string.toast_colors_reset, Toast.LENGTH_LONG);
+				setPreferenceScreen(null);
+				addPreferencesFromResource(R.xml.prefs_styling);
+				setupEverything();
+				restartOnExit(getActivity());
+				return true;
 			};
 			setupEverything();
 		}
@@ -172,21 +169,15 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 
 			for (String prefKey : preferencesNeedingRefresh)
 				findPreference(prefKey).setOnPreferenceChangeListener(
-						new Preference.OnPreferenceChangeListener() {
-							@Override
-							public boolean onPreferenceChange(Preference preference, Object newValue) {
-								restartOnExit(getActivity());
-								return true;
-							}
+						(preference, newValue) -> {
+							restartOnExit(getActivity());
+							return true;
 						});
 
 			findPreference("preference_use_theme_background").setOnPreferenceChangeListener(
-					new Preference.OnPreferenceChangeListener() {
-						@Override
-						public boolean onPreferenceChange(Preference preference, Object newValue) {
-							setupEnabledItemsOnThemeBackground((Boolean) newValue);
-							return true;
-						}
+					(preference, newValue) -> {
+						setupEnabledItemsOnThemeBackground((Boolean) newValue);
+						return true;
 					});
 		}
 
@@ -213,16 +204,11 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				final String key = colorPrefs.getKey(i);
 				final int id = i;
 				((ColorPreference) findPreference(key)).setOnShowDialogListener(
-						new ColorPreference.OnShowDialogListener() {
-							@Override
-							public void onShowColorPickerDialog(String title, int currentColor) {
-								new ColorPickerDialogFragment.Builder(id, currentColor)
-										.title(title)
-										.showHexadecimalInput()
-										.build()
-										.show(getFragmentManager(), key + "_dialog");
-							}
-						});
+						(title, currentColor) -> new ColorPickerDialogFragment.Builder(id, currentColor)
+								.title(title)
+								.showHexadecimalInput()
+								.build()
+								.show(getFragmentManager(), key + "_dialog"));
 			}
 
 			Preference reset = findPreference("preference_timetable_colors_reset");
@@ -266,24 +252,18 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 			addPreferencesFromResource(R.xml.prefs_notifications);
 
 			findPreference("preference_notifications_enable").setOnPreferenceClickListener(
-					new Preference.OnPreferenceClickListener() {
-						@Override
-						public boolean onPreferenceClick(Preference preference) {
-							if (!preference.isEnabled())
-								((NotificationManager) getActivity()
-										.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
-							return true;
-						}
+					preference -> {
+						if (!preference.isEnabled())
+							((NotificationManager) getActivity()
+									.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+						return true;
 					});
 
 			findPreference("preference_notifications_clear").setOnPreferenceClickListener(
-					new Preference.OnPreferenceClickListener() {
-						@Override
-						public boolean onPreferenceClick(Preference preference) {
-							((NotificationManager) getActivity()
-									.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
-							return true;
-						}
+					preference -> {
+						((NotificationManager) getActivity()
+								.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+						return true;
 					});
 		}
 
@@ -315,21 +295,15 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 					.setEntryValues(roomList);
 
 			findPreference("preference_room_to_display_in_free_lessons")
-					.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-						@Override
-						public boolean onPreferenceChange(Preference preference, Object newValue) {
-							restartOnExit(getActivity());
-							return true;
-						}
+					.setOnPreferenceChangeListener((preference, newValue) -> {
+						restartOnExit(getActivity());
+						return true;
 					});
 
 			findPreference("preference_room_to_display_in_free_lessons_trim")
-					.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-						@Override
-						public boolean onPreferenceChange(Preference preference, Object newValue) {
-							restartOnExit(getActivity());
-							return true;
-						}
+					.setOnPreferenceChangeListener((preference, newValue) -> {
+						restartOnExit(getActivity());
+						return true;
 					});
 		}
 
@@ -361,45 +335,36 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 					.getSharedPreferences("login_data", MODE_PRIVATE);
 			Preference prefKey = findPreference("preference_account_access_key");
 			prefKey.setSummary(prefs.getString("key", "UNKNOWN"));
-			prefKey.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					ClipboardManager clipboard = (ClipboardManager) getActivity()
-							.getSystemService(Context.CLIPBOARD_SERVICE);
-					ClipData clip = ClipData.newPlainText(getString(R.string.preference_account_access_key),
-							prefs.getString("key", "UNKNOWN"));
-					clipboard.setPrimaryClip(clip);
-					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
-					return true;
-				}
+			prefKey.setOnPreferenceClickListener(preference -> {
+				ClipboardManager clipboard = (ClipboardManager) getActivity()
+						.getSystemService(Context.CLIPBOARD_SERVICE);
+				ClipData clip = ClipData.newPlainText(getString(R.string.preference_account_access_key),
+						prefs.getString("key", "UNKNOWN"));
+				clipboard.setPrimaryClip(clip);
+				toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
+				return true;
 			});
 
 			Preference prefFirebaseKey = findPreference("preference_account_firebase_key");
 			prefFirebaseKey.setSummary(FirebaseInstanceId.getInstance().getToken());
-			prefFirebaseKey.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					ClipboardManager clipboard = (ClipboardManager) getActivity()
-							.getSystemService(Context.CLIPBOARD_SERVICE);
-					ClipData clip = ClipData.newPlainText(getString(R.string.firebase_key),
-							FirebaseInstanceId.getInstance().getToken());
-					clipboard.setPrimaryClip(clip);
-					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
-					return true;
-				}
+			prefFirebaseKey.setOnPreferenceClickListener(preference -> {
+				ClipboardManager clipboard = (ClipboardManager) getActivity()
+						.getSystemService(Context.CLIPBOARD_SERVICE);
+				ClipData clip = ClipData.newPlainText(getString(R.string.firebase_key),
+						FirebaseInstanceId.getInstance().getToken());
+				clipboard.setPrimaryClip(clip);
+				toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
+				return true;
 			});
 
 			findPreference("preference_account_logout").setOnPreferenceClickListener(
-					new Preference.OnPreferenceClickListener() {
-						@Override
-						public boolean onPreferenceClick(Preference preference) {
-							getActivity().getSharedPreferences("login_data", MODE_PRIVATE)
-									.edit().clear().apply();
-							ListManager lm = new ListManager(getActivity());
-							lm.delete("userData", false);
-							restartApplication(getActivity());
-							return true;
-						}
+					preference -> {
+						getActivity().getSharedPreferences("login_data", MODE_PRIVATE)
+								.edit().clear().apply();
+						ListManager lm = new ListManager(getActivity());
+						lm.delete("userData", false);
+						restartApplication(getActivity());
+						return true;
 					});
 		}
 
@@ -435,12 +400,9 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 
 			for (String prefKey : preferencesNeedingRefresh)
 				findPreference(prefKey).setOnPreferenceChangeListener(
-						new Preference.OnPreferenceChangeListener() {
-							@Override
-							public boolean onPreferenceChange(Preference preference, Object newValue) {
-								restartOnExit(getActivity());
-								return true;
-							}
+						(preference, newValue) -> {
+							restartOnExit(getActivity());
+							return true;
 						});
 		}
 
@@ -467,61 +429,47 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 			super.onCreate(savedInstanceState);
 			addPreferencesFromResource(R.xml.prefs_about);
 			findPreference("preference_info_contact_email").setOnPreferenceClickListener(
-					new Preference.OnPreferenceClickListener() {
-						public boolean onPreferenceClick(Preference preference) {
-							SharedPreferences prefs = getActivity()
-									.getSharedPreferences("login_data", MODE_PRIVATE);
-							Intent i3 = new Intent(Intent.ACTION_SEND);
-							i3.setType("plain/text");
-							i3.putExtra(Intent.EXTRA_EMAIL,
-									new String[]{getString(R.string.contact_email)});
-							i3.putExtra(Intent.EXTRA_SUBJECT, "BetterUntis Feedback from user "
-									+ prefs.getString("user", "UNKNOWN"));
-							startActivity(Intent.createChooser(i3, getString(R.string.give_feedback)));
-							return true;
-						}
+					preference -> {
+						SharedPreferences prefs = getActivity()
+								.getSharedPreferences("login_data", MODE_PRIVATE);
+						Intent i3 = new Intent(Intent.ACTION_SEND);
+						i3.setType("plain/text");
+						i3.putExtra(Intent.EXTRA_EMAIL,
+								new String[]{getString(R.string.contact_email)});
+						i3.putExtra(Intent.EXTRA_SUBJECT, "BetterUntis Feedback from user "
+								+ prefs.getString("user", "UNKNOWN"));
+						startActivity(Intent.createChooser(i3, getString(R.string.give_feedback)));
+						return true;
 					});
 
 			final Preference prefVersion = findPreference("preference_info_app_version");
 			prefVersion.setSummary(getString(R.string.app_version_full,
 					BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
-			prefVersion.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					clicks++;
-					if (clicks > BuildConfig.VERSION_CODE)
-						prefVersion.setSummary(getString(R.string.app_version_full, BuildConfig.VERSION_NAME, clicks));
-					return true;
-				}
+			prefVersion.setOnPreferenceClickListener(preference -> {
+				clicks++;
+				if (clicks > BuildConfig.VERSION_CODE)
+					prefVersion.setSummary(getString(R.string.app_version_full, BuildConfig.VERSION_NAME, clicks));
+				return true;
 			});
 
 			findPreference("preference_info_changelog").setOnPreferenceClickListener(
-					new Preference.OnPreferenceClickListener() {
-						@Override
-						public boolean onPreferenceClick(Preference preference) {
-							new DisplayChangelog(getActivity())
-									.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
-							return true;
-						}
+					preference -> {
+						new DisplayChangelog(getActivity())
+								.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
+						return true;
 					});
 
 			findPreference("preference_send_stats").setOnPreferenceClickListener(
-					new Preference.OnPreferenceClickListener() {
-						@Override
-						public boolean onPreferenceClick(Preference preference) {
-							// TODO: Disable the Preference and send a request to the server with the current settings and the message to log out.
-							// After that re-enable the preference and show a toast like "You opted out".
-							return false;
-						}
+					preference -> {
+						// TODO: Disable the Preference and send a request to the server with the current settings and the message to log out.
+						// After that re-enable the preference and show a toast like "You opted out".
+						return false;
 					});
 
 			findPreference("preference_info_stats").setOnPreferenceClickListener(
-					new Preference.OnPreferenceClickListener() {
-						@Override
-						public boolean onPreferenceClick(Preference preference) {
-							// TODO: Show a dialog with this information
-							return false;
-						}
+					preference -> {
+						// TODO: Show a dialog with this information
+						return false;
 					});
 		}
 

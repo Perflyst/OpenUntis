@@ -10,8 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -52,42 +50,27 @@ public class ActivityAppUpdate extends Activity {
 		final TextView tvCurrentVersion = findViewById(R.id.tvCurrentVersion);
 		final TextView tvNewVersion = findViewById(R.id.tvNewVersion);
 
-		btnNotNow.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Intent intent = new Intent(getApplicationContext(), ActivityMain.class);
-				intent.putExtra("disable_update_check", true);
-				startActivity(intent);
-				finish();
-			}
+		btnNotNow.setOnClickListener(view -> {
+			Intent intent = new Intent(getApplicationContext(), ActivityMain.class);
+			intent.putExtra("disable_update_check", true);
+			startActivity(intent);
+			finish();
 		});
 
-		btnUpdate.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				setContentView(R.layout.download);
-				mProgressBar = findViewById(R.id.pbDownload);
-				mTvProgress = findViewById(R.id.tvDownload);
+		btnUpdate.setOnClickListener(view -> {
+			setContentView(R.layout.download);
+			mProgressBar = findViewById(R.id.pbDownload);
+			mTvProgress = findViewById(R.id.tvDownload);
 
-				mDownloadTask = new DownloadTask();
-				mDownloadTask
-						.execute("https://data.sapuseven.com/BetterUntis/download.php?redirect=1");
-				mRunnable = new Runnable() {
-					public void run() {
-						cancel();
-					}
-				};
-				mTimeout.postDelayed(mRunnable, TIMEOUT);
-			}
+			mDownloadTask = new DownloadTask();
+			mDownloadTask
+					.execute("https://data.sapuseven.com/BetterUntis/download.php?redirect=1");
+			mRunnable = () -> cancel();
+			mTimeout.postDelayed(mRunnable, TIMEOUT);
 		});
 
-		btnViewChangelog.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				new DisplayChangelog(ActivityAppUpdate.this)
-						.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, getIntent().getIntExtra("currentVersionCode", 0));
-			}
-		});
+		btnViewChangelog.setOnClickListener(view -> new DisplayChangelog(ActivityAppUpdate.this)
+				.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, getIntent().getIntExtra("currentVersionCode", 0)));
 
 		tvCurrentVersion.setText(getIntent().getStringExtra("currentVersion"));
 		tvNewVersion.setText(getIntent().getStringExtra("newVersion"));
@@ -98,17 +81,11 @@ public class ActivityAppUpdate extends Activity {
 		setContentView(R.layout.download_failed);
 		Button try_again = findViewById(R.id.btnTryAgain);
 		Button manual = findViewById(R.id.btnManualUpdate);
-		try_again.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				recreate();
-			}
-		});
-		manual.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-						Uri.parse("http://data.sapuseven.com/BetterUntis/download.php"));
-				startActivity(browserIntent);
-			}
+		try_again.setOnClickListener(v -> recreate());
+		manual.setOnClickListener(v -> {
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+					Uri.parse("http://data.sapuseven.com/BetterUntis/download.php"));
+			startActivity(browserIntent);
 		});
 	}
 

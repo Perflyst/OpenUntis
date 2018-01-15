@@ -29,40 +29,38 @@ public abstract class AutoUpdater {
 	}
 
 	public void startAutoUpdate(final Context context) {
-		new Thread(new Runnable() {
-			public void run() {
-				// clean up old update files
-				File dir = new File(context.getCacheDir() + "/update");
-				String[] children = dir.list();
-				if (children != null)
-					for (String aChildren : children) //noinspection ResultOfMethodCallIgnored
-						new File(dir, aChildren).delete();
+		new Thread(() -> {
+			// clean up old update files
+			File dir = new File(context.getCacheDir() + "/update");
+			String[] children = dir.list();
+			if (children != null)
+				for (String aChildren : children) //noinspection ResultOfMethodCallIgnored
+					new File(dir, aChildren).delete();
 
-				try {
-					url = new URL(versionURL);
-					urlConnection = (HttpURLConnection) url.openConnection();
-					in = new BufferedInputStream(urlConnection.getInputStream());
-				} catch (IOException e) {
-					e.printStackTrace();
-					return;
-				}
-				appVersion = pInfo.versionCode - 1;
-				JSONObject newVersion;
-				try {
-					newVersion = new JSONObject(readStream(in));
-				} catch (JSONException e) {
-					e.printStackTrace();
-					return;
-				}
-				urlConnection.disconnect();
-				try {
-					if (newVersion.length() > 0 && newVersion.getJSONObject("result").getInt("versionCode") > appVersion)
-						onAppVersionOutdated(appVersion, pInfo.versionName,
-								newVersion.getJSONObject("result").getInt("versionCode"),
-								newVersion.getJSONObject("result").getString("versionName"));
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
+			try {
+				url = new URL(versionURL);
+				urlConnection = (HttpURLConnection) url.openConnection();
+				in = new BufferedInputStream(urlConnection.getInputStream());
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+			appVersion = pInfo.versionCode - 1;
+			JSONObject newVersion;
+			try {
+				newVersion = new JSONObject(readStream(in));
+			} catch (JSONException e) {
+				e.printStackTrace();
+				return;
+			}
+			urlConnection.disconnect();
+			try {
+				if (newVersion.length() > 0 && newVersion.getJSONObject("result").getInt("versionCode") > appVersion)
+					onAppVersionOutdated(appVersion, pInfo.versionName,
+							newVersion.getJSONObject("result").getInt("versionCode"),
+							newVersion.getJSONObject("result").getString("versionName"));
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
 		}).start();
 	}

@@ -44,29 +44,23 @@ public class ActivityFeatures extends AppCompatActivity {
 		new loadList().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
 		Button btnSuggestNew = findViewById(R.id.btnSuggestNew);
-		btnSuggestNew.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				final Dialog dialog = new Dialog(ActivityFeatures.this);
-				dialog.setContentView(R.layout.layout_suggest_new_feature);
+		btnSuggestNew.setOnClickListener(view -> {
+			final Dialog dialog = new Dialog(ActivityFeatures.this);
+			dialog.setContentView(R.layout.layout_suggest_new_feature);
 
-				final EditText etTitle = dialog.findViewById(R.id.etTitle);
-				final EditText etDesc = dialog.findViewById(R.id.etDesc);
-				Button btnSend = dialog.findViewById(R.id.btnSend);
-				btnSend.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						dialog.dismiss();
-						new suggestFeature().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-								etTitle.getText().toString(), etDesc.getText().toString());
-					}
-				});
-				dialog.show();
-				Window window = dialog.getWindow();
-				assert window != null;
-				window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT,
-						LinearLayout.LayoutParams.MATCH_PARENT);
-			}
+			final EditText etTitle = dialog.findViewById(R.id.etTitle);
+			final EditText etDesc = dialog.findViewById(R.id.etDesc);
+			Button btnSend = dialog.findViewById(R.id.btnSend);
+			btnSend.setOnClickListener(v -> {
+				dialog.dismiss();
+				new suggestFeature().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+						etTitle.getText().toString(), etDesc.getText().toString());
+			});
+			dialog.show();
+			Window window = dialog.getWindow();
+			assert window != null;
+			window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.MATCH_PARENT);
 		});
 	}
 

@@ -80,39 +80,33 @@ public class AdapterFeatures extends BaseAdapter {
 			tintDrawable(context, btnDislike.getDrawable(), R.attr.colorPrimary);
 
 		//noinspection ResourceType
-		btnLike.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (data.get(position).getHasVoted() != 1) {
-					int[] attrs = new int[]{R.attr.colorPrimary, android.R.attr.textColorPrimary};
-					TypedArray ta = context.obtainStyledAttributes(attrs);
-					int colored = ta.getColor(0, 0);
-					int uncolored = ta.getColor(1, 0);
-					ta.recycle();
-					DrawableCompat.setTint(btnLike.getDrawable(), colored);
-					DrawableCompat.setTint(btnDislike.getDrawable(), uncolored);
-					tvLikes.setText(Integer.toString(data.get(position).getLikes() - voteOffset + 1));
-					new Vote().executeOnExecutor(THREAD_POOL_EXECUTOR, data.get(position).getId(), 1);
-					data.get(position).setHasVoted(1);
-				}
+		btnLike.setOnClickListener(view -> {
+			if (data.get(position).getHasVoted() != 1) {
+				int[] attrs = new int[]{R.attr.colorPrimary, android.R.attr.textColorPrimary};
+				TypedArray ta = context.obtainStyledAttributes(attrs);
+				int colored = ta.getColor(0, 0);
+				int uncolored = ta.getColor(1, 0);
+				ta.recycle();
+				DrawableCompat.setTint(btnLike.getDrawable(), colored);
+				DrawableCompat.setTint(btnDislike.getDrawable(), uncolored);
+				tvLikes.setText(Integer.toString(data.get(position).getLikes() - voteOffset + 1));
+				new Vote().executeOnExecutor(THREAD_POOL_EXECUTOR, data.get(position).getId(), 1);
+				data.get(position).setHasVoted(1);
 			}
 		});
 		//noinspection ResourceType
-		btnDislike.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (data.get(position).getHasVoted() != -1) {
-					int[] attrs = new int[]{R.attr.colorPrimary, android.R.attr.textColorPrimary};
-					TypedArray ta = context.obtainStyledAttributes(attrs);
-					int colored = ta.getColor(0, 0);
-					int uncolored = ta.getColor(1, 0);
-					ta.recycle();
-					DrawableCompat.setTint(btnLike.getDrawable(), uncolored);
-					DrawableCompat.setTint(btnDislike.getDrawable(), colored);
-					tvLikes.setText(Integer.toString(data.get(position).getLikes() - voteOffset - 1));
-					new Vote().executeOnExecutor(THREAD_POOL_EXECUTOR, data.get(position).getId(), -1);
-					data.get(position).setHasVoted(-1);
-				}
+		btnDislike.setOnClickListener(view -> {
+			if (data.get(position).getHasVoted() != -1) {
+				int[] attrs = new int[]{R.attr.colorPrimary, android.R.attr.textColorPrimary};
+				TypedArray ta = context.obtainStyledAttributes(attrs);
+				int colored = ta.getColor(0, 0);
+				int uncolored = ta.getColor(1, 0);
+				ta.recycle();
+				DrawableCompat.setTint(btnLike.getDrawable(), uncolored);
+				DrawableCompat.setTint(btnDislike.getDrawable(), colored);
+				tvLikes.setText(Integer.toString(data.get(position).getLikes() - voteOffset - 1));
+				new Vote().executeOnExecutor(THREAD_POOL_EXECUTOR, data.get(position).getId(), -1);
+				data.get(position).setHasVoted(-1);
 			}
 		});
 		return v;
