@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+	<entry>
+		<key>recommendation_subject</key>
+		<value>Try out BetterUntis!</value>
+	</entry>
+	<entry>
+		<key>recommendation_text</key>
+		<value>Tired of the default Untis Mobile app? Use BetterUntis! More information at
+			https://sapuseven.com/apps/BetterUntis
+		</value>
+	</entry>
+</defaultsMap>

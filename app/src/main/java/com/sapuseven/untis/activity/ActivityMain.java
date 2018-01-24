@@ -123,11 +123,10 @@ public class ActivityMain extends AppCompatActivity
 		Conversions.setScale(this);
 
 		firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-		FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-				.setDeveloperModeEnabled(BuildConfig.DEBUG)
-				.build();
-		firebaseRemoteConfig.setConfigSettings(configSettings);
+		firebaseRemoteConfig.setConfigSettings(new FirebaseRemoteConfigSettings.Builder().build());
 		firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
+
+		setupRemoteConfig();
 
 		mItemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
@@ -393,6 +392,14 @@ public class ActivityMain extends AppCompatActivity
 		}
 	}
 
+	private void setupRemoteConfig() {
+		firebaseRemoteConfig.fetch(3600)
+				.addOnCompleteListener(this, task -> {
+					if (task.isSuccessful())
+						firebaseRemoteConfig.activateFetched();
+				});
+	}
+
 	private String getTeacherTitleByName(String teacherName) {
 		ElementName teacher = new ElementName(TEACHER).setUserDataList(mUserDataList);
 		return getString(R.string.title_teacher,
@@ -642,7 +649,7 @@ public class ActivityMain extends AppCompatActivity
 					.optJSONArray(masterDataField);
 			for (int i = 0; i < roomList.length(); i++)
 				list.add(roomList.getJSONObject(i).getString("name"));
-			Collections.sort(list, (s1, s2) -> s1.compareToIgnoreCase(s2));
+			Collections.sort(list, String::compareToIgnoreCase);
 
 			final AdapterGridView adapter = new AdapterGridView(this, list);
 			TextInputLayout titleContainer = new TextInputLayout(this);

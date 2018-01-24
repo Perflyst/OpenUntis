@@ -39,11 +39,11 @@ android {
 		}
 	}
 	useLibrary 'org.apache.http.legacy'
-	return void
 	compileOptions {
 		targetCompatibility 1.8
 		sourceCompatibility 1.8
 	}
+	return void
 }
 
 repositories {
@@ -60,7 +60,8 @@ dependencies {
 	compile 'com.google.code.gson:gson:2.8.0'
 	compile 'commons-codec:commons-codec:1.6'
 	compile 'org.jetbrains:annotations-java5:15.0'
-	compile 'com.google.firebase:firebase-messaging:11.6.2'
+	compile 'com.google.firebase:firebase-messaging:11.8.0'
+	compile 'com.google.firebase:firebase-config:11.8.0'
 	compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
 		transitive = true
 	}

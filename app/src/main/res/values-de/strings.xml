@@ -223,8 +223,6 @@
 	<string name="preference_background_cancelled">Ausgefallene Stunden</string>
 	<string name="preference_background_cancelled_past">Vergangene ausgefallene Stunden</string>
 	<string name="title_share">Teilen</string>
-	<string name="recommendation_subject">Versuche BetterUntis!</string>
-	<string name="recommendation_text">Genug von der originalen Untis Mobile App? Verwende BetterUntis! Mehr informationen auf https://sapuseven.com/apps/BetterUntis</string>
 	<string name="link_sending_caption">Link zu %1$s teilen via…</string>
 	<string name="view_changelog">Änderungen anzeigen</string>
 	<string name="current_version">Installierte Version:</string>

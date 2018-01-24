@@ -211,8 +211,6 @@
 	<string name="preference_category_coming_soon">Coming soon</string>
 	<string name="alert">Alert</string>
 	<string name="title_share">Share</string>
-	<string name="recommendation_subject">Try out BetterUntis!</string>
-	<string name="recommendation_text">Tired of the default Untis Mobile app? Use BetterUntis! More information at https://sapuseven.com/apps/BetterUntis</string>
 	<string name="link_sending_caption">Share the link to %1$s via…</string>
 	<string name="view_changelog">View Changelog</string>
 	<string name="current_version">Current version:</string>
