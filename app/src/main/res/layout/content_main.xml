@@ -21,9 +21,10 @@
 			android:id="@+id/ivSelectDate"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
+			android:background="?attr/selectableItemBackgroundBorderless"
 			android:contentDescription="@string/jump_to_date"
 			android:padding="4dp"
-			android:tint="@color/colorSecondary_text"
+			android:tint="?android:attr/textColorSecondary"
 			app:srcCompat="@drawable/ic_calendar"/>
 
 	</RelativeLayout>

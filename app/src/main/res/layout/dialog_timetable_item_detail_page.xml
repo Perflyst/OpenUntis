@@ -37,7 +37,7 @@
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/teachers"
-			android:tint="@color/colorPrimary_text"
+			android:tint="?android:attr/textColorPrimary"
 			app:srcCompat="@drawable/ic_teacher"/>
 
 		<HorizontalScrollView
@@ -74,7 +74,7 @@
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/classes"
-			android:tint="@color/colorPrimary_text"
+			android:tint="?android:attr/textColorPrimary"
 			app:srcCompat="@drawable/ic_classes"/>
 
 		<HorizontalScrollView
@@ -111,7 +111,7 @@
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/rooms"
-			android:tint="@color/colorPrimary_text"
+			android:tint="?android:attr/textColorPrimary"
 			app:srcCompat="@drawable/ic_rooms"/>
 
 		<HorizontalScrollView
