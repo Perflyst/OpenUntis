@@ -59,6 +59,7 @@ import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
 import com.sapuseven.untis.utils.TimegridUnitManager;
+import com.sapuseven.untis.utils.UserRegistration;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -137,7 +138,7 @@ public class ActivityMain extends AppCompatActivity
 			finish();
 		} else {
 			if (BuildConfig.DEBUG)
-				new ActivityUserRegistration().submit(this);
+				new UserRegistration().submit(this);
 
 			Intent intent = new Intent(this, StartupReceiver.class);
 			sendBroadcast(intent);
