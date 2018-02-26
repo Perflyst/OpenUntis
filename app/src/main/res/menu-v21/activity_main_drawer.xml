@@ -34,7 +34,6 @@
 		</item>
 		<item
 			android:id="@+id/nav_suggested_features"
-			android:enabled="false"
 			android:icon="@drawable/ic_suggested_features"
 			android:title="@string/title_new_features">
 		</item>

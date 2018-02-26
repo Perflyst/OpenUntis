@@ -4,12 +4,16 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:padding="16dp">
+	android:padding="8dp">
 
 	<TextView
 		android:id="@+id/tvTitle"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
+		android:layout_marginEnd="8dp"
+		android:layout_marginRight="8dp"
+		android:layout_toLeftOf="@+id/ivDragHandle"
+		android:layout_toStartOf="@+id/ivDragHandle"
 		android:textColor="?android:attr/textColorPrimary"
 		android:textSize="16sp"/>
 
@@ -17,76 +21,24 @@
 		android:id="@+id/tvDesc"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_alignParentLeft="true"
-		android:layout_alignParentStart="true"
 		android:layout_below="@+id/tvTitle"
 		android:layout_marginEnd="8dp"
 		android:layout_marginRight="8dp"
 		android:layout_marginTop="8dp"
-		android:layout_toLeftOf="@+id/llLikeOrDislike"
-		android:layout_toStartOf="@+id/llLikeOrDislike"
+		android:layout_toLeftOf="@+id/ivDragHandle"
+		android:layout_toStartOf="@+id/ivDragHandle"
 		android:textColor="?android:attr/textColorSecondary"
 		android:textSize="16sp"/>
 
-	<LinearLayout
-		android:id="@+id/llLikeOrDislike"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentBottom="true"
+	<ImageView
+		android:id="@+id/ivDragHandle"
+		android:layout_width="32dp"
+		android:layout_height="32dp"
 		android:layout_alignParentEnd="true"
 		android:layout_alignParentRight="true"
-		android:layout_below="@+id/tvTitle"
-		android:layout_marginTop="8dp"
-		android:baselineAligned="false"
-		android:gravity="bottom"
-		android:orientation="horizontal">
-
-		<LinearLayout
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:gravity="center"
-			android:orientation="horizontal">
-
-			<ImageButton
-				android:id="@+id/btnLike"
-				style="@style/Widget.AppCompat.Button.Borderless"
-				android:layout_width="64dp"
-				android:layout_height="64dp"
-				android:layout_weight="1"
-				android:contentDescription="@string/btn_like"
-				android:padding="8dp"
-				android:text="@string/minus"
-				android:textSize="16sp"
-				android:tint="@color/colorPrimary_text"
-				app:srcCompat="@drawable/ic_like"/>
-
-			<TextView
-				android:id="@+id/tvLikes"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_marginEnd="8dp"
-				android:layout_marginLeft="8dp"
-				android:layout_marginRight="8dp"
-				android:layout_marginStart="8dp"
-				android:layout_weight="1"
-				android:text="@string/placeholder_numeric"
-				android:textColor="?android:attr/textColorPrimary"
-				android:textSize="16sp"/>
-
-			<ImageButton
-				android:id="@+id/btnDislike"
-				style="@style/Widget.AppCompat.Button.Borderless"
-				android:layout_width="64dp"
-				android:layout_height="64dp"
-				android:layout_weight="1"
-				android:contentDescription="@string/btn_dislike"
-				android:text="@string/plus"
-				android:textSize="16sp"
-				android:tint="@color/colorPrimary_text"
-				app:srcCompat="@drawable/ic_dislike"/>
-
-		</LinearLayout>
-
-	</LinearLayout>
+		android:layout_centerVertical="true"
+		android:contentDescription="@string/drag_to_sort"
+		android:tint="?android:attr/textColorSecondary"
+		app:srcCompat="@drawable/ic_drag_handle"/>
 
 </RelativeLayout>

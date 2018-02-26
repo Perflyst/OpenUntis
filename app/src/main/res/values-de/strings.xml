@@ -72,7 +72,7 @@
 	<string name="placeholder_numeric">0</string>
 	<string name="plus">+</string>
 	<string name="new_features_header">Geplante Neuerungen</string>
-	<string name="new_features_body">Bewerte bestehende Vorschläge oder sende deine eigenen ein!\nBitte bewerte alle Einträge.</string>
+	<string name="new_features_body">Benutze drag\'n\'drop um die Vorschläge zu sortieren, je besser du ein Feature findest desto weiter oben!</string>
 	<string name="toast_colors_reset">Die Standardeinstellungen wurden übernommen.</string>
 	<string name="preference_marker">Zeitanzeige</string>
 	<string name="preference_background_irregular">Irreguläre Stunden</string>

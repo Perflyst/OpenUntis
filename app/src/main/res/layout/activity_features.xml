@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:sortableList="http://schemas.android.com/apk/res-auto"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical">
@@ -10,11 +11,11 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_marginBottom="4dp"
-		android:layout_marginEnd="16dp"
-		android:layout_marginLeft="16dp"
-		android:layout_marginRight="16dp"
-		android:layout_marginStart="16dp"
-		android:layout_marginTop="16dp"
+		android:layout_marginEnd="8dp"
+		android:layout_marginLeft="8dp"
+		android:layout_marginRight="8dp"
+		android:layout_marginStart="8dp"
+		android:layout_marginTop="8dp"
 		android:text="@string/new_features_header"
 		android:textColor="?android:attr/textColorPrimary"
 		android:textSize="16sp"/>
@@ -24,11 +25,11 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@+id/tvTitle"
-		android:layout_marginBottom="16dp"
-		android:layout_marginEnd="16dp"
-		android:layout_marginLeft="16dp"
-		android:layout_marginRight="16dp"
-		android:layout_marginStart="16dp"
+		android:layout_marginBottom="8dp"
+		android:layout_marginEnd="8dp"
+		android:layout_marginLeft="8dp"
+		android:layout_marginRight="8dp"
+		android:layout_marginStart="8dp"
 		android:text="@string/new_features_body"
 		android:textColor="?android:attr/textColorSecondary"
 		android:textSize="16sp"/>
@@ -41,18 +42,34 @@
 
 	<Button
 		android:id="@+id/btnSuggestNew"
+		style="@style/Widget.AppCompat.Button"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
 		android:text="@string/suggest_new_feature"/>
 
-	<ListView
+	<Button
+		android:id="@+id/btnSave"
+		style="@style/Widget.AppCompat.Button.Colored"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:text="Save"
+		android:textColor="@android:color/white"
+		android:visibility="gone"/>
+
+	<com.sapuseven.untis.view.SortableListView
 		android:id="@+id/lvFeatures"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_above="@+id/btnSuggestNew"
-		android:layout_below="@+id/tvDesc">
-	</ListView>
+		android:layout_below="@+id/tvDesc"
+		sortableList:drag_enabled="true"
+		sortableList:drag_handle_id="@id/ivDragHandle"
+		sortableList:drag_scroll_start="0.3"
+		sortableList:float_alpha="0.7"
+		sortableList:max_drag_scroll_speed="1">
+	</com.sapuseven.untis.view.SortableListView>
 
 	<ProgressBar
 		android:id="@+id/pbLoading"

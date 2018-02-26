@@ -1,18 +1,17 @@
 package com.sapuseven.untis.adapter;
 
-public class AdapterItemFeatures {
+import android.content.Context;
+
+import com.sapuseven.untis.view.SortableListViewItem;
+
+public class AdapterItemFeatures extends SortableListViewItem {
 	private String title;
 	private String desc;
-	private int likes;
 	private int id;
-	private int hasVoted;
+	private String label;
 
-	public int getHasVoted() {
-		return hasVoted;
-	}
-
-	public void setHasVoted(int hasVoted) {
-		this.hasVoted = hasVoted;
+	public AdapterItemFeatures(Context context) {
+		super(context);
 	}
 
 	public int getId() {
@@ -39,11 +38,11 @@ public class AdapterItemFeatures {
 		this.desc = desc;
 	}
 
-	public int getLikes() {
-		return likes;
+	public String getLabel() {
+		return label;
 	}
 
-	public void setLikes(int likes) {
-		this.likes = likes;
+	public void setLabel(String label) {
+		this.label = label;
 	}
 }

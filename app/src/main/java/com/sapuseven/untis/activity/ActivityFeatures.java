@@ -2,8 +2,6 @@ package com.sapuseven.untis.activity;
 
 import android.app.Dialog;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -18,43 +16,67 @@ import android.widget.Toast;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterFeatures;
 import com.sapuseven.untis.adapter.AdapterItemFeatures;
+import com.sapuseven.untis.utils.ApiRequest;
+import com.sapuseven.untis.view.SortableListView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
 public class ActivityFeatures extends AppCompatActivity {
+	private AdapterFeatures adapter;
+
+	private SortableListView.DropListener onDrop =
+			new SortableListView.DropListener() {
+				@Override
+				public void drop(int from, int to) {
+					showSaveButton(true);
+
+					AdapterItemFeatures item = (AdapterItemFeatures) adapter.getItem(from);
+
+					adapter.remove(from);
+					adapter.insert(item, to);
+					adapter.notifyDataSetChanged();
+
+					while (((AdapterItemFeatures) adapter.getItem(adapter.getCount() - 1)).getLabel() != null)
+						adapter.remove(adapter.getCount() - 1);
+				}
+			};
+
+	private void showSaveButton(boolean show) {
+		findViewById(R.id.btnSuggestNew).setVisibility(show ? View.INVISIBLE : View.VISIBLE);
+		findViewById(R.id.btnSave).setVisibility(show ? View.VISIBLE : View.GONE);
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		setupTheme(this, true);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_features);
 
-		new loadList().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		SortableListView lv = findViewById(R.id.lvFeatures);
+		lv.setDropListener(onDrop);
 
-		Button btnSuggestNew = findViewById(R.id.btnSuggestNew);
-		btnSuggestNew.setOnClickListener(view -> {
+		loadList();
+
+		findViewById(R.id.btnSuggestNew).setOnClickListener(view -> {
 			final Dialog dialog = new Dialog(ActivityFeatures.this);
-			dialog.setContentView(R.layout.layout_suggest_new_feature);
+			dialog.setContentView(R.layout.dialog_suggest_new_feature);
 
-			final EditText etTitle = dialog.findViewById(R.id.etTitle);
-			final EditText etDesc = dialog.findViewById(R.id.etDesc);
+			EditText etTitle = dialog.findViewById(R.id.etTitle);
+			EditText etDesc = dialog.findViewById(R.id.etDesc);
 			Button btnSend = dialog.findViewById(R.id.btnSend);
 			btnSend.setOnClickListener(v -> {
 				dialog.dismiss();
-				new suggestFeature().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-						etTitle.getText().toString(), etDesc.getText().toString());
+				suggestFeature(etTitle.getText().toString(), etDesc.getText().toString());
 			});
 			dialog.show();
 			Window window = dialog.getWindow();
@@ -62,118 +84,144 @@ public class ActivityFeatures extends AppCompatActivity {
 			window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.MATCH_PARENT);
 		});
-	}
 
-	private String readStream(InputStream is) {
-		try {
-			ByteArrayOutputStream bo = new ByteArrayOutputStream();
-			int i = is.read();
-			while (i != -1) {
-				bo.write(i);
-				i = is.read();
+		findViewById(R.id.btnSave).setOnClickListener(view -> {
+			SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
+			String user = prefs.getString("user", "");
+			String school = prefs.getString("school", "");
+
+			JSONArray features = new JSONArray();
+
+			for (AdapterItemFeatures feature : adapter.getData()) {
+				if (feature.getLabel() != null)
+					break;
+
+				features.put(feature.getId());
 			}
-			return bo.toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "";
-		}
+
+			ApiRequest api = new ApiRequest(this);
+
+			Map<String, String> params = new HashMap<>();
+			params.put("method", "saveRatedFeatures");
+			params.put("name", user);
+			params.put("school", school);
+			params.put("features", features.toString());
+
+			ApiRequest.ResponseHandler handler = response -> {
+				try {
+					if (new JSONObject(response).optString("result").equals("OK")) {
+						Toast.makeText(this, R.string.toast_ratings_saved,
+								Toast.LENGTH_SHORT).show();
+
+						showSaveButton(false);
+					} else {
+						Toast.makeText(this, R.string.toast_error_occurred,
+								Toast.LENGTH_SHORT).show();
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			};
+
+			api.setResponseHandler(handler).submit(params);
+		});
 	}
 
-	private class loadList extends AsyncTask<Void, Void, List<AdapterItemFeatures>> {
-		ListView lvFeatures;
-		ProgressBar pbLoading;
+	private void suggestFeature(String title, String desc) {
+		SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
+		String user = prefs.getString("user", "");
 
-		@Override
-		protected void onPreExecute() {
-			lvFeatures = findViewById(R.id.lvFeatures);
-			pbLoading = findViewById(R.id.pbLoading);
-			pbLoading.setVisibility(View.VISIBLE);
-		}
+		String lang = Locale.getDefault().getLanguage();
 
-		@Override
-		protected List<AdapterItemFeatures> doInBackground(Void... voids) {
-			final List<AdapterItemFeatures> items = new ArrayList<>();
+		ApiRequest api = new ApiRequest(this);
+
+		Map<String, String> params = new HashMap<>();
+		params.put("method", "addSuggestedFeature");
+		params.put("name", user);
+		params.put("lang", lang);
+		params.put("title", title);
+		params.put("desc", desc);
+
+		ApiRequest.ResponseHandler handler = response -> {
 			try {
-				SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
-				String user = prefs.getString("user", "");
-				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php" +
-						"?method=getSuggestedFeatures");
-				HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-				BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-				JSONObject list = new JSONObject(readStream(in));
-				urlConnection.disconnect();
-				final JSONArray suggestedFeatures = list.optJSONObject("result")
-						.optJSONArray("suggestedFeatures");
-				for (int i = 0; i < suggestedFeatures.length(); i++) {
-					final AdapterItemFeatures featureInfo = new AdapterItemFeatures();
-					final JSONObject item = suggestedFeatures.optJSONObject(i);
-					featureInfo.setTitle(item.optString("title"));
-					featureInfo.setDesc(item.optString("desc"));
-					int likes = 0;
-					for (int j = 0; j < item.optJSONArray("votes").length(); j++) {
-						likes += item.optJSONArray("votes").optJSONObject(j).optInt("vote");
-						if (item.optJSONArray("votes").optJSONObject(j)
-								.optString("name").equals(user))
-							featureInfo.setHasVoted(item.optJSONArray("votes")
-									.optJSONObject(j).optInt("vote"));
-					}
-					featureInfo.setLikes(likes);
-					featureInfo.setId(item.optInt("id"));
-					if (!item.optBoolean("disabled", false))
+				if (new JSONObject(response).optString("result").equals("OK")) {
+					Toast.makeText(this, R.string.toast_suggestion_submitted,
+							Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(this, R.string.toast_error_occurred,
+							Toast.LENGTH_SHORT).show();
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		};
+
+		api.setResponseHandler(handler).submit(params);
+	}
+
+	private void loadList() {
+		ListView lvFeatures = findViewById(R.id.lvFeatures);
+		ProgressBar pbLoading = findViewById(R.id.pbLoading);
+		pbLoading.setVisibility(View.VISIBLE);
+
+		SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
+		String user = prefs.getString("user", "");
+		String school = prefs.getString("school", "");
+
+		String lang = Locale.getDefault().getLanguage();
+
+		ApiRequest api = new ApiRequest(this);
+
+		Map<String, String> params = new HashMap<>();
+		params.put("method", "getSuggestedFeatures");
+		params.put("name", user);
+		params.put("school", school);
+		params.put("lang", lang);
+
+		ApiRequest.ResponseHandler handler = response -> {
+			List<AdapterItemFeatures> items = new ArrayList<>();
+
+			try {
+				JSONObject list = new JSONObject(response);
+				JSONArray ratedFeatures = list.optJSONObject("result").getJSONArray("ratedFeatures");
+				JSONArray newFeatures = list.optJSONObject("result").getJSONArray("newFeatures");
+
+				for (int i = 0; i < ratedFeatures.length(); i++) {
+					AdapterItemFeatures featureInfo = new AdapterItemFeatures(getApplicationContext());
+					JSONObject item = ratedFeatures.getJSONObject(i);
+
+					featureInfo.setTitle(item.getString("title"));
+					featureInfo.setDesc(item.getString("desc"));
+					featureInfo.setId(item.getInt("id"));
+					if (!item.optBoolean("disabled"))
 						items.add(featureInfo);
 				}
-			} catch (JSONException | IOException e) {
+
+				if (newFeatures.length() > 0) {
+					AdapterItemFeatures newFeaturesLabel = new AdapterItemFeatures(getApplicationContext());
+					newFeaturesLabel.setLabel("Unrated Features");
+					items.add(newFeaturesLabel);
+
+					for (int i = 0; i < newFeatures.length(); i++) {
+						AdapterItemFeatures featureInfo = new AdapterItemFeatures(getApplicationContext());
+						JSONObject item = newFeatures.getJSONObject(i);
+
+						featureInfo.setTitle(item.getString("title"));
+						featureInfo.setDesc(item.getString("desc"));
+						featureInfo.setId(item.getInt("id"));
+						if (!item.optBoolean("disabled"))
+							items.add(featureInfo);
+					}
+				}
+			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			return items;
-		}
 
-		@Override
-		protected void onPostExecute(List<AdapterItemFeatures> featureInfos) {
 			pbLoading.setVisibility(View.GONE);
-			lvFeatures.setAdapter(new AdapterFeatures(ActivityFeatures.this, featureInfos));
-		}
-	}
+			adapter = new AdapterFeatures(ActivityFeatures.this, items);
+			lvFeatures.setAdapter(adapter);
+		};
 
-	private class suggestFeature extends AsyncTask<String, Void, Boolean> {
-		@Override
-		protected Boolean doInBackground(String... values) {
-			HttpURLConnection urlConnection = null;
-			JSONObject list;
-			try {
-				SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
-				String user = prefs.getString("user", "");
-				Uri url = new Uri.Builder()
-						.scheme("https")
-						.authority("data.sapuseven.com")
-						.path("BetterUntis/api.php")
-						.appendQueryParameter("method", "addSuggestedFeature")
-						.appendQueryParameter("name", user)
-						.appendQueryParameter("title", values[0])
-						.appendQueryParameter("desc", values[1])
-						.build();
-				urlConnection = (HttpURLConnection) new URL(url.toString()).openConnection();
-				BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-				list = new JSONObject(readStream(in));
-			} catch (JSONException | IOException e) {
-				e.printStackTrace();
-				return false;
-			} finally {
-				if (urlConnection != null)
-					urlConnection.disconnect();
-			}
-			return list.optString("result").equals("OK");
-		}
-
-		@Override
-		protected void onPostExecute(Boolean success) {
-			if (success) {
-				Toast.makeText(ActivityFeatures.this, R.string.toast_suggestion_submitted,
-						Toast.LENGTH_SHORT).show();
-			} else {
-				Toast.makeText(ActivityFeatures.this, R.string.toast_error_occurred,
-						Toast.LENGTH_SHORT).show();
-			}
-		}
+		api.setResponseHandler(handler).submit(params);
 	}
 }

@@ -7,7 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -36,7 +36,6 @@ import android.view.ViewGroup;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -52,6 +51,7 @@ import com.sapuseven.untis.adapter.AdapterTimetable;
 import com.sapuseven.untis.adapter.AdapterTimetableHeader;
 import com.sapuseven.untis.fragment.FragmentDatePicker;
 import com.sapuseven.untis.notification.StartupReceiver;
+import com.sapuseven.untis.utils.ApiRequest;
 import com.sapuseven.untis.utils.AutoUpdater;
 import com.sapuseven.untis.utils.Conversions;
 import com.sapuseven.untis.utils.DateOperations;
@@ -65,19 +65,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import io.fabric.sdk.android.Fabric;
@@ -88,7 +86,6 @@ import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.ElementName.TEACHER;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefBool;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
-import static com.sapuseven.untis.utils.StreamUtils.readStream;
 import static com.sapuseven.untis.utils.ThemeUtils.restartApplication;
 import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 
@@ -184,8 +181,6 @@ public class ActivityMain extends AppCompatActivity
 					&& c.getFirstDayOfWeek() == Calendar.MONDAY))
 				currentViewPos++;
 
-			//setLastRefresh(((FragmentTimetable) mPagerTableAdapter.getItem(currentViewPos)).getLastRefresh());
-
 			mPagerHeader = findViewById(R.id.viewpagerHeader);
 			mPagerHeaderAdapter = new AdapterTimetableHeader(getSupportFragmentManager());
 			mPagerHeader.setAdapter(mPagerHeaderAdapter);
@@ -194,6 +189,7 @@ public class ActivityMain extends AppCompatActivity
 			mPagerTableAdapter = new AdapterTimetable(getSupportFragmentManager());
 			mPagerTable.setAdapter(mPagerTableAdapter);
 
+			//noinspection AndroidLintClickableViewAccessibility
 			mPagerTable.setOnTouchListener((v, event) -> {
 				if (event.getAction() == MotionEvent.ACTION_MOVE
 						&& !swipeRefresh.isRefreshing())
@@ -306,9 +302,8 @@ public class ActivityMain extends AppCompatActivity
 			mPagerTable.setCurrentItem(currentViewPos);
 
 			checkVersion();
-			// TODO: Re-enable with the new feature voting system
-			//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-			//new CheckForNewFeatures().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+				checkForNewFeatures();
 
 			final int oldVersion = prefs.getInt("last_version", 0);
 			if (oldVersion < BuildConfig.VERSION_CODE) {
@@ -560,14 +555,8 @@ public class ActivityMain extends AppCompatActivity
 				startActivity(i1);
 				break;
 			case R.id.nav_suggested_features:
-				// TODO: Re-implement a new feature voting system
-				//Intent i2 = new Intent(ActivityMain.this, ActivityFeatures.class);
-				//startActivity(i2);
-				new AlertDialog.Builder(this)
-						.setTitle(R.string.feature_disabled_title)
-						.setMessage(R.string.feature_disabled)
-						.setPositiveButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss())
-						.show();
+				Intent i2 = new Intent(ActivityMain.this, ActivityFeatures.class);
+				startActivity(i2);
 				break;
 			case R.id.nav_free_rooms:
 				Intent i3 = new Intent(ActivityMain.this, ActivityRoomFinder.class);
@@ -827,42 +816,33 @@ public class ActivityMain extends AppCompatActivity
 			return getResources().getQuantityString(R.plurals.time_diff_days, (int) (diff / DAY_MILLIS), diff / DAY_MILLIS);
 	}
 
-	private class CheckForNewFeatures extends AsyncTask<Void, Void, Boolean> {
-		ProgressBar pbLoading;
+	private void checkForNewFeatures() {
+		SharedPreferences prefs = getLoginData();
+		String user = prefs.getString("user", "");
+		String school = prefs.getString("school", "");
 
-		@Override
-		protected void onPreExecute() {
-			pbLoading = findViewById(R.id.pbLoading);
-			pbLoading.setVisibility(View.VISIBLE);
-		}
+		ApiRequest api = new ApiRequest(this);
 
-		@Override
-		protected Boolean doInBackground(Void... voids) {
+		Map<String, String> params = new HashMap<>();
+		params.put("method", "checkForNewFeatures");
+		params.put("school", school);
+		params.put("name", user);
+
+		ApiRequest.ResponseHandler handler = response -> {
 			try {
-				SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
-				String user = prefs.getString("user", "");
-				URL url = new URL("https://data.sapuseven.com/BetterUntis/api.php" +
-						"?method=checkForNewFeatures&name=" + user);
-				HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-				BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
-				JSONObject list = new JSONObject(readStream(in));
-				urlConnection.disconnect();
-				return list.getJSONObject("result").getBoolean("newFeatures");
-			} catch (JSONException | IOException | NullPointerException e) {
+				JSONObject list = new JSONObject(response);
+				if (list.getJSONObject("result").getBoolean("newFeatures")) {
+					Snackbar.make(findViewById(R.id.content_main), R.string.new_feature_planned,
+							Snackbar.LENGTH_INDEFINITE).setAction(R.string.show, view -> {
+						Intent i = new Intent(ActivityMain.this, ActivityFeatures.class);
+						startActivity(i);
+					}).show();
+				}
+			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			return false;
-		}
+		};
 
-		@Override
-		protected void onPostExecute(Boolean newFeatureAvailable) {
-			if (newFeatureAvailable) {
-				Snackbar.make(findViewById(R.id.content_main), R.string.new_feature_planned,
-						Snackbar.LENGTH_INDEFINITE).setAction(R.string.show, view -> {
-					Intent i = new Intent(ActivityMain.this, ActivityFeatures.class);
-					startActivity(i);
-				}).show();
-			}
-		}
+		api.setResponseHandler(handler).submit(params);
 	}
 }

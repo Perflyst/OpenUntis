@@ -45,7 +45,7 @@ public abstract class AutoUpdater {
 				e.printStackTrace();
 				return;
 			}
-			appVersion = pInfo.versionCode - 1;
+			appVersion = pInfo.versionCode;
 			JSONObject newVersion;
 			try {
 				newVersion = new JSONObject(readStream(in));
