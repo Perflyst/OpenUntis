@@ -15,7 +15,7 @@ import com.sapuseven.untis.activity.ActivityMain;
 import com.sapuseven.untis.adapter.AdapterItemDetails;
 import com.sapuseven.untis.fragment.FragmentTimetable;
 import com.sapuseven.untis.fragment.FragmentTimetableItemDetails;
-import com.sapuseven.untis.utils.TimetableItemData;
+import com.sapuseven.untis.utils.timetable.TimetableItemData;
 
 import java.util.ArrayList;
 import java.util.List;

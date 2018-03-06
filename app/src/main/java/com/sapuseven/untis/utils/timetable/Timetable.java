@@ -1,4 +1,4 @@
-package com.sapuseven.untis.utils;
+package com.sapuseven.untis.utils.timetable;
 
 import android.content.SharedPreferences;
 import android.util.Log;

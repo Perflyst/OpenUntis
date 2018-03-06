@@ -1,4 +1,6 @@
-package com.sapuseven.untis.utils;
+package com.sapuseven.untis.utils.timetable;
+
+import com.sapuseven.untis.utils.ElementName;
 
 import org.json.JSONArray;
 import org.json.JSONException;

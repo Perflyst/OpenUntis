@@ -1,5 +1,6 @@
 package com.sapuseven.untis.utils;
 
+import android.annotation.SuppressLint;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.AdapterView;
 
+import com.sapuseven.untis.utils.lazyload.SimpleFloatViewManager;
 import com.sapuseven.untis.view.SortableListView;
 
 /**
@@ -101,6 +103,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
 				deltaY);
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouch(View v, MotionEvent ev) {
 		if (!mDslv.isDragEnabled() || mDslv.listViewIntercepted()) {

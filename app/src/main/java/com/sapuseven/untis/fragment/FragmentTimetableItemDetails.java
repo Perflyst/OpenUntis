@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
-import com.sapuseven.untis.utils.TimetableItemData;
+import com.sapuseven.untis.utils.timetable.TimetableItemData;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -18,7 +18,7 @@ import android.widget.TextView;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ListManager;
-import com.sapuseven.untis.utils.TimegridUnitManager;
+import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;

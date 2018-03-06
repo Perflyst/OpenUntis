@@ -1,4 +1,4 @@
-package com.sapuseven.untis.utils;
+package com.sapuseven.untis.utils.timetable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -88,7 +88,7 @@ public class TimegridUnitManager {
 			this.endTime = endTime;
 		}
 
-		public String getStartTime() {
+		String getStartTime() {
 			return startTime;
 		}
 

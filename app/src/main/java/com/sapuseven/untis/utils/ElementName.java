@@ -22,10 +22,10 @@ public class ElementName {
 	private int type;
 	private JSONObject userData;
 
-	ElementName() {
+	public ElementName() {
 	}
 
-	ElementName(JSONObject userDataList) {
+	public ElementName(JSONObject userDataList) {
 		this.userData = userDataList;
 	}
 
@@ -57,7 +57,7 @@ public class ElementName {
 		return this;
 	}
 
-	ElementName fromIdList(List<Integer> list, int elemType) {
+	public ElementName fromIdList(List<Integer> list, int elemType) {
 		if (this.userData == null)
 			throw new RuntimeException("You have to provide a unitList via setUserDataList()!");
 		type = elemType;
