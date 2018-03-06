@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+
+	<ProgressBar
+		android:id="@+id/pbLoading"
+		style="?android:attr/progressBarStyle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerInParent="true"/>
+
+	<LinearLayout
+		android:id="@+id/lvDonations"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:visibility="gone">
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_margin="8dp"
+			android:baselineAligned="false"
+			android:gravity="bottom"
+			android:orientation="horizontal">
+
+			<include
+				android:id="@+id/vgSecond"
+				layout="@layout/donations_podium"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.3"/>
+
+			<include
+				android:id="@+id/vgFirst"
+				layout="@layout/donations_podium"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.4"/>
+
+			<include
+				android:id="@+id/vgThird"
+				layout="@layout/donations_podium"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="0.3"/>
+		</LinearLayout>
+
+		<ListView
+			android:id="@+id/lvTopDonations"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"/>
+
+	</LinearLayout>
+
+</RelativeLayout>

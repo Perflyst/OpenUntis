@@ -92,13 +92,15 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			roomList.add(context.getString(R.string.preference_note_disable));
 
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					context.openFileInput("roomList.txt")));
-			String name;
-			while ((name = reader.readLine()) != null) {
-				for (int i = 0; i < 2; i++)
-					reader.readLine();
-				roomList.add(name);
+			File file = context.getFileStreamPath("roomList.txt");
+			if (file != null && file.exists()) {
+				BufferedReader reader = new BufferedReader(new InputStreamReader(context.openFileInput("roomList.txt")));
+				String name;
+				while ((name = reader.readLine()) != null) {
+					for (int i = 0; i < 2; i++)
+						reader.readLine();
+					roomList.add(name);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -244,7 +246,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			JSONArray roomList = mUserDataList.optJSONObject("masterData").optJSONArray("rooms");
 			for (int i = 0; i < roomList.length(); i++)
 				list.add(roomList.getJSONObject(i).getString("name"));
-			Collections.sort(list, (s1, s2) -> s1.compareToIgnoreCase(s2));
+			Collections.sort(list, String::compareToIgnoreCase);
 
 			final AdapterCheckBoxGridView adapter = new AdapterCheckBoxGridView(this, list);
 			TextInputLayout titleContainer = new TextInputLayout(this);

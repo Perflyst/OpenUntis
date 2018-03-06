@@ -170,7 +170,7 @@
 	<string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"http://sapuseven.com\",\n  }\n}]</string>
 	<string name="title_teacher">%1$s %2$s</string>
 	<string name="error_invalid_url">Invalid URL!</string>
-	<string name="title_donators">Donations</string>
+	<string name="title_donations">Donations</string>
 	<string name="week_empty">No school this week :D</string>
 	<string name="last_refreshed">Last refreshed: %1$s</string>
 	<string name="pref_account">Account</string>
@@ -217,6 +217,7 @@
 	<string name="new_version">New version:</string>
 	<string name="drag_to_sort">Drag to sort</string>
 	<string name="toast_ratings_saved">Ratings saved.</string>
+	<string name="donation">Donation</string>
 	<plurals name="time_diff_minutes">
 		<item quantity="one">a minute ago</item>
 		<item quantity="other">%d minutes ago</item>

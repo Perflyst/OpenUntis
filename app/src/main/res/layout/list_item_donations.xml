@@ -22,6 +22,7 @@
 		android:layout_centerVertical="true"
 		android:layout_marginLeft="48dp"
 		android:layout_marginStart="48dp"
+		android:contentDescription="@string/donation"
 		app:srcCompat="@drawable/ic_prefs_personal"/>
 
 	<LinearLayout

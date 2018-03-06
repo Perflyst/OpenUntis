@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="com.sapuseven.untis">
 
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -30,7 +31,9 @@
 				<action android:name="android.intent.action.MAIN"/>
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
-			<intent-filter android:autoVerify="true">
+			<intent-filter
+				android:autoVerify="true"
+				tools:targetApi="m">
 				<action android:name="android.intent.action.VIEW"/>
 
 				<category android:name="android.intent.category.DEFAULT"/>
@@ -105,8 +108,8 @@
 		</activity>
 
 		<activity
-			android:name=".activity.ActivityDonators"
-			android:label="@string/title_donators"
+			android:name=".activity.ActivityDonations"
+			android:label="@string/title_donations"
 			android:parentActivityName=".activity.ActivityMain"
 			android:theme="@style/AppTheme">
 			<meta-data

@@ -562,15 +562,10 @@ public class ActivityMain extends AppCompatActivity
 				Intent i3 = new Intent(ActivityMain.this, ActivityRoomFinder.class);
 				startActivityForResult(i3, REQUEST_CODE_ROOM_FINDER);
 				break;
-			case R.id.nav_donators:
+			case R.id.nav_donations:
 				// TODO: Fully implement this feature
-				//Intent i4 = new Intent(ActivityMain.this, ActivityDonators.class);
-				//startActivity(i4);
-				new AlertDialog.Builder(this)
-						.setTitle(R.string.feature_disabled_title)
-						.setMessage(R.string.feature_disabled)
-						.setPositiveButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss())
-						.show();
+				Intent i4 = new Intent(ActivityMain.this, ActivityDonations.class);
+				startActivity(i4);
 				break;
 			case R.id.nav_share:
 				Answers.getInstance().logShare(new ShareEvent()
