@@ -358,7 +358,12 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 			});
 
 			Preference prefFirebaseKey = findPreference("preference_account_firebase_key");
-			prefFirebaseKey.setSummary(FirebaseInstanceId.getInstance().getToken());
+			try {
+				prefFirebaseKey.setSummary(FirebaseInstanceId.getInstance().getToken());
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+				prefFirebaseKey.setSummary("(disabled)");
+			}
 			prefFirebaseKey.setOnPreferenceClickListener(preference -> {
 				ClipboardManager clipboard = (ClipboardManager) getActivity()
 						.getSystemService(Context.CLIPBOARD_SERVICE);

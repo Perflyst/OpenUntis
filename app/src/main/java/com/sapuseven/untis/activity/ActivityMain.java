@@ -120,12 +120,15 @@ public class ActivityMain extends AppCompatActivity
 
 		Conversions.setScale(this);
 
-		firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-		firebaseRemoteConfig.setConfigSettings(new FirebaseRemoteConfigSettings.Builder().build());
-		firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
+		try {
+			firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+			firebaseRemoteConfig.setConfigSettings(new FirebaseRemoteConfigSettings.Builder().build());
+			firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
 
-		setupRemoteConfig();
-
+			setupRemoteConfig();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		}
 		mItemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -372,13 +375,12 @@ public class ActivityMain extends AppCompatActivity
 				} catch (NoSuchElementException e) {
 					e.printStackTrace();
 
-					AlertDialog.Builder builder = new AlertDialog.Builder(this);
+					mDialog = new AlertDialog.Builder(this)
+							.setTitle(R.string.error)
+							.setMessage(R.string.error_item_not_found)
+							.setNeutralButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss())
+							.create();
 
-					builder.setTitle(R.string.error);
-					builder.setMessage(R.string.error_item_not_found);
-					builder.setNeutralButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss());
-
-					mDialog = builder.create();
 					mDialog.setCanceledOnTouchOutside(true);
 					mDialog.show();
 				}
@@ -576,8 +578,8 @@ public class ActivityMain extends AppCompatActivity
 
 				Intent i = new Intent(Intent.ACTION_SEND);
 				i.setType("text/plain");
-				i.putExtra(Intent.EXTRA_SUBJECT, firebaseRemoteConfig.getString("recommendation_subject"));
-				i.putExtra(Intent.EXTRA_TEXT, firebaseRemoteConfig.getString("recommendation_text"));
+				i.putExtra(Intent.EXTRA_SUBJECT, getFirebaseString("recommendation_subject"));
+				i.putExtra(Intent.EXTRA_TEXT, getFirebaseString("recommendation_text"));
 				startActivity(Intent.createChooser(i, getString(R.string.link_sending_caption, getString(R.string.app_name))));
 				break;
 		}
@@ -585,6 +587,24 @@ public class ActivityMain extends AppCompatActivity
 		DrawerLayout drawer = findViewById(R.id.drawer_layout);
 		drawer.closeDrawer(GravityCompat.START);
 		return true;
+	}
+
+	private String getFirebaseString(String s) {
+		if (firebaseRemoteConfig != null) {
+			return firebaseRemoteConfig.getString(s);
+		} else {
+			if (!mDialog.isShowing()) {
+				mDialog = new AlertDialog.Builder(this)
+						.setTitle("Notice")
+						.setMessage("Failed to initialize Firebase. The full functionality of this feature is not guaranteed.")
+						.setNeutralButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss())
+						.create();
+
+				mDialog.setCanceledOnTouchOutside(true);
+				mDialog.show();
+			}
+			return "";
+		}
 	}
 
 	@Override
