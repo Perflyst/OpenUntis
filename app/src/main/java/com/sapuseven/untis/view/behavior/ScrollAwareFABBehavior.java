@@ -9,6 +9,7 @@ import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 
+@SuppressWarnings("unused") // This is used in layouts (activity_room_finder.xml)
 public class ScrollAwareFABBehavior extends Behavior {
 	public ScrollAwareFABBehavior(Context context, AttributeSet attrs) {
 		super();

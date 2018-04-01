@@ -132,10 +132,6 @@ public class ElementName {
 		}
 	}
 
-	List<Integer> getIds() {
-		return ids;
-	}
-
 	public List<String> getNames() {
 		return names;
 	}

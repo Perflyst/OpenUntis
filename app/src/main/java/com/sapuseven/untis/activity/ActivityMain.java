@@ -173,8 +173,14 @@ public class ActivityMain extends AppCompatActivity
 				int startDate = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
 						.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(),
 								(currentViewPos - 50) * 7).getTime()));
+				int days = 4;
+				try {
+					days = mUserDataList.getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days").length();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
 				mListManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
-						"-" + startDate + "-" + addDaysToInt(startDate, 4), true);
+						"-" + startDate + "-" + addDaysToInt(startDate, days), true);
 				refresh();
 			});
 

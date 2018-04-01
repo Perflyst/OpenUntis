@@ -56,11 +56,7 @@ public class NotificationSetup extends BroadcastReceiver {
 		listManager = new ListManager(context);
 		sessionInfo = new SessionInfo();
 
-		try {
-			sessionInfo.setDataFromJsonObject(new JSONObject(listManager.readList("userData", false)).optJSONObject("userData"));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		sessionInfo.setDataFromJsonObject(ListManager.getUserData(listManager).optJSONObject("userData"));
 
 		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
 				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
@@ -74,7 +70,13 @@ public class NotificationSetup extends BroadcastReceiver {
 			try {
 				if (response.has("result")) {
 					setup(response.getJSONObject("result"));
-					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
+					int days = 4;
+					try {
+						days = ListManager.getUserData(listManager).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days").length();
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, days);
 					listManager.saveList(fileName, response.toString(), true);
 				}
 			} catch (JSONException e) {
@@ -83,12 +85,19 @@ public class NotificationSetup extends BroadcastReceiver {
 		};
 
 		JSONObject params = new JSONObject();
+		int days = 4;
+		try {
+			days = ListManager.getUserData(listManager).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days").length();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
 		try {
 			params
 					.put("id", sessionInfo.getElemId())
 					.put("type", sessionInfo.getElemType())
 					.put("startDate", startDateFromWeek)
-					.put("endDate", addDaysToInt(startDateFromWeek, 4))
+					.put("endDate", addDaysToInt(startDateFromWeek, days))
 					.put("masterDataTimestamp", System.currentTimeMillis())
 					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
 		} catch (JSONException e) {
@@ -107,12 +116,7 @@ public class NotificationSetup extends BroadcastReceiver {
 	private void setup(JSONObject data) {
 		Calendar c = Calendar.getInstance();
 
-		JSONObject userDataList = new JSONObject();
-		try {
-			userDataList = new JSONObject(listManager.readList("userData", false));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		JSONObject userDataList = ListManager.getUserData(listManager);
 
 		TimegridUnitManager unitManager;
 		try {

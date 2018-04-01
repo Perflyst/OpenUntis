@@ -3,6 +3,7 @@ package com.sapuseven.untis.fragment;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -16,7 +17,6 @@ import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.timetable.TimetableItemData;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import static com.sapuseven.untis.utils.Conversions.dp2px;
@@ -35,17 +35,12 @@ public class FragmentTimetableItemDetails extends Fragment {
 		fragmentTimetableItemDetails.setContext(context);
 		fragmentTimetableItemDetails.setFragment(fragment);
 		fragmentTimetableItemDetails.setTimetableItemData(itemData);
-		ListManager listManager = new ListManager(context);
-		try {
-			fragmentTimetableItemDetails.setUserDataList(new JSONObject(listManager.readList("userData", false)));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		fragmentTimetableItemDetails.setUserDataList(ListManager.getUserData(context));
 		return fragmentTimetableItemDetails;
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		LinearLayout root = (LinearLayout) inflater.inflate(R.layout.dialog_timetable_item_detail_page, container, false);
 
 		if (timetableItemData.getTeachers(userDataList).isEmpty())

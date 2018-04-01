@@ -129,11 +129,7 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			}
 		}
 
-		// TODO: Add this to the specific UntisRequest Timetable class
 		// TODO: Implement a new caching system (display cache while loading, option to toggle cache for background tasks)
-		/*String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
-		if (listManager.exists(fileName, true))
-			return listManager.readList(fileName, true);*/
 	}
 
 	@Override
@@ -179,11 +175,11 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 		private String school = "";
 		private JSONArray params = new JSONArray();
 
-		public String getJsonrpc() {
+		String getJsonrpc() {
 			return jsonrpc;
 		}
 
-		public String getMethod() {
+		String getMethod() {
 			return method;
 		}
 
@@ -195,7 +191,7 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.url = url;
 		}
 
-		public String getSchool() {
+		String getSchool() {
 			return school;
 		}
 
@@ -203,7 +199,7 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.school = school;
 		}
 
-		public JSONArray getParams() {
+		JSONArray getParams() {
 			return params;
 		}
 
@@ -211,7 +207,7 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.params = params;
 		}
 
-		public URI getURI() throws URISyntaxException {
+		URI getURI() throws URISyntaxException {
 			return new URI("https", url, "/WebUntis/jsonrpc_intern.do", "school=" + getSchool(), "");
 		}
 	}

@@ -132,7 +132,7 @@ public class ImageLoader {
 	}
 
 	private class PhotoToLoad {
-		public final String url;
+		final String url;
 		final ImageView imageView;
 
 		PhotoToLoad(String u, ImageView i) {

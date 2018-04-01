@@ -1225,7 +1225,7 @@ public class SortableListView extends ListView {
 		void onDestroyFloatView(View floatView);
 	}
 
-	public interface DragListener {
+	interface DragListener {
 		void drag(int from, int to);
 	}
 
@@ -1233,7 +1233,7 @@ public class SortableListView extends ListView {
 		void drop(int from, int to);
 	}
 
-	public interface DragScrollProfile {
+	interface DragScrollProfile {
 		float getSpeed(float w, long t);
 	}
 
@@ -1342,7 +1342,7 @@ public class SortableListView extends ListView {
 			mMaxSize = size;
 		}
 
-		public void add(int position, int height) {
+		void add(int position, int height) {
 			int currHeight = mMap.get(position, -1);
 			if (currHeight != height) {
 				if (currHeight == -1) {
@@ -1357,7 +1357,7 @@ public class SortableListView extends ListView {
 			}
 		}
 
-		public int get(int position) {
+		int get(int position) {
 			return mMap.get(position, -1);
 		}
 
@@ -1399,7 +1399,7 @@ public class SortableListView extends ListView {
 			}
 		}
 
-		public void start() {
+		void start() {
 			mStartTime = SystemClock.uptimeMillis();
 			mCanceled = false;
 			onStart();
@@ -1410,13 +1410,13 @@ public class SortableListView extends ListView {
 			mCanceled = true;
 		}
 
-		public void onStart() {
+		void onStart() {
 		}
 
-		public void onUpdate(float frac, float smoothFrac) {
+		void onUpdate(float frac, float smoothFrac) {
 		}
 
-		public void onStop() {
+		void onStop() {
 		}
 
 		@Override

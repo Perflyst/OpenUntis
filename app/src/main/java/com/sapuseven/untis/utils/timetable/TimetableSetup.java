@@ -1,5 +1,6 @@
 package com.sapuseven.untis.utils.timetable;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -157,7 +158,8 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 
 		a.recycle();
 
-		fragmentContext.get().userDataList = ListManager.getUserData(fragmentContext.get().listManager);
+		if (fragmentContext.get().userDataList == null)
+			fragmentContext.get().userDataList = ListManager.getUserData(fragmentContext.get().listManager);
 
 		for (int day = 0; day < cols / 2; day++) {
 			try {
@@ -279,7 +281,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 					if (item.isHidden())
 						continue;
 
-					View view = fragmentContext.get().inflater
+					@SuppressLint("InflateParams") View view = fragmentContext.get().inflater
 							.inflate(R.layout.table_item, null, false);
 
 					TextView tvC = view.findViewById(R.id.tvC);

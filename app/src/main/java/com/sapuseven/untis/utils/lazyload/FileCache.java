@@ -20,7 +20,7 @@ class FileCache {
 		return new File(cacheDir, filename);
 	}
 
-	public void clear() {
+	public void clear() { // TODO: Implement some setting to clear cached images
 		File[] files = cacheDir.listFiles();
 		if (files == null)
 			return;

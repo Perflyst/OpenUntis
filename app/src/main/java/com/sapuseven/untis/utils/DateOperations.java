@@ -8,7 +8,6 @@ import java.util.Locale;
 
 public class DateOperations {
 	private static final SimpleDateFormat FROM_ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US);
-	private static final SimpleDateFormat TO_ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.US);
 
 	public static Calendar getStartDateFromWeek(Calendar week, int offset, boolean resetTime) {
 		week.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);

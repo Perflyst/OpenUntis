@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ import org.json.JSONException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Objects;
 
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
 import static com.sapuseven.untis.utils.DateOperations.getDayNameFromInt;
@@ -39,9 +41,9 @@ public class FragmentTimetableHeader extends Fragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		scale = getActivity().getResources().getDisplayMetrics().density;
-		int startDateOffset = getArguments().getInt("position") - 50;
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		scale = Objects.requireNonNull(getActivity()).getResources().getDisplayMetrics().density;
+		int startDateOffset = (getArguments() != null ? getArguments().getInt("position") : 0) - 50;
 		ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.content_header, container, false);
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
 
@@ -51,7 +53,7 @@ public class FragmentTimetableHeader extends Fragment {
 		boolean alternatingDays = prefs.getBoolean("preference_alternating_days", false);
 
 		int alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_light);
-		if (getPrefBool(this.getContext(), prefs, "preference_alternating_colors_use_custom"))
+		if (getPrefBool(Objects.requireNonNull(this.getContext()), prefs, "preference_alternating_colors_use_custom"))
 			alternativeBackgroundColor = getPrefInt(this.getContext(), prefs, "preference_alternating_color");
 		else if (prefs.getBoolean("preference_dark_theme", false))
 			alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_dark);

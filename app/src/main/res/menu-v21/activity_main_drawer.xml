@@ -25,7 +25,6 @@
 	</item>
 
 	<group
-		android:id="@+id/nav_extra"
 		android:checkableBehavior="none">
 		<item
 			android:id="@+id/nav_free_rooms"
@@ -45,7 +44,6 @@
 	</group>
 
 	<group
-		android:id="@+id/nav_social"
 		android:checkableBehavior="none">
 		<item
 			android:id="@+id/nav_share"

@@ -80,7 +80,7 @@ public abstract class AutoUpdater {
 		}
 	}
 
-	public abstract void onAppVersionOutdated(int oldVersion, String oldVersionName, int newVersion, String newVersionName);
+	protected abstract void onAppVersionOutdated(int oldVersion, String oldVersionName, int newVersion, String newVersionName);
 
 	public void setPackageInfo(PackageManager pm, String packageName) throws PackageManager.NameNotFoundException {
 		pInfo = pm.getPackageInfo(packageName, 0);

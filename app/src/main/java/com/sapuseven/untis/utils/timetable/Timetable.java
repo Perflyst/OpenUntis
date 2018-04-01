@@ -17,8 +17,8 @@ import java.util.Locale;
 
 public class Timetable {
 	private UnitList[][] units;
-	private int numberOfDays = -1;
-	private int hoursPerDay = -1;
+	private int numberOfDays;
+	private int hoursPerDay;
 	private TimegridUnitManager unitManager;
 	private int[][] offsets;
 

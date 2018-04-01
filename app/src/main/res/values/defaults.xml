@@ -9,12 +9,10 @@
 	<bool name="preference_dark_theme_amoled_default">false</bool>
 	<bool name="preference_timetable_centered_lesson_info_default">false</bool>
 	<bool name="preference_timetable_bold_lesson_name_default">true</bool>
-	<bool name="preference_background_color_use_custom_default">false</bool>
 	<bool name="preference_timetable_item_text_light_default">true</bool>
 	<bool name="preference_timetable_hide_cancelled">false</bool>
 
 	<integer name="preference_alternating_color_default">0xFFEEEEEE</integer>
-	<integer name="preference_background_color_default">0xFFFFFFFF</integer>
 	<integer name="preference_background_regular_default">0xFFF44336</integer>
 	<integer name="preference_background_regular_past_default">0xFFD32F2F</integer>
 	<integer name="preference_background_exam_default">0xFF03A9F4</integer>

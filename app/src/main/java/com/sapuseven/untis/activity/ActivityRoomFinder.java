@@ -1,5 +1,6 @@
 package com.sapuseven.untis.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -128,12 +129,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 
 		mRoomListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
-		ListManager listManager = new ListManager(getApplicationContext());
-		try {
-			mUserDataList = new JSONObject(listManager.readList("userData", false));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		mUserDataList = ListManager.getUserData(getApplicationContext());
 
 		mRecyclerView = findViewById(R.id.lvRoomList);
 		setupNoRoomsIndicator();
@@ -168,9 +164,11 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		if (text.contains("+")) {
 			SpannableString ss = new SpannableString(text);
 			Drawable img = ContextCompat.getDrawable(this, R.drawable.ic_add_circle);
-			img.setBounds(0, 0, img.getIntrinsicWidth(), img.getIntrinsicHeight());
-			ss.setSpan(new ImageSpan(img, ImageSpan.ALIGN_BOTTOM),
-					text.indexOf("+"), text.indexOf("+") + 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+			if (img != null) {
+				img.setBounds(0, 0, img.getIntrinsicWidth(), img.getIntrinsicHeight());
+				ss.setSpan(new ImageSpan(img, ImageSpan.ALIGN_BOTTOM),
+						text.indexOf("+"), text.indexOf("+") + 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+			}
 			tv.setText(ss);
 		}
 	}
@@ -277,7 +275,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				}
 			});
 			titleContainer.addView(searchField);
-			Button selectAll = (Button) getLayoutInflater()
+			@SuppressLint("InflateParams") Button selectAll = (Button) getLayoutInflater()
 					.inflate(R.layout.borderless_button, null);
 			selectAll.setText(R.string.add);
 			final ActivityRoomFinder context = this;
@@ -324,6 +322,20 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void loadRoom(RequestModel room) {
+		JSONArray dayList = null;
+		try {
+			dayList = new JSONObject(new ListManager(getApplication())
+					.readList("userData", false)).getJSONObject("masterData")
+					.getJSONObject("timeGrid").getJSONArray("days");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
+
+		int days = unitManager.getNumberOfDays();
+		int hours = unitManager.getMaxHoursPerDay();
+
 		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
 				.format(getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 
@@ -342,20 +354,6 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					RequestModel requestModel = mRequestQueue.get(0);
 
 					Timetable timetable = new Timetable(response.getJSONObject("result"), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
-
-					JSONArray dayList = null;
-					try {
-						dayList = new JSONObject(new ListManager(getApplication())
-								.readList("userData", false)).getJSONObject("masterData")
-								.getJSONObject("timeGrid").getJSONArray("days");
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-
-					TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
-
-					int days = unitManager.getNumberOfDays();
-					int hours = unitManager.getMaxHoursPerDay();
 
 					boolean[] states = new boolean[days * hours];
 
@@ -408,7 +406,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					.put("id", room.getRoomID())
 					.put("type", getElemTypeName(ROOM))
 					.put("startDate", startDateFromWeek)
-					.put("endDate", addDaysToInt(startDateFromWeek, 4)) // TODO: Replace with actual week length
+					.put("endDate", addDaysToInt(startDateFromWeek, days))
 					.put("masterDataTimestamp", System.currentTimeMillis())
 					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
 		} catch (JSONException e) {
