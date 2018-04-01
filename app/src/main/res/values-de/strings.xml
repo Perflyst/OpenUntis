@@ -11,7 +11,6 @@
 	<string name="please_log_in">Bitte melde dich an, um die App nutzen zu können:</string>
 	<string name="btn_login">anmelden</string>
 	<string name="settings">Einstellungen</string>
-	<string name="connected">Verbindung erfolgreich.</string>
 	<string name="download_progress">%1$d.%2$s MB / %3$d.%4$s MB</string>
 	<string name="app_name">BetterUntis</string>
 	<string name="data_loaded">Daten geladen.</string>
@@ -39,7 +38,6 @@
 	<string name="timetable_no_time">00:00</string>
 	<string name="contact">Kontakt</string>
 	<string name="contact_email">betteruntis@sapuseven.com</string>
-	<string name="credits">Made by SapuSeven</string>
 	<string name="today">Heute</string>
 	<string name="pref_styling">Anpassung</string>
 	<string name="pref_notifications">Benachrichtigungen</string>
@@ -68,17 +66,12 @@
 	<string name="title">Titel</string>
 	<string name="description">Beschreibung</string>
 	<string name="send">Senden</string>
-	<string name="minus">-</string>
-	<string name="placeholder_numeric">0</string>
-	<string name="plus">+</string>
 	<string name="new_features_header">Geplante Neuerungen</string>
 	<string name="new_features_body">Benutze drag\'n\'drop um die Vorschläge zu sortieren, je besser du ein Feature findest desto weiter oben!</string>
 	<string name="toast_colors_reset">Die Standardeinstellungen wurden übernommen.</string>
 	<string name="preference_marker">Zeitanzeige</string>
 	<string name="preference_background_irregular">Irreguläre Stunden</string>
 	<string name="preference_background_irregular_past">Vergangene irreguläre Stunden</string>
-	<string name="btn_dislike">Gefällt mir nicht so</string>
-	<string name="btn_like">Gefällt mir</string>
 	<string name="preference_notifications_enable">Benachrichtigung aktivieren</string>
 	<string name="preference_notifications_enable_desc">In den Pausen wird eine Benachrichtigung mit Infos zur nächsten Unterrichtsstunde angezeigt</string>
 	<string name="preference_notifications_visibility_hidden">Versteckt</string>
@@ -102,7 +95,6 @@
 	<string name="key_copied">In die Zwischenablage kopiert</string>
 	<string name="toast_error_occurred">Ein Fehler ist aufgetreten.</string>
 	<string name="toast_suggestion_submitted">Dein Vorschlag wurde übermittelt.</string>
-	<string name="toast_vote_counted">Deine Stimme wurde gezählt.</string>
 	<string name="error_field_empty">Dieses Feld darf nicht leer sein!</string>
 	<string name="invalid_credentials">Benutzername oder Passwort ist falsch.</string>
 	<string name="invalid_school">Die angegebene Schule gibt es nicht.</string>
@@ -170,14 +162,11 @@
 	<string name="firebase_key">Firebase-Schlüssel</string>
 	<string name="error_invalid_url">Ungültige URL!</string>
 	<string name="title_donations">Spenden</string>
-	<string name="week_empty">Diese Woche ist keine Schule :D</string>
 	<string name="last_refreshed">Zuletzt aktualisiert: %1$s</string>
 	<string name="pref_account">Benutzerkonto</string>
 	<string name="pref_timetable">Stundenplan-Elemente</string>
 	<string name="never">nie</string>
 	<string name="error_item_not_found">Das Element wurde nicht gefunden</string>
-	<string name="feature_disabled_title">Funktion deaktiviert</string>
-	<string name="feature_disabled">Entschuldigung, diese Funktion ist vorübergehend deaktiviert.\nSchau später nochmal zurück!</string>
 	<string name="infos">Info</string>
 	<string name="time_diff_just_now">gerade eben</string>
 	<plurals name="time_diff_minutes">
@@ -227,4 +216,9 @@
 	<string name="view_changelog">Änderungen anzeigen</string>
 	<string name="current_version">Installierte Version:</string>
 	<string name="new_version">Neue Version:</string>
+	<string name="drag_to_sort">Ziehen zum sortieren</string>
+	<string name="toast_ratings_saved">Deine Bewertung wurde gespeichert.</string>
+	<string name="save">Speichern</string>
+	<string name="key_copy_failed">Fehler beim Kopieren</string>
+	<string name="donation">Spende</string>
 </resources>
