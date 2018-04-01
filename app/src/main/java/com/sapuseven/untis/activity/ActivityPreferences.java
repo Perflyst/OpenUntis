@@ -253,16 +253,23 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 
 			findPreference("preference_notifications_enable").setOnPreferenceClickListener(
 					preference -> {
-						if (!preference.isEnabled())
-							((NotificationManager) getActivity()
-									.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+						if (!preference.isEnabled()) {
+							NotificationManager notificationManager = ((NotificationManager) getActivity()
+									.getSystemService(Context.NOTIFICATION_SERVICE));
+							if (notificationManager != null)
+								notificationManager.cancelAll();
+						}
 						return true;
 					});
 
 			findPreference("preference_notifications_clear").setOnPreferenceClickListener(
 					preference -> {
-						((NotificationManager) getActivity()
-								.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+						if (!preference.isEnabled()) {
+							NotificationManager notificationManager = ((NotificationManager) getActivity()
+									.getSystemService(Context.NOTIFICATION_SERVICE));
+							if (notificationManager != null)
+								notificationManager.cancelAll();
+						}
 						return true;
 					});
 		}
@@ -338,11 +345,16 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 			prefKey.setOnPreferenceClickListener(preference -> {
 				ClipboardManager clipboard = (ClipboardManager) getActivity()
 						.getSystemService(Context.CLIPBOARD_SERVICE);
-				ClipData clip = ClipData.newPlainText(getString(R.string.preference_account_access_key),
-						prefs.getString("key", "UNKNOWN"));
-				clipboard.setPrimaryClip(clip);
-				toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
-				return true;
+				if (clipboard != null) {
+					ClipData clip = ClipData.newPlainText(getString(R.string.preference_account_access_key),
+							prefs.getString("key", "UNKNOWN"));
+					clipboard.setPrimaryClip(clip);
+					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
+					return true;
+				} else {
+					toast.showToast(R.string.key_copy_failed, Toast.LENGTH_SHORT);
+					return false;
+				}
 			});
 
 			Preference prefFirebaseKey = findPreference("preference_account_firebase_key");
@@ -350,15 +362,21 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 			prefFirebaseKey.setOnPreferenceClickListener(preference -> {
 				ClipboardManager clipboard = (ClipboardManager) getActivity()
 						.getSystemService(Context.CLIPBOARD_SERVICE);
-				ClipData clip = ClipData.newPlainText(getString(R.string.firebase_key),
-						FirebaseInstanceId.getInstance().getToken());
-				clipboard.setPrimaryClip(clip);
-				toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
-				return true;
+				if (clipboard != null) {
+					ClipData clip = ClipData.newPlainText(getString(R.string.firebase_key),
+							FirebaseInstanceId.getInstance().getToken());
+					clipboard.setPrimaryClip(clip);
+					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
+					return true;
+				} else {
+					toast.showToast(R.string.key_copy_failed, Toast.LENGTH_SHORT);
+					return false;
+				}
 			});
 
 			findPreference("preference_account_logout").setOnPreferenceClickListener(
 					preference -> {
+						// TODO: Display a confirmation dialog
 						getActivity().getSharedPreferences("login_data", MODE_PRIVATE)
 								.edit().clear().apply();
 						ListManager lm = new ListManager(getActivity());

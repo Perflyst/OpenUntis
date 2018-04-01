@@ -11,8 +11,8 @@ import android.widget.TextView;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterDonations;
 import com.sapuseven.untis.adapter.AdapterItemDonations;
-import com.sapuseven.untis.utils.ApiRequest;
 import com.sapuseven.untis.utils.DonationManager;
+import com.sapuseven.untis.utils.connectivity.ApiRequest;
 import com.sapuseven.untis.utils.lazyload.ImageLoader;
 
 import org.json.JSONException;
@@ -45,6 +45,9 @@ public class ActivityDonations extends AppCompatActivity {
 		params.put("method", "getDonations");
 
 		ApiRequest.ResponseHandler handler = response -> {
+			if (response == null)
+				return; // TODO: Display "Network Error"
+
 			try {
 				DonationManager donations = new DonationManager(new JSONObject(response).getJSONObject("result").getJSONArray("donations"));
 				donations.sort(new DonationManager.ComparatorDonationAmount());
@@ -84,7 +87,7 @@ public class ActivityDonations extends AppCompatActivity {
 		api.setResponseHandler(handler).submit(params);
 	}
 
-	public void setDonationVisibility(boolean visibility) {
+	private void setDonationVisibility(boolean visibility) {
 		findViewById(R.id.pbLoading).setVisibility(visibility ? View.GONE : View.VISIBLE);
 		findViewById(R.id.lvDonations).setVisibility(visibility ? View.VISIBLE : View.GONE);
 	}

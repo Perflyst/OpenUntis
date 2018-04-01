@@ -27,8 +27,8 @@ import com.sapuseven.untis.utils.DragSortController;
 import java.util.ArrayList;
 
 public class SortableListView extends ListView {
-	public final static int DRAG_POS_X = 0x1;
-	public final static int DRAG_NEG_X = 0x2;
+	private final static int DRAG_POS_X = 0x1;
+	private final static int DRAG_NEG_X = 0x2;
 	public final static int DRAG_POS_Y = 0x4;
 	public final static int DRAG_NEG_Y = 0x8;
 
@@ -45,8 +45,8 @@ public class SortableListView extends ListView {
 
 	private View mFloatView;
 
-	private Point mFloatLoc = new Point();
-	private Point mTouchLoc = new Point();
+	private final Point mFloatLoc = new Point();
+	private final Point mTouchLoc = new Point();
 	private int mFloatViewMid;
 	private boolean mFloatViewOnMeasured = false;
 	private DataSetObserver mObserver;
@@ -78,7 +78,7 @@ public class SortableListView extends ListView {
 	private float mDragUpScrollHeight;
 	private float mDragDownScrollHeight;
 	private float mMaxScrollSpeed = 0.5f;
-	private DragScrollProfile mScrollProfile = (w, t) -> mMaxScrollSpeed * w;
+	private final DragScrollProfile mScrollProfile = (w, t) -> mMaxScrollSpeed * w;
 	private int mX;
 	private int mY;
 	private int mLastY;
@@ -92,7 +92,7 @@ public class SortableListView extends ListView {
 	private float mSlideFrac = 0.0f;
 	private boolean mBlockLayoutRequests = false;
 	private boolean mIgnoreTouchEvent = false;
-	private HeightCache mChildHeightCache = new HeightCache(sCacheSize);
+	private final HeightCache mChildHeightCache = new HeightCache(sCacheSize);
 	private LiftAnimator mLiftAnimator;
 	private DropAnimator mDropAnimator;
 	private boolean mListViewIntercepted = false;
@@ -497,12 +497,7 @@ public class SortableListView extends ListView {
 		return updated;
 	}
 
-	@Override
-	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-	}
-
-	public void cancelDrag() {
+	private void cancelDrag() {
 		if (mDragState == DRAGGING) {
 			mDragScroller.stopScrolling(true);
 			destroyFloatView();
@@ -559,7 +554,7 @@ public class SortableListView extends ListView {
 		}
 	}
 
-	public void stopDrag() {
+	private void stopDrag() {
 		if (mFloatView != null) {
 			mDragScroller.stopScrolling(true);
 
@@ -696,11 +691,11 @@ public class SortableListView extends ListView {
 		return intercept;
 	}
 
-	public void setDragScrollStart(float heightFraction) {
+	private void setDragScrollStart(float heightFraction) {
 		setDragScrollStarts(heightFraction, heightFraction);
 	}
 
-	public void setDragScrollStarts(float upperFrac, float lowerFrac) {
+	private void setDragScrollStarts(float upperFrac, float lowerFrac) {
 		if (lowerFrac > 0.5f) {
 			mDragDownScrollStartFrac = 0.5f;
 		} else {
@@ -1029,7 +1024,7 @@ public class SortableListView extends ListView {
 		}
 	}
 
-	protected boolean onDragTouchEvent(MotionEvent ev) {
+	private boolean onDragTouchEvent(MotionEvent ev) {
 		switch (ev.getAction() & MotionEvent.ACTION_MASK) {
 			case MotionEvent.ACTION_CANCEL:
 				if (mDragState == DRAGGING) {
@@ -1063,7 +1058,7 @@ public class SortableListView extends ListView {
 
 	}
 
-	public boolean startDrag(int position, View floatView, int dragFlags, int deltaX, int deltaY) {
+	private boolean startDrag(int position, View floatView, int dragFlags, int deltaX, int deltaY) {
 		if (mDragState != IDLE || !mInTouchEvent || mFloatView != null || floatView == null
 				|| !mDragEnabled) {
 			return false;
@@ -1155,7 +1150,6 @@ public class SortableListView extends ListView {
 	private void updateFloatView() {
 		if (mFloatViewManager != null) {
 			mTouchLoc.set(mX, mY);
-			mFloatViewManager.onDragFloatView(mFloatView, mFloatLoc, mTouchLoc);
 		}
 
 		final int floatX = mFloatLoc.x;
@@ -1213,7 +1207,7 @@ public class SortableListView extends ListView {
 		}
 	}
 
-	public void setDragListener(DragListener l) {
+	private void setDragListener(DragListener l) {
 		mDragListener = l;
 	}
 
@@ -1227,8 +1221,6 @@ public class SortableListView extends ListView {
 
 	public interface FloatViewManager {
 		View onCreateFloatView(int position);
-
-		void onDragFloatView(View floatView, Point location, Point touch);
 
 		void onDestroyFloatView(View floatView);
 	}
@@ -1246,7 +1238,7 @@ public class SortableListView extends ListView {
 	}
 
 	private class AdapterWrapper extends BaseAdapter {
-		private ListAdapter mAdapter;
+		private final ListAdapter mAdapter;
 
 		AdapterWrapper(ListAdapter adapter) {
 			super();
@@ -1261,10 +1253,6 @@ public class SortableListView extends ListView {
 					notifyDataSetInvalidated();
 				}
 			});
-		}
-
-		public ListAdapter getAdapter() {
-			return mAdapter;
 		}
 
 		@Override
@@ -1344,9 +1332,9 @@ public class SortableListView extends ListView {
 	}
 
 	private class HeightCache {
-		private SparseIntArray mMap;
-		private ArrayList<Integer> mOrder;
-		private int mMaxSize;
+		private final SparseIntArray mMap;
+		private final ArrayList<Integer> mOrder;
+		private final int mMaxSize;
 
 		HeightCache(int size) {
 			mMap = new SparseIntArray(size);
@@ -1383,10 +1371,13 @@ public class SortableListView extends ListView {
 	private class SmoothAnimator implements Runnable {
 		long mStartTime;
 
-		private float mDurationF;
+		private final float mDurationF;
 
-		private float mAlpha;
-		private float mA, mB, mC, mD;
+		private final float mAlpha;
+		private final float mA;
+		private final float mB;
+		private final float mC;
+		private final float mD;
 
 		private boolean mCanceled;
 

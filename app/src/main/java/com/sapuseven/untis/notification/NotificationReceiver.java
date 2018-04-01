@@ -32,12 +32,15 @@ public class NotificationReceiver extends BroadcastReceiver {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		if (!prefs.getBoolean("preference_notifications_enable", true) ||
 				(System.currentTimeMillis() > intent.getLongExtra("endTime", 0) && !clear) ||
-				(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && notificationManager.getActiveNotifications().length > 0 && !clear))
+				(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && notificationManager != null && notificationManager.getActiveNotifications().length > 0 && !clear))
 			return;
 
 		if (clear) {
 			Log.d("NotificationReceiver", "Attempting to cancel notification #" + intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)) + "...");
-			notificationManager.cancel(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)));
+			if (notificationManager != null)
+				notificationManager.cancel(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)));
+			else
+				Log.d("NotificationManager", "Failed to cancel notification (notificationManager == null)");
 		} else {
 			PendingIntent pIntent = PendingIntent.getActivity(context, 0, new Intent(context, ActivityMain.class), 0);
 			Calendar endTime = Calendar.getInstance();
@@ -121,7 +124,10 @@ public class NotificationReceiver extends BroadcastReceiver {
 						.setOngoing(true)
 						.build();
 			}
-			notificationManager.notify(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)), n);
+			if (notificationManager != null)
+				notificationManager.notify(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)), n);
+			else
+				Log.d("NotificationManager", "Failed to notify (notificationManager == null)");
 		}
 	}
 }

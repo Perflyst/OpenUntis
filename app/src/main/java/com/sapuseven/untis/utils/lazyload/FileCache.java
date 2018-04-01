@@ -6,9 +6,9 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-public class FileCache {
+class FileCache {
 
-	private File cacheDir;
+	private final File cacheDir;
 
 	FileCache(Context context) {
 		cacheDir = new File(context.getCacheDir(), "images");

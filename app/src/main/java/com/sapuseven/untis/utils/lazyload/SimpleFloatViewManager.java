@@ -2,7 +2,6 @@ package com.sapuseven.untis.utils.lazyload;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -14,9 +13,9 @@ public class SimpleFloatViewManager implements SortableListView.FloatViewManager
 	private Bitmap floatBitmap;
 	private ImageView imageView;
 	private int floatBGColor = Color.BLACK;
-	private ListView listView;
+	private final ListView listView;
 
-	public SimpleFloatViewManager(ListView lv) {
+	protected SimpleFloatViewManager(ListView lv) {
 		listView = lv;
 	}
 
@@ -49,10 +48,6 @@ public class SimpleFloatViewManager implements SortableListView.FloatViewManager
 		imageView.setLayoutParams(new ViewGroup.LayoutParams(v.getWidth(), v.getHeight()));
 
 		return imageView;
-	}
-
-	@Override
-	public void onDragFloatView(View floatView, Point position, Point touch) {
 	}
 
 	@Override

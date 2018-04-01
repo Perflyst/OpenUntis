@@ -1,5 +1,6 @@
 package com.sapuseven.untis.utils.timetable;
 
+import com.sapuseven.untis.utils.Constants;
 import com.sapuseven.untis.utils.ElementName;
 
 import org.json.JSONArray;
@@ -10,9 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.graphics.Color.parseColor;
-import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_CANCELLED;
-import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_EXAM;
-import static com.sapuseven.untis.utils.Constants.TimetableItem.CODE_IRREGULAR;
 import static com.sapuseven.untis.utils.ElementName.CLASS;
 import static com.sapuseven.untis.utils.ElementName.HOLIDAY;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
@@ -23,12 +21,12 @@ public class TimetableItemData {
 	private final ArrayList<Integer> holidays = new ArrayList<>();
 	private String startDateTime = "";
 	private String endDateTime = "";
-	private List<String> codes = new ArrayList<>();
-	private List<Integer> classes = new ArrayList<>();
-	private List<Integer> subjects = new ArrayList<>();
-	private List<Integer> teachers = new ArrayList<>();
-	private List<Integer> rooms = new ArrayList<>();
-	private List<String> infos = new ArrayList<>();
+	private final List<String> codes = new ArrayList<>();
+	private final List<Integer> classes = new ArrayList<>();
+	private final List<Integer> subjects = new ArrayList<>();
+	private final List<Integer> teachers = new ArrayList<>();
+	private final List<Integer> rooms = new ArrayList<>();
+	private final List<String> infos = new ArrayList<>();
 	private boolean hidden;
 	private int backColor;
 
@@ -192,15 +190,15 @@ public class TimetableItemData {
 	}
 
 	public boolean isCancelled() {
-		return codes.contains(CODE_CANCELLED);
+		return codes.contains(Constants.TimetableItem.CODE_CANCELLED);
 	}
 
 	public boolean isIrregular() {
-		return codes.contains(CODE_IRREGULAR);
+		return codes.contains(Constants.TimetableItem.CODE_IRREGULAR);
 	}
 
 	public boolean isExam() {
-		return codes.contains(CODE_EXAM);
+		return codes.contains(Constants.TimetableItem.CODE_EXAM);
 	}
 
 	public boolean mergeWith(ArrayList<TimetableItemData> items) {

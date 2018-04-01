@@ -26,7 +26,8 @@ public class StartupReceiver extends BroadcastReceiver {
 		calendar.set(Calendar.SECOND, 0);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NotificationSetup.class), PendingIntent.FLAG_UPDATE_CURRENT);
 		AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+		if (am != null)
+			am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
 
 		Intent i = new Intent(context, NotificationSetup.class);
 		context.sendBroadcast(i);

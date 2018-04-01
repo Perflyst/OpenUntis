@@ -21,7 +21,6 @@ import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -46,7 +45,6 @@ public class FragmentTimetableHeader extends Fragment {
 		ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.content_header, container, false);
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
 
-		ListManager listManager = new ListManager(getContext());
 		TimegridUnitManager unitManager;
 		LinearLayout contentHeader = rootView.findViewById(R.id.header_content);
 
@@ -59,7 +57,7 @@ public class FragmentTimetableHeader extends Fragment {
 			alternativeBackgroundColor = getResources().getInteger(R.integer.preference_alternating_color_default_dark);
 
 		try {
-			unitManager = new TimegridUnitManager(new JSONObject(listManager.readList("userData", false)).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
+			unitManager = new TimegridUnitManager(ListManager.getUserData(getContext()).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
 
 			int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
 					.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), startDateOffset * 7).getTime()));

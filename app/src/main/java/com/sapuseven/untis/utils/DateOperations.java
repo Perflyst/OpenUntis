@@ -79,8 +79,4 @@ public class DateOperations {
 	public static Date parseFromISO(String dateTime) throws ParseException {
 		return FROM_ISO_8601.parse(dateTime);
 	}
-
-	public static String formatToISO(Date dateTime) {
-		return TO_ISO_8601.format(dateTime);
-	}
 }

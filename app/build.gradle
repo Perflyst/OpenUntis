@@ -20,8 +20,8 @@ android {
 		applicationId "com.sapuseven.untis"
 		minSdkVersion 16
 		targetSdkVersion 26
-		versionCode 9
-		versionName "2.0.1"
+		versionCode 10
+		versionName "2.0.2"
 		vectorDrawables.useSupportLibrary = true
 	}
 	buildTypes {
@@ -60,8 +60,8 @@ dependencies {
 	compile 'com.google.code.gson:gson:2.8.0'
 	compile 'commons-codec:commons-codec:1.6'
 	compile 'org.jetbrains:annotations-java5:15.0'
-	compile 'com.google.firebase:firebase-messaging:11.8.0'
-	compile 'com.google.firebase:firebase-config:11.8.0'
+	compile 'com.google.firebase:firebase-messaging:12.0.0'
+	compile 'com.google.firebase:firebase-config:12.0.0'
 	compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
 		transitive = true
 	}

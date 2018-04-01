@@ -51,15 +51,15 @@ import com.sapuseven.untis.adapter.AdapterTimetable;
 import com.sapuseven.untis.adapter.AdapterTimetableHeader;
 import com.sapuseven.untis.fragment.FragmentDatePicker;
 import com.sapuseven.untis.notification.StartupReceiver;
-import com.sapuseven.untis.utils.ApiRequest;
 import com.sapuseven.untis.utils.AutoUpdater;
 import com.sapuseven.untis.utils.Conversions;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
-import com.sapuseven.untis.utils.TimegridUnitManager;
 import com.sapuseven.untis.utils.UserRegistration;
+import com.sapuseven.untis.utils.connectivity.ApiRequest;
+import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -153,7 +153,7 @@ public class ActivityMain extends AppCompatActivity
 			mListManager = new ListManager(getApplicationContext());
 			mDialog = new AlertDialog.Builder(this).create();
 			try {
-				mUserDataList = new JSONObject(mListManager.readList("userData", false));
+				mUserDataList = ListManager.getUserData(mListManager);
 
 				logUser(mUserDataList.getJSONObject("userData").optInt("elemId", -1),
 						mUserDataList.getJSONObject("userData")
@@ -824,6 +824,9 @@ public class ActivityMain extends AppCompatActivity
 		params.put("name", user);
 
 		ApiRequest.ResponseHandler handler = response -> {
+			if (response == null)
+				return;
+
 			try {
 				JSONObject list = new JSONObject(response);
 				if (list.getJSONObject("result").getBoolean("newFeatures")) {

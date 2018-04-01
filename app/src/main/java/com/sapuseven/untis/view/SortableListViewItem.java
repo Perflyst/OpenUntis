@@ -31,10 +31,6 @@ public class SortableListViewItem extends ViewGroup {
 				ViewGroup.LayoutParams.WRAP_CONTENT));
 	}
 
-	public int getGravity() {
-		return mGravity;
-	}
-
 	public void setGravity(int gravity) {
 		mGravity = gravity;
 	}

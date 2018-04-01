@@ -27,11 +27,11 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
 	private static final int MISS = -1;
 	private int mDragInitMode = ON_DOWN;
 	private boolean mSortEnabled = true;
-	private GestureDetector mDetector;
-	private int mTouchSlop;
+	private final GestureDetector mDetector;
+	private final int mTouchSlop;
 	private int mHitPos = MISS;
 
-	private int[] mTempLoc = new int[2];
+	private final int[] mTempLoc = new int[2];
 
 	private int mItemX;
 	private int mItemY;
@@ -41,11 +41,11 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
 
 	private boolean mDragging = false;
 
-	private int mDragHandleId;
+	private final int mDragHandleId;
 
 	private boolean mCanDrag;
 
-	private SortableListView mDslv;
+	private final SortableListView mDslv;
 
 	/**
 	 * By default, sorting is enabled, and removal is disabled.

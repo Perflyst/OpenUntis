@@ -1,6 +1,8 @@
-package com.sapuseven.untis.utils;
+package com.sapuseven.untis.utils.connectivity;
 
 import org.apache.commons.codec.binary.Base32;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -9,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-public class Authentication {
+public class UntisAuthentication {
 	private static long createTimeBasedCode(long timestamp, String secret) {
 		GeneralSecurityException e;
 		if (secret == null || secret.isEmpty()) {
@@ -51,11 +53,10 @@ public class Authentication {
 		return (int) ((truncatedHash & 2147483647L) % 1000000);
 	}
 
-	public static String getAuthElement(String user, String key) {
-		return "\"auth\":{" +
-				"\"user\":\"" + user + "\"," +
-				"\"otp\":\"" + createTimeBasedCode(System.currentTimeMillis(), key) + "\"," +
-				"\"clientTime\":\"" + System.currentTimeMillis() + "\"" +
-				"}";
+	public static JSONObject getAuthObject(String user, String key) throws JSONException {
+		return new JSONObject()
+				.put("user", user)
+				.put("otp", createTimeBasedCode(System.currentTimeMillis(), key))
+				.put("clientTime", System.currentTimeMillis());
 	}
 }

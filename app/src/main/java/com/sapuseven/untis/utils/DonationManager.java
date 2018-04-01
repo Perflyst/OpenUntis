@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.Currency;
 
 public class DonationManager {
-	private ArrayList<Donation> donations = new ArrayList<>();
+	private final ArrayList<Donation> donations = new ArrayList<>();
 
 	public DonationManager(JSONArray donations) throws JSONException {
 		for (int i = 0; i < donations.length(); i++)

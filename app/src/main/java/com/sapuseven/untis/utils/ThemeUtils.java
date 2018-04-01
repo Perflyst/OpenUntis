@@ -4,25 +4,23 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
-import android.support.annotation.AttrRes;
-import android.support.v4.graphics.drawable.DrawableCompat;
 
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.activity.ActivityMain;
 
 public class ThemeUtils {
-	@SuppressWarnings("SameParameterValue")
-	public static void tintDrawable(Context context, Drawable drawable, @AttrRes int attr) {
-		int[] attrs = new int[]{attr};
-		TypedArray ta = context.obtainStyledAttributes(attrs);
-		final int color = ta.getColor(0, 0);
-		ta.recycle();
-		DrawableCompat.setTint(drawable, color);
-	}
+// --Commented out by Inspection START (24-Mar-18 9:16):
+//	@SuppressWarnings("SameParameterValue")
+//	public static void tintDrawable(Context context, Drawable drawable, @AttrRes int attr) {
+//		int[] attrs = new int[]{attr};
+//		TypedArray ta = context.obtainStyledAttributes(attrs);
+//		final int color = ta.getColor(0, 0);
+//		ta.recycle();
+//		DrawableCompat.setTint(drawable, color);
+//	}
+// --Commented out by Inspection STOP (24-Mar-18 9:16)
 
 	public static void setupTheme(Context context, boolean actionBar) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

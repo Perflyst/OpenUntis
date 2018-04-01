@@ -122,16 +122,13 @@ public class ColorPickerDialogFragment extends DialogFragment {
 
 		final boolean showHexadecimalInput = getArguments().getBoolean(ARG_HEXADECIMAL_INPUT);
 		final boolean showAlphaSlider = getArguments().getBoolean("alpha");
-		TextView titleView = (TextView) v.findViewById(android.R.id.title);
+		TextView titleView = v.findViewById(android.R.id.title);
 
-		mColorPicker = (ColorPickerView)
-				v.findViewById(R.id.colorpickerview__color_picker_view);
-		ColorPanelView mOldColorPanel = (ColorPanelView)
-				v.findViewById(R.id.colorpickerview__color_panel_old);
-		mNewColorPanel = (ColorPanelView)
-				v.findViewById(R.id.colorpickerview__color_panel_new);
-		Button mOkButton = (Button) v.findViewById(android.R.id.button1);
-		mHexadecimalInput = (EditText) v.findViewById(R.id.colorpickerview__hexadecimal_input);
+		mColorPicker = v.findViewById(R.id.colorpickerview__color_picker_view);
+		ColorPanelView mOldColorPanel = v.findViewById(R.id.colorpickerview__color_panel_old);
+		mNewColorPanel = v.findViewById(R.id.colorpickerview__color_panel_new);
+		Button mOkButton = v.findViewById(android.R.id.button1);
+		mHexadecimalInput = v.findViewById(R.id.colorpickerview__hexadecimal_input);
 
 		mColorPicker.setOnColorChangedListener(new OnColorChangedListener() {
 

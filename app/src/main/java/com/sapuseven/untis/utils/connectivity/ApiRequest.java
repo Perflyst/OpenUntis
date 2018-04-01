@@ -1,4 +1,4 @@
-package com.sapuseven.untis.utils;
+package com.sapuseven.untis.utils.connectivity;
 
 import android.content.Context;
 import android.net.Uri;
@@ -14,7 +14,7 @@ import java.net.URL;
 import java.util.Map;
 
 public class ApiRequest extends AsyncTask<Map<String, String>, Void, String> {
-	private WeakReference<Context> context;
+	private final WeakReference<Context> context;
 	private ResponseHandler handler;
 
 	public ApiRequest(Context context) {

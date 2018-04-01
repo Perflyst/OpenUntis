@@ -8,6 +8,7 @@ import android.widget.Button;
 
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.activity.ActivityMain;
+import com.sapuseven.untis.utils.connectivity.ApiRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;

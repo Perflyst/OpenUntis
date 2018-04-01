@@ -6,32 +6,24 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.sapuseven.untis.utils.Constants;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
-import com.sapuseven.untis.utils.TimegridUnitManager;
-import com.sapuseven.untis.utils.Timetable;
-import com.sapuseven.untis.utils.TimetableItemData;
+import com.sapuseven.untis.utils.connectivity.UntisRequest;
+import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
+import com.sapuseven.untis.utils.timetable.Timetable;
+import com.sapuseven.untis.utils.timetable.TimetableItemData;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,8 +31,8 @@ import java.util.Locale;
 
 import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
-import static com.sapuseven.untis.utils.Authentication.getAuthElement;
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
+import static com.sapuseven.untis.utils.connectivity.UntisAuthentication.getAuthObject;
 
 public class NotificationSetup extends BroadcastReceiver {
 	private ListManager listManager;
@@ -51,11 +43,17 @@ public class NotificationSetup extends BroadcastReceiver {
 	@Override
 	public void onReceive(final Context context, Intent intent) {
 		Log.d("NotificationSetup", "NotificationSetup received");
+		this.context = context;
+
+		performRequest();
+	}
+
+	private void performRequest() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		if (!prefs.getBoolean("preference_notifications_enable", true))
 			return;
+
 		listManager = new ListManager(context);
-		this.context = context;
 		sessionInfo = new SessionInfo();
 
 		try {
@@ -68,17 +66,42 @@ public class NotificationSetup extends BroadcastReceiver {
 				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 
 		prefs = context.getSharedPreferences("login_data", MODE_PRIVATE);
-		Request request = new Request(prefs.getString("url", null));
-		request.setSchool(prefs.getString("school", null));
-		request.setParams("[{\"id\":\"" + sessionInfo.getElemId() + "\"," +
-				"\"type\":\"" + sessionInfo.getElemType() + "\"," +
-				"\"startDate\":" + startDateFromWeek + "," +
-				"\"endDate\":" + addDaysToInt(startDateFromWeek, 4) + "," +
-				"\"masterDataTimestamp\":" + System.currentTimeMillis() + "," +
-				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
-				"}]");
-		Log.d("NotificationSetup", "Executing request...");
-		request.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+		UntisRequest api = new UntisRequest(context);
+
+		UntisRequest.ResponseHandler handler = response -> {
+			Log.d("NotificationSetup", "Request executed, response: " + response.toString().substring(0, Math.min(255, response.toString().length())));
+			try {
+				if (response.has("result")) {
+					setup(response.getJSONObject("result"));
+					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
+					listManager.saveList(fileName, response.toString(), true);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		};
+
+		JSONObject params = new JSONObject();
+		try {
+			params
+					.put("id", sessionInfo.getElemId())
+					.put("type", sessionInfo.getElemType())
+					.put("startDate", startDateFromWeek)
+					.put("endDate", addDaysToInt(startDateFromWeek, 4))
+					.put("masterDataTimestamp", System.currentTimeMillis())
+					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
+		} catch (JSONException e) {
+			e.printStackTrace(); // TODO: Implement proper error handling
+		}
+
+		UntisRequest.UntisRequestQuery query = new UntisRequest.UntisRequestQuery();
+		query.setMethod(Constants.UntisAPI.METHOD_GET_TIMETABLE);
+		query.setParams(new JSONArray().put(params));
+		query.setUrl(prefs.getString("url", null));
+		query.setSchool(prefs.getString("school", null));
+
+		api.setResponseHandler(handler).submit(query);
 	}
 
 	private void setup(JSONObject data) {
@@ -93,7 +116,7 @@ public class NotificationSetup extends BroadcastReceiver {
 
 		TimegridUnitManager unitManager;
 		try {
-			unitManager = new TimegridUnitManager(new JSONObject(listManager.readList("userData", false)).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
+			unitManager = new TimegridUnitManager(userDataList.getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days"));
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return;
@@ -191,97 +214,6 @@ public class NotificationSetup extends BroadcastReceiver {
 				Log.d("NotificationSetup", "notification will be cancelled at " + c2.get(Calendar.HOUR_OF_DAY) + ":" + c2.get(Calendar.MINUTE));
 			} else
 				Log.d("NotificationSetup", "notification not scheduled at: " + c1.get(Calendar.HOUR_OF_DAY) + ":" + c1.get(Calendar.MINUTE));
-		}
-	}
-
-	private class Request extends AsyncTask<Void, Void, String> { // TODO: Create a separate class for this task and also use it in FragmentTimetable
-		private static final String jsonrpc = "2.0";
-		private final String method = "getTimetable2017";
-		private String url = "";
-		private String params = "{}";
-		private String school = "";
-
-		private String json;
-
-		Request(String url) {
-			this.url = "https://" + url + "/WebUntis/jsonrpc_intern.do";
-		}
-
-		void setSchool(String school) {
-			this.school = school;
-		}
-
-		void setParams(String params) {
-			this.params = params;
-		}
-
-		@SuppressWarnings("deprecation")
-		@Override
-		protected String doInBackground(Void... p1) {
-			String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
-			if (listManager.exists(fileName, true))
-				return listManager.readList(fileName, true);
-
-			InputStream inputStream;
-			try {
-				HttpClient httpclient = new DefaultHttpClient();
-				String url = this.url;
-				if (this.school.length() > 0)
-					url += "?school=" + this.school;
-				HttpPost httpPost = new HttpPost(url);
-
-				json = "";
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("id", 0);
-				jsonObject.put("method", this.method);
-				jsonObject.put("params", new JSONArray(this.params));
-				jsonObject.put("jsonrpc", jsonrpc);
-				json = jsonObject.toString();
-
-				StringEntity se = new StringEntity(json);
-				httpPost.setEntity(se);
-				httpPost.setHeader("Accept", "application/json");
-				httpPost.setHeader("Content-type", "application/json");
-
-				HttpResponse httpResponse = httpclient.execute(httpPost);
-				inputStream = httpResponse.getEntity().getContent();
-				if (inputStream != null) {
-					JSONObject resultJson = new JSONObject(inputStreamToString(inputStream));
-					resultJson.put("timeModified", System.currentTimeMillis());
-					return resultJson.toString();
-				} else {
-					return "{}";
-				}
-
-			} catch (Exception e) {
-				return "{\"id\":\"0\",\"error\":{\"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}}";
-			}
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			Log.d("NotificationSetup", "Request executed, result: " + result.substring(0, Math.min(255, result.length())));
-			try {
-				JSONObject jsonObj = new JSONObject(result);
-				if (jsonObj.has("result")) {
-					setup(jsonObj.getJSONObject("result"));
-					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
-					listManager.saveList(fileName, result, true);
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		private String inputStreamToString(InputStream inputStream) throws IOException {
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-			String line;
-			StringBuilder result = new StringBuilder();
-			while ((line = bufferedReader.readLine()) != null)
-				result.append(line);
-
-			inputStream.close();
-			return result.toString();
 		}
 	}
 }

@@ -218,6 +218,8 @@
 	<string name="drag_to_sort">Drag to sort</string>
 	<string name="toast_ratings_saved">Ratings saved.</string>
 	<string name="donation">Donation</string>
+	<string name="save">Save</string>
+	<string name="key_copy_failed">Failed to copy key</string>
 	<plurals name="time_diff_minutes">
 		<item quantity="one">a minute ago</item>
 		<item quantity="other">%d minutes ago</item>

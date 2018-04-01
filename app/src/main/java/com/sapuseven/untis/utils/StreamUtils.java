@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class StreamUtils {
+class StreamUtils {
 	public static String readStream(InputStream is) {
 		try {
 			ByteArrayOutputStream bo = new ByteArrayOutputStream();

@@ -81,6 +81,9 @@
 			android:layout_height="wrap_content"
 			android:layout_alignParentLeft="true"
 			android:layout_alignParentStart="true"
+			android:layout_toLeftOf="@+id/btnUpdateLater"
+			android:layout_toStartOf="@+id/btnUpdateLater"
+			android:gravity="start|center_vertical"
 			android:text="@string/view_changelog"/>
 
 		<Button

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -35,11 +34,13 @@ import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterCheckBoxGridView;
 import com.sapuseven.untis.adapter.AdapterItemRoomFinder;
 import com.sapuseven.untis.adapter.AdapterRoomFinder;
+import com.sapuseven.untis.utils.Constants;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
-import com.sapuseven.untis.utils.TimegridUnitManager;
-import com.sapuseven.untis.utils.Timetable;
+import com.sapuseven.untis.utils.connectivity.UntisRequest;
+import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
+import com.sapuseven.untis.utils.timetable.Timetable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,14 +48,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,13 +60,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import static com.sapuseven.untis.fragment.FragmentTimetable.ID_GET_TIMETABLE;
-import static com.sapuseven.untis.utils.Authentication.getAuthElement;
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
 import static com.sapuseven.untis.utils.DateOperations.getStartDateFromWeek;
 import static com.sapuseven.untis.utils.ElementName.ROOM;
 import static com.sapuseven.untis.utils.SessionInfo.getElemTypeName;
 import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
+import static com.sapuseven.untis.utils.connectivity.UntisAuthentication.getAuthObject;
 
 public class ActivityRoomFinder extends AppCompatActivity implements View.OnClickListener {
 	private int mRoomListMargins;
@@ -77,9 +73,9 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	private AlertDialog mDialog;
 	private ArrayList<AdapterItemRoomFinder> mRoomList;
 	private AdapterRoomFinder mRoomAdapter;
-	private int mCurrentHourIndex = 0;
+	private int mCurrentHourIndex = -1;
 	private int mHourIndexOffset;
-	private ArrayList<Request> mRequestQueue;
+	private ArrayList<RequestModel> mRequestQueue;
 	private ArrayList<String> mRefreshingItems;
 	private RecyclerView mRecyclerView;
 	private TextView mCurrentHour;
@@ -216,7 +212,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			e.printStackTrace();
 		}
 
-		for (Request r : mRequestQueue) {
+		for (RequestModel r : mRequestQueue) {
 			if (!r.isRefreshOnly())
 				mRoomList.add(new AdapterItemRoomFinder(this, r.getDisplayName(), true));
 			mRoomAdapter.notifyItemInserted(mRoomList.size() - 1);
@@ -231,7 +227,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		else
 			findViewById(R.id.tvNoRooms).setVisibility(View.GONE);
 
-		Collections.sort(mRoomList);
+		Collections.sort(mRoomList); // TODO: Due to multiple calls of getIndex(), this takes quite a bit of time. Better make this asynchronous and display a loading indicator
 		mRoomAdapter.notifyDataSetChanged();
 		displayCurrentHour();
 	}
@@ -311,24 +307,11 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		}
 	}
 
-	private void addRoom(AdapterItemRoomFinder item, Integer roomID) {
+	private void addRoom(AdapterItemRoomFinder item, int roomID) {
 		if (mRoomList.contains(item))
 			return;
 
-		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
-				.format(getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
-
-		SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
-		Request request = new Request(prefs.getString("url", null), item.getName());
-		request.setSchool(prefs.getString("school", null));
-		request.setParams("[{\"id\":\"" + roomID + "\"," +
-				"\"type\":\"" + getElemTypeName(ROOM) + "\"," +
-				"\"startDate\":" + startDateFromWeek + "," +
-				"\"endDate\":" + addDaysToInt(startDateFromWeek, 4) + "," +
-				"\"masterDataTimestamp\":" + System.currentTimeMillis() + "," +
-				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
-				"}]");
-		mRequestQueue.add(request);
+		mRequestQueue.add(new RequestModel(roomID, item.getName()));
 
 		refreshRoomList();
 	}
@@ -336,12 +319,108 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	private void executeRequestQueue() {
 		reload();
 
-		if (mRequestQueue.size() > 0 && mRequestQueue.get(0).getStatus() == AsyncTask.Status.PENDING)
-			mRequestQueue.get(0).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		if (mRequestQueue.size() > 0)
+			loadRoom(mRequestQueue.get(0));
+	}
+
+	private void loadRoom(RequestModel room) {
+		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+				.format(getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
+
+		SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
+		UntisRequest api = new UntisRequest(this);
+
+		UntisRequest.ResponseHandler handler = response -> {
+			try {
+				if (response.has("error")) {
+					Log.w("error", response.toString());
+					Snackbar.make(mRecyclerView,
+							getString(R.string.snackbar_error, response.getJSONObject("error")
+									.getString("message")), Snackbar.LENGTH_LONG)
+							.setAction("OK", null).show();
+				} else if (response.has("result")) {
+					RequestModel requestModel = mRequestQueue.get(0);
+
+					Timetable timetable = new Timetable(response.getJSONObject("result"), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+
+					JSONArray dayList = null;
+					try {
+						dayList = new JSONObject(new ListManager(getApplication())
+								.readList("userData", false)).getJSONObject("masterData")
+								.getJSONObject("timeGrid").getJSONArray("days");
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+
+					TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
+
+					int days = unitManager.getNumberOfDays();
+					int hours = unitManager.getMaxHoursPerDay();
+
+					boolean[] states = new boolean[days * hours];
+
+					for (int i = 0; i < states.length; i++) {
+						int day = i / hours;
+						int hour = i % hours;
+
+						if (timetable.getItems(day, hour).size() > 0)
+							states[day * hours + hour] = true;
+					}
+
+					StringBuilder binaryData = new StringBuilder();
+					for (boolean value : states)
+						binaryData.append(value ? '1' : '0');
+
+					if (!TextUtils.isEmpty(binaryData.toString())) {
+						if (requestModel.isRefreshOnly())
+							deleteItem(requestModel.getDisplayName());
+
+						BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+								openFileOutput("roomList.txt", MODE_APPEND), "UTF-8"));
+						writer.write(requestModel.getDisplayName());
+						writer.newLine();
+						writer.write(binaryData.toString());
+						writer.newLine();
+						writer.write(String.valueOf(getStartDateFromWeek(Calendar.getInstance(), 0,
+								true).getTimeInMillis()));
+						writer.newLine();
+						writer.close();
+					}
+
+					reload();
+					refreshRoomList();
+				}
+			} catch (JSONException | IOException e) {
+				e.printStackTrace();
+			}
+			mRequestQueue.remove(0);
+			executeRequestQueue();
+		};
+
+		UntisRequest.UntisRequestQuery query = new UntisRequest.UntisRequestQuery();
+		query.setMethod(Constants.UntisAPI.METHOD_GET_TIMETABLE);
+		query.setUrl(prefs.getString("url", null));
+		query.setSchool(prefs.getString("school", null));
+
+		JSONObject params = new JSONObject();
+		try {
+			params
+					.put("id", room.getRoomID())
+					.put("type", getElemTypeName(ROOM))
+					.put("startDate", startDateFromWeek)
+					.put("endDate", addDaysToInt(startDateFromWeek, 4)) // TODO: Replace with actual week length
+					.put("masterDataTimestamp", System.currentTimeMillis())
+					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
+		} catch (JSONException e) {
+			e.printStackTrace(); // TODO: Implment proper error handling (search for possible cases first)
+		}
+		query.setParams(new JSONArray().put(params));
+
+		api.setResponseHandler(handler).submit(query);
 	}
 
 	public int getCurrentHourIndex() {
-		if (mCurrentHourIndex > 0)
+		if (mCurrentHourIndex >= 0)
 			return mCurrentHourIndex + mHourIndexOffset;
 
 		int index = 0;
@@ -391,7 +470,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		return mCurrentHourIndex + mHourIndexOffset;
 	}
 
-	public void deleteItem(final int position) {
+	public void showDeleteItemDialog(int position) {
 		new AlertDialog.Builder(this)
 				.setTitle(getString(R.string.delete_item_title, mRoomList.get(position).getName()))
 				.setMessage(R.string.delete_item_text)
@@ -413,7 +492,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				.show();
 	}
 
-	private boolean deleteItem(final String name) throws IOException {
+	private boolean deleteItem(String name) throws IOException {
 		File inputFile = new File(getFilesDir(), "roomList.txt");
 		File tempFile = new File(getFilesDir(), "roomList.txt.tmp");
 
@@ -472,25 +551,10 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	private void refreshItemData(final int position) {
 		mRoomList.get(position).setLoading();
 
-		final int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
-				.format(getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
-		final SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
 		final ElementName elementName = new ElementName(ROOM).setUserDataList(mUserDataList);
 
-		Request request = new Request(prefs.getString("url", null),
-				mRoomList.get(position).getName());
-		request.setSchool(prefs.getString("school", null));
-		request.setParams("[{\"id\":\"" + elementName.findFieldByValue("name",
-				mRoomList.get(position).getName(), "id") + "\"," +
-				"\"type\":\"" + getElemTypeName(ROOM) + "\"," +
-				"\"startDate\":" + startDateFromWeek + "," +
-				"\"endDate\":" + addDaysToInt(startDateFromWeek, 4) + "," +
-				"\"masterDataTimestamp\":" + System.currentTimeMillis() + "," +
-				getAuthElement(prefs.getString("user", ""), prefs.getString("key", "")) +
-				"}]");
-		request.refreshOnly();
-		mRequestQueue.add(request);
-		mRefreshingItems.add(mRoomList.get(position).getName());
+		mRequestQueue.add(new RequestModel((Integer) elementName.findFieldByValue("name",
+				mRoomList.get(position).getName(), "id"), mRoomList.get(position).getName(), true));
 	}
 
 	private void displayCurrentHour() {
@@ -521,7 +585,36 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		finish();
 	}
 
-	private class Request extends AsyncTask<Void, Void, String> {
+	private class RequestModel {
+		private final String displayName;
+		private final int roomID;
+		private boolean refreshOnly;
+
+		RequestModel(int roomID, String displayName) {
+			this.roomID = roomID;
+			this.displayName = displayName;
+		}
+
+		RequestModel(int roomID, String displayName, boolean refreshOnly) {
+			this.roomID = roomID;
+			this.displayName = displayName;
+			this.refreshOnly = refreshOnly;
+		}
+
+		private String getDisplayName() {
+			return displayName;
+		}
+
+		boolean isRefreshOnly() {
+			return refreshOnly;
+		}
+
+		int getRoomID() {
+			return roomID;
+		}
+	}
+
+	/*private class Request extends AsyncTask<Void, Void, String> {
 		private static final String jsonrpc = "2.0";
 		private final String method = "getTimetable2017";
 		private final String id = ID_GET_TIMETABLE;
@@ -532,7 +625,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		private boolean refreshOnly;
 
 		Request(String url, String displayName) {
-			this.url = "https://" + url + "/WebUntis/jsonrpc_intern.do";
+			this.url = Constants.UntisAPI.DEFAULT_PROTOCOL + url + Constants.UntisAPI.DEFAULT_WEBUNTIS_PATH;
 			this.displayName = displayName;
 		}
 
@@ -554,11 +647,11 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					url += "?school=" + this.school;
 				urlConnection = (HttpURLConnection) new URL(url).openConnection();
 
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("id", this.id);
-				jsonObject.put("method", this.method);
-				jsonObject.put("params", new JSONArray(this.params));
-				jsonObject.put("jsonrpc", jsonrpc);
+				JSONObject responseect = new JSONObject();
+				responseect.put("id", this.id);
+				responseect.put("method", this.method);
+				responseect.put("params", new JSONArray(this.params));
+				responseect.put("jsonrpc", jsonrpc);
 
 				urlConnection.setDoOutput(true);
 				urlConnection.setRequestMethod("POST");
@@ -567,7 +660,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				urlConnection.connect();
 
 				DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
-				wr.writeBytes(jsonObject.toString());
+				wr.writeBytes(responseect.toString());
 				wr.close();
 
 				int response = urlConnection.getResponseCode();
@@ -588,15 +681,15 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		@Override
 		protected void onPostExecute(String result) {
 			try {
-				JSONObject jsonObj = new JSONObject(result);
-				if (jsonObj.has("error")) {
-					Log.w("error", jsonObj.toString());
+				JSONObject response = new JSONObject(result);
+				if (response.has("error")) {
+					Log.w("error", response.toString());
 					Snackbar.make(mRecyclerView,
-							getString(R.string.snackbar_error, jsonObj.getJSONObject("error")
+							getString(R.string.snackbar_error, response.getJSONObject("error")
 									.getString("message")), Snackbar.LENGTH_LONG)
 							.setAction("OK", null).show();
-				} else if (jsonObj.has("result")) {
-					Timetable timetable = new Timetable(jsonObj.getJSONObject("result"), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+				} else if (response.has("result")) {
+					Timetable timetable = new Timetable(response.getJSONObject("result"), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
 
 					JSONArray dayList = null;
 					try {
@@ -628,7 +721,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 
 					if (!TextUtils.isEmpty(binaryData.toString())) {
 						if (refreshOnly)
-							deleteItem(displayName);
+							showDeleteItemDialog(displayName);
 
 						BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
 								openFileOutput("roomList.txt", MODE_APPEND), "UTF-8"));
@@ -677,5 +770,5 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		void refreshOnly() {
 			this.refreshOnly = true;
 		}
-	}
+	}*/
 }

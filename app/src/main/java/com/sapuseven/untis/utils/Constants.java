@@ -2,9 +2,9 @@ package com.sapuseven.untis.utils;
 
 @SuppressWarnings("unused")
 public class Constants {
-	public class API {
+	public class UntisAPI {
 		public static final String DEFAULT_PROTOCOL = "https://";
-		public static final String PATH = "/WebUntis/jsonrpc_intern.do";
+		public static final String DEFAULT_WEBUNTIS_PATH = "/WebUntis/jsonrpc_intern.do";
 
 		public static final int ERROR_CODE_INVALID_SCHOOLNAME = -8500;
 		public static final int ERROR_CODE_INVALID_CREDENTIALS = -8504;
@@ -13,11 +13,9 @@ public class Constants {
 		public static final int ERROR_CODE_WEBUNTIS_NOT_INSTALLED = 101;
 
 		public static final int ERROR_CODE_UNKNOWN = 0;
-	}
 
-	public class LoginDataInput {
-		public static final String REQUEST_ID_CONNECT = "1";
-		public static final String REQUEST_ID_LOAD = "2";
+		public static final String METHOD_GET_USER_DATA = "getUserData2017";
+		public static final String METHOD_GET_TIMETABLE = "getTimetable2017";
 	}
 
 	public class TimetableItem {

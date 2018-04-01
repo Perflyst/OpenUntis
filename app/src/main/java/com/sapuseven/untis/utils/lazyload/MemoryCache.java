@@ -9,9 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class MemoryCache {
+class MemoryCache {
 	private static final String TAG = "MemoryCache";
-	private Map<String, Bitmap> cache = Collections.synchronizedMap(
+	private final Map<String, Bitmap> cache = Collections.synchronizedMap(
 			new LinkedHashMap<String, Bitmap>(10, 1.5f, true));
 	private long size = 0;
 	private long limit = 1000000;

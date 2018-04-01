@@ -14,12 +14,4 @@ public class Conversions {
 			throw new IllegalStateException("You have to call setScale first!");
 		return (int) (dp * scale + 0.5f);
 	}
-
-	public static int dp2px(String dp) {
-		if (scale < 0)
-			throw new IllegalStateException("You have to call setScale first!");
-		if (dp.replaceAll("\\d+(dp)?", "").length() > 0)
-			throw new IllegalArgumentException("Illegal dp value: " + dp);
-		return (int) (Integer.parseInt(dp.replace("dp", "")) * scale + 0.5f);
-	}
 }

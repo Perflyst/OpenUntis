@@ -62,7 +62,7 @@ public class AdapterRoomFinder extends RecyclerView.Adapter<AdapterRoomFinder.Vi
 			holder.btnRoomExpired.setVisibility(View.GONE);
 		}
 
-		holder.btnDelete.setOnClickListener(v -> activity.deleteItem(holder.getAdapterPosition()));
+		holder.btnDelete.setOnClickListener(v -> activity.showDeleteItemDialog(holder.getAdapterPosition()));
 
 		holder.btnRoomExpired.setOnClickListener(v -> activity.refreshItem(holder.getAdapterPosition()));
 	}

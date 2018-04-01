@@ -99,10 +99,6 @@ public class TimegridUnitManager {
 			return displayTime;
 		}
 
-		public String getEndTime() {
-			return endTime;
-		}
-
 		public String getDisplayEndTime() {
 			String displayTime = endTime;
 			while (displayTime.charAt(0) == '0')

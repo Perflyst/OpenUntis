@@ -3,11 +3,9 @@ package com.sapuseven.untis.activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -20,42 +18,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.sapuseven.untis.R;
+import com.sapuseven.untis.utils.Constants;
 import com.sapuseven.untis.utils.ListManager;
+import com.sapuseven.untis.utils.connectivity.UntisRequest;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-
-import static com.sapuseven.untis.utils.Authentication.getAuthElement;
-import static com.sapuseven.untis.utils.Constants.API.DEFAULT_PROTOCOL;
-import static com.sapuseven.untis.utils.Constants.API.ERROR_CODE_INVALID_CLIENT_TIME;
-import static com.sapuseven.untis.utils.Constants.API.ERROR_CODE_INVALID_CREDENTIALS;
-import static com.sapuseven.untis.utils.Constants.API.ERROR_CODE_INVALID_SCHOOLNAME;
-import static com.sapuseven.untis.utils.Constants.API.ERROR_CODE_NO_SERVER_FOUND;
-import static com.sapuseven.untis.utils.Constants.API.ERROR_CODE_UNKNOWN;
-import static com.sapuseven.untis.utils.Constants.API.ERROR_CODE_WEBUNTIS_NOT_INSTALLED;
-import static com.sapuseven.untis.utils.Constants.API.PATH;
-import static com.sapuseven.untis.utils.Constants.LoginDataInput.REQUEST_ID_CONNECT;
-import static com.sapuseven.untis.utils.Constants.LoginDataInput.REQUEST_ID_LOAD;
+import static com.sapuseven.untis.utils.connectivity.UntisAuthentication.getAuthObject;
 
 public class ActivityLoginDataInput extends AppCompatActivity {
-	private RelativeLayout mRlConnectionStatus;
-	private ProgressBar mPbConnectionStatus;
-	private ImageView mIvConnectionStatusSuccess;
-	private ImageView mIvConnectionStatusFailed;
-	private TextView mTvConnectionStatus;
-
 	private RelativeLayout mRlLoadingStatus;
 	private ProgressBar mPbLoadingStatus;
 	private ImageView mIvLoadingStatusSuccess;
@@ -67,8 +40,6 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 	private EditText mEtUser;
 	private EditText mEtKey;
 	private Button mBtnLogin;
-
-	private LoginRequest mRequest;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -109,19 +80,12 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 				error.requestFocus();
 		});
 
-		mRlConnectionStatus = findViewById(R.id.rlConnectionStatus);
-		mPbConnectionStatus = findViewById(R.id.pbConnectionStatus);
-		mIvConnectionStatusSuccess = findViewById(R.id.ivConnectionStatusSuccess);
-		mIvConnectionStatusFailed = findViewById(R.id.ivConnectionStatusFailed);
-		mTvConnectionStatus = findViewById(R.id.tvConnectionStatus);
-
 		mRlLoadingStatus = findViewById(R.id.rlLoadingStatus);
 		mPbLoadingStatus = findViewById(R.id.pbLoadingStatus);
 		mIvLoadingStatusSuccess = findViewById(R.id.ivLoadingStatusSuccess);
 		mIvLoadingStatusFailed = findViewById(R.id.ivLoadingStatusFailed);
 		mTvLoadingStatus = findViewById(R.id.tvLoadingStatus);
 
-		mRlConnectionStatus.setVisibility(View.GONE);
 		mRlLoadingStatus.setVisibility(View.GONE);
 
 		String[] servers = getResources().getStringArray(R.array.webuntis_servers);
@@ -154,42 +118,116 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 			mEtUser.setText(uri.getQueryParameter("user"));
 			mEtKey.setText(uri.getQueryParameter("key"));
 		} else if (prefs != null) {
-			mEtUrl.setText(prefs.getString("etUrl", ""));
-			mEtSchool.setText(prefs.getString("etSchool", ""));
-			mEtUser.setText(prefs.getString("etUser", ""));
-			mEtKey.setText(prefs.getString("etKey", ""));
+			restoreInput(prefs);
 		}
 		setElementsEnabled(true);
 	}
 
 	@Override
 	public void onPause() {
-		if (mRequest != null && mRequest.getStatus().equals(AsyncTask.Status.RUNNING)) {
-			mRequest.cancel(true);
-		}
+		backupInput(this.getSharedPreferences("loginDataInputBackup", MODE_PRIVATE));
 
-		SharedPreferences prefs = this.getSharedPreferences("loginDataInputBackup", MODE_PRIVATE);
+		super.onPause();
+	}
+
+	private void backupInput(SharedPreferences prefs) {
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString("etUrl", mEtUrl.getText().toString());
 		editor.putString("etSchool", mEtSchool.getText().toString());
 		editor.putString("etUser", mEtUser.getText().toString());
 		editor.putString("etKey", mEtKey.getText().toString());
 		editor.apply();
+	}
 
-		super.onPause();
+	private void restoreInput(SharedPreferences prefs) {
+		mEtUrl.setText(prefs.getString("etUrl", ""));
+		mEtSchool.setText(prefs.getString("etSchool", ""));
+		mEtUser.setText(prefs.getString("etUser", ""));
+		mEtKey.setText(prefs.getString("etKey", ""));
 	}
 
 	private void loadData() {
-		mRlLoadingStatus.setVisibility(View.GONE);
-		mRlConnectionStatus.setVisibility(View.VISIBLE);
-		mTvConnectionStatus.setText(getString(R.string.connecting));
-		mIvConnectionStatusFailed.setVisibility(View.GONE);
-		mIvConnectionStatusSuccess.setVisibility(View.GONE);
-		mPbConnectionStatus.setVisibility(View.VISIBLE);
-		mRequest = new LoginRequest(mEtUrl.getText().toString() + "/WebUntis/jsonrpc_intern.do" +
-				"?school=" + mEtSchool.getText().toString());
-		mRequest.setId(REQUEST_ID_CONNECT);
-		mRequest.execute();
+		mRlLoadingStatus.setVisibility(View.VISIBLE);
+		mTvLoadingStatus.setText(getString(R.string.loading_data));
+		mIvLoadingStatusFailed.setVisibility(View.GONE);
+		mIvLoadingStatusSuccess.setVisibility(View.GONE);
+		mPbLoadingStatus.setVisibility(View.VISIBLE);
+
+		sendRequest();
+	}
+
+	private void sendRequest() {
+		UntisRequest api = new UntisRequest(this);
+
+		UntisRequest.ResponseHandler handler = response -> {
+			try {
+				if (response != null && response.has("result")) {
+					mPbLoadingStatus.setVisibility(View.GONE);
+					mIvLoadingStatusSuccess.setVisibility(View.VISIBLE);
+					mTvLoadingStatus.setText(getString(R.string.data_loaded));
+					saveCredentials(mEtUrl.getText().toString(), mEtSchool.getText().toString(),
+							mEtUser.getText().toString(), mEtKey.getText().toString());
+					saveData(response.getJSONObject("result"));
+					finish();
+				} else {
+					mPbLoadingStatus.setVisibility(View.GONE);
+					mIvLoadingStatusFailed.setVisibility(View.VISIBLE);
+
+					int errorCode = Constants.UntisAPI.ERROR_CODE_UNKNOWN;
+					if (response != null)
+						errorCode = response.getJSONObject("error").getInt("code");
+
+					switch (errorCode) {
+						case Constants.UntisAPI.ERROR_CODE_NO_SERVER_FOUND:
+							mTvLoadingStatus.setText(R.string.invalid_server_url);
+							break;
+						case Constants.UntisAPI.ERROR_CODE_INVALID_SCHOOLNAME:
+							mTvLoadingStatus.setText(R.string.invalid_school);
+							break;
+						case Constants.UntisAPI.ERROR_CODE_INVALID_CLIENT_TIME:
+							mTvLoadingStatus.setText(R.string.invalid_time_settings);
+							break;
+						case Constants.UntisAPI.ERROR_CODE_INVALID_CREDENTIALS:
+							mTvLoadingStatus.setText(R.string.invalid_credentials);
+							break;
+						case Constants.UntisAPI.ERROR_CODE_WEBUNTIS_NOT_INSTALLED:
+							mTvLoadingStatus.setText(R.string.server_webuntis_not_installed);
+							break;
+						case Constants.UntisAPI.ERROR_CODE_UNKNOWN:
+						default:
+							mTvLoadingStatus.setText(R.string.unknown_error);
+							break;
+					}
+
+					setElementsEnabled(true);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+				mPbLoadingStatus.setVisibility(View.GONE);
+				mIvLoadingStatusFailed.setVisibility(View.VISIBLE);
+				mTvLoadingStatus.setText(R.string.unknown_error);
+				setElementsEnabled(true);
+			}
+		};
+
+		UntisRequest.UntisRequestQuery query = new UntisRequest.UntisRequestQuery();
+		query.setMethod(Constants.UntisAPI.METHOD_GET_USER_DATA);
+		query.setUrl(mEtUrl.getText().toString());
+		query.setSchool(mEtSchool.getText().toString());
+
+		JSONArray params = new JSONArray();
+		JSONObject auth = new JSONObject();
+		try {
+			auth.put("auth", getAuthObject(mEtUser.getText().toString(),
+					mEtKey.getText().toString()));
+		} catch (JSONException e) {
+			e.printStackTrace(); // TODO: Implment proper error handling (search for possible cases first)
+		}
+		params.put(auth);
+		query.setParams(params);
+
+		setElementsEnabled(false);
+		api.setResponseHandler(handler).submit(query);
 	}
 
 	private void saveCredentials(String url, String school, String user, String key) {
@@ -219,187 +257,5 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		mEtUser.setEnabled(enabled);
 		mEtKey.setEnabled(enabled);
 		mBtnLogin.setEnabled(enabled);
-	}
-
-	private class LoginRequest extends AsyncTask<Void, Void, String> {
-		private static final String jsonrpc = "2.0";
-		private final String url;
-		private final String method = "getUserData2017";
-		private String id = "-1";
-		private String params = "[]";
-		private String json;
-
-		LoginRequest(String url) {
-			this.url = DEFAULT_PROTOCOL + url;
-		}
-
-		@Override
-		protected void onPreExecute() {
-			setElementsEnabled(false);
-		}
-
-		@SuppressWarnings("deprecation")
-		@Override
-		protected String doInBackground(Void... p1) {
-			InputStream inputStream;
-			String result;
-			try {
-				HttpClient httpclient = new DefaultHttpClient();
-
-				HttpPost httpPost = new HttpPost(url);
-
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("id", id);
-				jsonObject.put("method", method);
-				jsonObject.put("params", new JSONArray(params));
-				jsonObject.put("jsonrpc", jsonrpc);
-
-				json = jsonObject.toString();
-
-				StringEntity se = new StringEntity(json);
-
-				httpPost.setEntity(se);
-
-				httpPost.setHeader("Accept", "application/json");
-				httpPost.setHeader("Content-type", "application/json");
-
-				HttpResponse httpResponse;
-				try {
-					httpResponse = httpclient.execute(httpPost);
-				} catch (IOException e) {
-					e.printStackTrace();
-					return "{\"id\":\"" + id + "\",\"error\":{\"code\":"
-							+ ERROR_CODE_NO_SERVER_FOUND + "," +
-							"\"message\":" + "\"" + e.getMessage().replace("\"", "\\\"") + "\"}}";
-				}
-
-				if (httpResponse.getStatusLine().getStatusCode() != 200) {
-					Log.e("BetterUntis", "Server responded with code "
-							+ httpResponse.getStatusLine().getStatusCode());
-					return "{\"id\":\"" + id + "\",\"error\":{\"code\":"
-							+ ERROR_CODE_WEBUNTIS_NOT_INSTALLED + ",\"message\":" +
-							"\"WebUntis is not installed on the specified server!\"}}";
-				}
-
-				try {
-					inputStream = httpResponse.getEntity().getContent();
-
-					result = inputStreamToString(inputStream);
-				} catch (IOException e) {
-					e.printStackTrace();
-					return "{\"id\":\"" + id + "\",\"error\":{\"code\":"
-							+ ERROR_CODE_WEBUNTIS_NOT_INSTALLED + ",\"message\":" +
-							"\"WebUntis is not installed on the specified server!\"}}";
-				}
-			} catch (JSONException | UnsupportedEncodingException e) {
-				e.printStackTrace();
-				result = "{\"id\":\"" + id + "\",\"error\":{\"code\":"
-						+ ERROR_CODE_UNKNOWN + ",\"message\":" +
-						"\"An unknown error occurred.\"}}";
-			}
-
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			try {
-				JSONObject data = new JSONObject(result);
-
-				if (id.equals(REQUEST_ID_CONNECT) &&
-						data.optJSONObject("error").optInt("code") != ERROR_CODE_NO_SERVER_FOUND &&
-						data.optJSONObject("error").optInt("code")
-								!= ERROR_CODE_INVALID_SCHOOLNAME) {
-					mPbConnectionStatus.setVisibility(View.GONE);
-					mIvConnectionStatusSuccess.setVisibility(View.VISIBLE);
-					mTvConnectionStatus.setText(getString(R.string.connected));
-					mRlLoadingStatus.setVisibility(View.VISIBLE);
-					mTvLoadingStatus.setText(getString(R.string.loading_data));
-					mIvLoadingStatusFailed.setVisibility(View.GONE);
-					mIvLoadingStatusSuccess.setVisibility(View.GONE);
-					mPbLoadingStatus.setVisibility(View.VISIBLE);
-					mRequest = new LoginRequest(mEtUrl.getText().toString() + PATH
-							+ "?school=" + mEtSchool.getText().toString());
-					mRequest.setId(REQUEST_ID_LOAD);
-					mRequest.setParams("[{" + getAuthElement(mEtUser.getText().toString(),
-							mEtKey.getText().toString()) + "}]");
-					mRequest.execute();
-				}
-				if (!data.has("error")) {
-					mPbLoadingStatus.setVisibility(View.GONE);
-					mIvLoadingStatusSuccess.setVisibility(View.VISIBLE);
-					mTvLoadingStatus.setText(getString(R.string.data_loaded));
-					saveCredentials(mEtUrl.getText().toString(), mEtSchool.getText().toString(),
-							mEtUser.getText().toString(), mEtKey.getText().toString());
-					saveData(data.optJSONObject("result"));
-					finish();
-				} else {
-					if (id.equals(REQUEST_ID_CONNECT) &&
-							(data.optJSONObject("error").optInt("code")
-									== ERROR_CODE_NO_SERVER_FOUND ||
-									data.optJSONObject("error").optInt("code")
-											== ERROR_CODE_INVALID_SCHOOLNAME)) {
-						mPbConnectionStatus.setVisibility(View.GONE);
-						mIvConnectionStatusFailed.setVisibility(View.VISIBLE);
-
-						switch (data.optJSONObject("error").optInt("code")) {
-							case ERROR_CODE_NO_SERVER_FOUND:
-								mTvConnectionStatus.setText(R.string.invalid_server_url);
-								break;
-							case ERROR_CODE_INVALID_SCHOOLNAME:
-								mTvConnectionStatus.setText(R.string.invalid_school);
-								break;
-							default:
-								mTvConnectionStatus.setText(R.string.unknown_error);
-								break;
-						}
-
-						setElementsEnabled(true);
-					} else if (id.equals(REQUEST_ID_LOAD)) {
-						mPbLoadingStatus.setVisibility(View.GONE);
-						mIvLoadingStatusFailed.setVisibility(View.VISIBLE);
-
-						switch (data.optJSONObject("error").optInt("code")) {
-							case ERROR_CODE_INVALID_CLIENT_TIME:
-								mTvLoadingStatus.setText(R.string.invalid_time_settings);
-								break;
-							case ERROR_CODE_INVALID_CREDENTIALS:
-								mTvLoadingStatus.setText(R.string.invalid_credentials);
-								break;
-							case ERROR_CODE_WEBUNTIS_NOT_INSTALLED:
-								mTvLoadingStatus.setText(R.string.server_webuntis_not_installed);
-								break;
-							case ERROR_CODE_UNKNOWN:
-							default:
-								mTvLoadingStatus.setText(R.string.unknown_error);
-								break;
-						}
-
-						setElementsEnabled(true);
-					}
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-				mPbConnectionStatus.setVisibility(View.GONE);
-				mIvConnectionStatusFailed.setVisibility(View.VISIBLE);
-				mTvConnectionStatus.setText(R.string.unknown_error);
-				setElementsEnabled(true);
-			}
-		}
-
-		private String inputStreamToString(InputStream inputStream) throws IOException {
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-			String result = bufferedReader.readLine();
-			inputStream.close();
-			return result;
-		}
-
-		public void setId(String id) {
-			this.id = id;
-		}
-
-		void setParams(String params) {
-			this.params = params;
-		}
 	}
 }

@@ -3,7 +3,7 @@ package com.sapuseven.untis.utils;
 import java.util.ArrayList;
 
 public class ColorPreferenceList {
-	private ArrayList<String> keys = new ArrayList<>();
+	private final ArrayList<String> keys = new ArrayList<>();
 
 	public void add(String key) {
 		keys.add(key);

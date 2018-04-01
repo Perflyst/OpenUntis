@@ -16,7 +16,7 @@ import android.widget.Toast;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterFeatures;
 import com.sapuseven.untis.adapter.AdapterItemFeatures;
-import com.sapuseven.untis.utils.ApiRequest;
+import com.sapuseven.untis.utils.connectivity.ApiRequest;
 import com.sapuseven.untis.view.SortableListView;
 
 import org.json.JSONArray;
@@ -34,7 +34,7 @@ import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 public class ActivityFeatures extends AppCompatActivity {
 	private AdapterFeatures adapter;
 
-	private SortableListView.DropListener onDrop =
+	private final SortableListView.DropListener onDrop =
 			new SortableListView.DropListener() {
 				@Override
 				public void drop(int from, int to) {
@@ -179,6 +179,9 @@ public class ActivityFeatures extends AppCompatActivity {
 		params.put("lang", lang);
 
 		ApiRequest.ResponseHandler handler = response -> {
+			if (response == null)
+				return; // TODO: Display "Network Error"
+
 			List<AdapterItemFeatures> items = new ArrayList<>();
 
 			try {

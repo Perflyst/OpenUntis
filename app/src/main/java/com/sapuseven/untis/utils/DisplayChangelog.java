@@ -17,7 +17,7 @@ import static com.sapuseven.untis.utils.StreamUtils.readStream;
 
 public class DisplayChangelog extends AsyncTask<Integer, Void, String> {
 	private AlertDialog dialog;
-	private WeakReference<Context> context;
+	private final WeakReference<Context> context;
 
 	public DisplayChangelog(Context context) {
 		this.context = new WeakReference<>(context);
