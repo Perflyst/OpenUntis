@@ -54,7 +54,6 @@ import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 
 public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 	private static final float DARKNESS_FACTOR = 0.8f;
-	private static long timer;
 	private final WeakReference<FragmentTimetable> fragmentContext;
 	private GridLayout glTimetable;
 
@@ -75,7 +74,6 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 
 	@Override
 	protected Void doInBackground(Timetable... timetable) {
-		timer = System.nanoTime();
 		Context context = this.fragmentContext.get().getContext();
 
 		if (context == null)
@@ -163,8 +161,6 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 
 		for (int day = 0; day < cols / 2; day++) {
 			try {
-				long timer2 = System.nanoTime();
-
 				JSONArray holidays = fragmentContext.get().userDataList.getJSONObject("masterData").getJSONArray("holidays");
 				LinearLayout holidayItem = null;
 				StringBuilder holidayLabelString = null;
@@ -216,22 +212,15 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 					glTimetable.addView(holidayItem);
 					continue;
 				}
-
-				if (fragmentContext.get().isCurrentWeek())
-					Log.d("TimetableSetup", "Table setup timer duration holidays: " + (System.nanoTime() - timer2) / 1000000.0 + "ms");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-
-			if (fragmentContext.get().isCurrentWeek())
-				Log.d("TimetableSetup", "Table setup timer before hours: " + (System.nanoTime() - timer) / 1000000 + "ms");
 
 			int lastHourIndex = 0;
 			for (int i = 0; i < rows; i++)
 				if (timetable[0].has(day, i))
 					lastHourIndex = i;
 
-			long timer3 = System.nanoTime();
 			for (int hour = 0; hour < rows; hour++) {
 				final ArrayList<TimetableItemData> allItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour);
 				if (allItems.size() == 0) { // A free hour
@@ -416,16 +405,12 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 					}
 				}
 			}
-			if (fragmentContext.get().isCurrentWeek())
-				Log.d("TimetableSetup", "Table setup hours duration: " + (System.nanoTime() - timer3) / 1000000.0 + "ms");
 		}
 		return null;
 	}
 
 	@Override
 	protected void onPostExecute(Void v) {
-		if (fragmentContext.get().isCurrentWeek())
-			Log.d("TimetableSetup", "Table setup timer onPostExecute start: " + (System.nanoTime() - timer) / 1000000 + "ms");
 		if (glTimetable == null)
 			return;
 
@@ -439,8 +424,6 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 			fragmentContext.get().main.setLastRefresh(fragmentContext.get().lastRefresh);
 		}
 		fragmentContext.get().pbLoading.setVisibility(View.GONE);
-		if (fragmentContext.get().isCurrentWeek())
-			Log.d("TimetableSetup", "Table setup took " + (System.nanoTime() - timer) / 1000000 + "ms");
 	}
 
 	private boolean shouldColorizeCell(int day, int hour, boolean alternatingDays, boolean alternatingHours) {
