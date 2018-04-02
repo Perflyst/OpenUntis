@@ -114,20 +114,19 @@ public class ActivityMain extends AppCompatActivity
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Fabric.with(this, new Crashlytics());
+		if (BuildConfig.ENABLE_FABRIC)
+			Fabric.with(this, new Crashlytics());
 		setupTheme(this, false);
 		super.onCreate(savedInstanceState);
 
 		Conversions.setScale(this);
 
-		try {
+		if (BuildConfig.ENABLE_FIREBASE) {
 			firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
 			firebaseRemoteConfig.setConfigSettings(new FirebaseRemoteConfigSettings.Builder().build());
 			firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
 
 			setupRemoteConfig();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
 		}
 		mItemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
@@ -596,7 +595,7 @@ public class ActivityMain extends AppCompatActivity
 	}
 
 	private String getFirebaseString(String s) {
-		if (firebaseRemoteConfig != null) {
+		if (BuildConfig.ENABLE_FIREBASE) {
 			return firebaseRemoteConfig.getString(s);
 		} else {
 			if (!mDialog.isShowing()) {

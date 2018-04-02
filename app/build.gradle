@@ -1,3 +1,7 @@
+// Change this to toggle Firebase / Fabric
+def enableFabric = true
+def enableFirebase = true
+
 buildscript {
 	repositories {
 		maven {
@@ -29,6 +33,9 @@ android {
 			minifyEnabled true
 			shrinkResources true
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+			ext.enableCrashlytics = enableFabric
+			buildConfigField "boolean", "ENABLE_FABRIC", "$enableFabric"
+			buildConfigField "boolean", "ENABLE_FIREBASE", "$enableFirebase"
 		}
 		debug {
 			minifyEnabled false
@@ -36,6 +43,8 @@ android {
 			ext.enableCrashlytics = false
 			applicationIdSuffix '.debug'
 			versionNameSuffix '-DEBUG'
+			buildConfigField "boolean", "ENABLE_FABRIC", "$enableFabric"
+			buildConfigField "boolean", "ENABLE_FIREBASE", "$enableFirebase"
 		}
 	}
 	useLibrary 'org.apache.http.legacy'
@@ -66,4 +75,6 @@ dependencies {
 	}
 }
 
-apply plugin: 'com.google.gms.google-services'
+if (enableFirebase) {
+	apply plugin: 'com.google.gms.google-services'
+}

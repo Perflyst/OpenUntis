@@ -358,10 +358,9 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 			});
 
 			Preference prefFirebaseKey = findPreference("preference_account_firebase_key");
-			try {
+			if (BuildConfig.ENABLE_FIREBASE) {
 				prefFirebaseKey.setSummary(FirebaseInstanceId.getInstance().getToken());
-			} catch (IllegalStateException e) {
-				e.printStackTrace();
+			} else {
 				prefFirebaseKey.setSummary("(disabled)");
 			}
 			prefFirebaseKey.setOnPreferenceClickListener(preference -> {
