@@ -58,7 +58,7 @@ public class NotificationSetup extends BroadcastReceiver {
 
 		sessionInfo.setDataFromJsonObject(ListManager.getUserData(listManager).optJSONObject("userData"));
 
-		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 
 		prefs = context.getSharedPreferences("login_data", MODE_PRIVATE);
@@ -70,19 +70,39 @@ public class NotificationSetup extends BroadcastReceiver {
 			try {
 				if (response.has("result")) {
 					setup(response.getJSONObject("result"));
-					int days = 4;
-					try {
-						days = ListManager.getUserData(listManager).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days").length();
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, days);
+					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
 					listManager.saveList(fileName, response.toString(), true);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		};
+
+		JSONObject params = new JSONObject();
+		try {
+			params
+					.put("id", sessionInfo.getElemId())
+					.put("type", sessionInfo.getElemType())
+					.put("startDate", startDateFromWeek)
+					.put("endDate", addDaysToInt(startDateFromWeek, 4))
+					.put("masterDataTimestamp", System.currentTimeMillis())
+					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
+		} catch (JSONException e) {
+			e.printStackTrace(); // TODO: Implement proper error handling
+		}
+
+		UntisRequest.UntisRequestQuery query = new UntisRequest.UntisRequestQuery();
+		query.setMethod(Constants.UntisAPI.METHOD_GET_TIMETABLE);
+		query.setParams(new JSONArray().put(params));
+		query.setUrl(prefs.getString("url", null));
+		query.setSchool(prefs.getString("school", null));
+
+		api.setCachingMode(UntisRequest.CachingMode.LOAD_LIVE);
+		api.setResponseHandler(handler).submit(query);
+	}
+
+	private void setup(JSONObject data) {
+		Calendar c = Calendar.getInstance();
 
 		JSONObject params = new JSONObject();
 		int days = 4;

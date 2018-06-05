@@ -59,7 +59,7 @@ public class Timetable {
 				JSONObject item = periods.getJSONObject(i);
 
 				Calendar c = Calendar.getInstance();
-				Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(item.getString("startDateTime").substring(0, 10));
+				Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(item.getString("startDateTime").substring(0, 10));
 				c.setTime(date);
 
 				hourIndex = -1;

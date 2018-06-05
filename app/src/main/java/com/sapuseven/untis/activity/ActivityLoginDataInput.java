@@ -227,6 +227,7 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		query.setParams(params);
 
 		setElementsEnabled(false);
+		api.setCachingMode(UntisRequest.CachingMode.LOAD_LIVE);
 		api.setResponseHandler(handler).submit(query);
 	}
 

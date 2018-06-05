@@ -34,18 +34,25 @@ public class ListManager {
 		}
 	}
 
-	public static JSONObject getUserData(ListManager listManager) {
-		if (userData == null) {
-			try {
-				userData = new JSONObject(listManager.readList("userData", false));
-			} catch (JSONException e) {
-				e.printStackTrace();
+	public String readList(String name, boolean isCacheData) {
+		Log.d("ListManager", "Reading list " + name + (isCacheData ? " (using cache)" : "") + ", origin: " + new Exception().getStackTrace()[1].getClassName());
+		long timer = System.nanoTime();
+		StringBuilder content = new StringBuilder();
+		try {
+			FileInputStream inputStream;
+			if (isCacheData)
+				inputStream = new FileInputStream(new File(getCacheDir(), name + ".json"));
+			else
+				inputStream = new FileInputStream(new File(context.getFilesDir(), name + ".json"));
+			byte[] input = new byte[inputStream.available()];
+			//noinspection StatementWithEmptyBody
+			while (inputStream.read(input) != -1) {
 			}
-		} else {
-			Log.d("ListManager", "Returning userData from cache");
+			content.append(new String(input));
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-
-		return userData;
+Log.d("ListManager", "Took " + (System.nanoTime() - timer) / 1000000.0 + "ms");		return userData;
 	}
 
 	public boolean exists(String name, @SuppressWarnings("SameParameterValue") boolean useCaching) {

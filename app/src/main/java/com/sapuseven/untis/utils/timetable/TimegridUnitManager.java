@@ -67,7 +67,7 @@ public class TimegridUnitManager {
 
 	public int getDayIndex(Calendar c) throws IndexOutOfBoundsException {
 		try {
-			SimpleDateFormat dayFormat = new SimpleDateFormat("E", Locale.US);
+			SimpleDateFormat dayFormat = new SimpleDateFormat("E", Locale.ENGLISH);
 			for (int i = 0; i < days.length(); i++) {
 				String day = days.getJSONObject(i).getString("day");
 				if (day.equalsIgnoreCase(dayFormat.format(c.getTime())))

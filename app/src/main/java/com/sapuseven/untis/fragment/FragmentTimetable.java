@@ -27,7 +27,6 @@ import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
 import com.sapuseven.untis.utils.connectivity.UntisRequest;
-import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
 import com.sapuseven.untis.utils.timetable.Timetable;
 import com.sapuseven.untis.utils.timetable.TimetableItemData;
 import com.sapuseven.untis.utils.timetable.TimetableSetup;
@@ -99,104 +98,89 @@ public class FragmentTimetable extends Fragment {
 
 	private void requestTimetable() {
 		SharedPreferences prefs = main.getLoginData();
-		if (main.sessionInfo.getElemId() == -1
-				&& main.sessionInfo.getElemType().equals("")) {
-			main.sessionInfo.setDataFromJsonObject(ListManager.getUserData(listManager).optJSONObject("userData"));
-			if (main.getSupportActionBar() != null)
-				main.getSupportActionBar().setTitle(main.sessionInfo.getDisplayName());
-			switch (main.sessionInfo.getElemType()) {
-				case "CLASS":
-					((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_classes);
-					break;
-				case "TEACHER":
-					((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_teachers);
-					break;
-				case "ROOM":
-					((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_rooms);
-					break;
-				default:
-					((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_personal);
-					break;
-			}
-		}
-
-		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
-				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), startDateOffset * 7).getTime()));
-
-		UntisRequest api = new UntisRequest(main, true, startDateFromWeek);
-
-		final FragmentTimetable context = this;
-		UntisRequest.ResponseHandler handler = response -> {
-			try {
-				if (response.has("error")) {
-					if (Math.abs(context.startDateOffset + 50 - context.main.currentViewPos) == 0) {
-						if (context.getView() != null)
-							Snackbar.make(context.getView(),
-									context.getString(R.string.snackbar_error,
-											response.getJSONObject("error")
-													.getString("message")),
-									Snackbar.LENGTH_LONG)
-									.setAction("OK", null).show();
-						Log.w("error", response.toString());
-						context.pbLoading.setVisibility(View.GONE);
-						context.main.swipeRefresh.setRefreshing(false);
-					}
-				} else if (response.has("result")) {
-					if (response.has("timeModified"))
-						context.setLastRefresh(response.getLong("timeModified"));
-					context.setTimetableData(response.getJSONObject("result"));
-					int days = 4;
-					try {
-						if (userDataList == null)
-							userDataList = ListManager.getUserData(listManager);
-						days = userDataList.getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days").length();
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-					String fileName = context.main.sessionInfo.getElemType() + "-"
-							+ context.main.sessionInfo.getElemId() + "-"
-							+ context.startDateFromWeek + "-"
-							+ addDaysToInt(context.startDateFromWeek, days);
-					context.listManager.saveList(fileName, response.toString(), true);
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		};
-
-		UntisRequest.UntisRequestQuery query = new UntisRequest.UntisRequestQuery();
-		query.setMethod(Constants.UntisAPI.METHOD_GET_TIMETABLE);
-		query.setUrl(prefs.getString("url", null));
-		query.setSchool(prefs.getString("school", null));
-
-		JSONArray days = null;
 		try {
-			days = new JSONObject(new ListManager(getContext())
-					.readList("userData", false))
-					.getJSONObject("masterData")
-					.getJSONObject("timeGrid")
-					.getJSONArray("days");
+			if (main.sessionInfo.getElemId() == -1
+					&& main.sessionInfo.getElemType().equals("")) {
+				main.sessionInfo.setDataFromJsonObject(new JSONObject(listManager.readList("userData", false)).optJSONObject("userData"));
+				if (main.getSupportActionBar() != null)
+					main.getSupportActionBar().setTitle(main.sessionInfo.getDisplayName());
+				switch (main.sessionInfo.getElemType()) {
+					case "CLASS":
+						((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_classes);
+						break;
+					case "TEACHER":
+						((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_teachers);
+						break;
+					case "ROOM":
+						((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_rooms);
+						break;
+					default:
+						((NavigationView) main.findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_show_personal);
+						break;
+				}
+			}
+
+			startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
+					.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), startDateOffset * 7).getTime()));
+
+
+			UntisRequest api = new UntisRequest(main);
+
+			final FragmentTimetable context = this;
+			UntisRequest.ResponseHandler handler = response -> {
+				try {
+					if (response.has("error")) {
+						if (Math.abs(context.startDateOffset + 50 - context.main.currentViewPos) == 0) {
+							if (context.getView() != null)
+								Snackbar.make(context.getView(),
+										context.getString(R.string.snackbar_error,
+												response.getJSONObject("error")
+														.getString("message")),
+										Snackbar.LENGTH_LONG)
+										.setAction("OK", null).show();
+							Log.w("error", response.toString());
+							context.pbLoading.setVisibility(View.GONE);
+							context.main.swipeRefresh.setRefreshing(false);
+						}
+					} else if (response.has("result")) {
+						if (response.has("timeModified"))
+							context.setLastRefresh(response.getLong("timeModified"));
+						context.setTimetableData(response.getJSONObject("result"));
+						String fileName = context.main.sessionInfo.getElemType() + "-"
+								+ context.main.sessionInfo.getElemId() + "-"
+								+ context.startDateFromWeek + "-"
+								+ addDaysToInt(context.startDateFromWeek, 4);
+						context.listManager.saveList(fileName, response.toString(), true);
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			};
+
+			UntisRequest.UntisRequestQuery query = new UntisRequest.UntisRequestQuery();
+			query.setMethod(Constants.UntisAPI.METHOD_GET_TIMETABLE);
+			query.setUrl(prefs.getString("url", null));
+			query.setSchool(prefs.getString("school", null));
+
+			JSONObject params = new JSONObject();
+			try {
+				params
+						.put("id", main.sessionInfo.getElemId())
+						.put("type", main.sessionInfo.getElemType())
+						.put("startDate", startDateFromWeek)
+						.put("endDate", addDaysToInt(startDateFromWeek, 4)) // TODO: Replace with actual week length
+						.put("masterDataTimestamp", System.currentTimeMillis())
+						.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
+			} catch (JSONException e) {
+				e.printStackTrace(); // TODO: Implment proper error handling (search for possible cases first)
+			}
+			query.setParams(new JSONArray().put(params));
+
+			api.setCachingMode(UntisRequest.CachingMode.RETURN_CACHE_LOAD_LIVE_RETURN_LIVE);
+			api.setResponseHandler(handler).submit(query);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-
-		TimegridUnitManager unitManager = new TimegridUnitManager(days);
-
-		JSONObject params = new JSONObject();
-		try {
-			params
-					.put("id", main.sessionInfo.getElemId())
-					.put("type", main.sessionInfo.getElemType())
-					.put("startDate", startDateFromWeek)
-					.put("endDate", addDaysToInt(startDateFromWeek, unitManager.getNumberOfDays() - 1))
-					.put("masterDataTimestamp", System.currentTimeMillis())
-					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
-		} catch (JSONException e) {
-			e.printStackTrace(); // TODO: Implment proper error handling (search for possible cases first)
-		}
-		query.setParams(new JSONArray().put(params));
-
-		api.setResponseHandler(handler).submit(query);
 	}
 
 	private void setTimetableData(JSONObject data) {

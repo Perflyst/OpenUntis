@@ -28,10 +28,10 @@ public class DateOperations {
 	public static int addDaysToInt(int startDate, int days) {
 		try {
 			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
 			c.setTime(sdf.parse(Integer.toString(startDate)));
 			c.add(Calendar.DATE, days);
-			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US).format(c.getTime()));
+			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(c.getTime()));
 		} catch (ParseException e) {
 			e.printStackTrace();
 			return startDate;
@@ -41,7 +41,7 @@ public class DateOperations {
 	public static String addDaysToInt(int startDate, int days, SimpleDateFormat targetFormat) {
 		try {
 			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
 			c.setTime(sdf.parse(Integer.toString(startDate)));
 			c.add(Calendar.DATE, days);
 			return targetFormat.format(c.getTime());
@@ -51,24 +51,24 @@ public class DateOperations {
 		}
 	}
 
-	public static String getStringDateFromInt(int date) {
+	public static String getStringDateFromInt(int date, Locale locale) {
 		try {
 			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
 			c.setTime(sdf.parse(Integer.toString(date)));
-			return new SimpleDateFormat("d. MMM", Locale.getDefault()).format(c.getTime());
+			return new SimpleDateFormat("d. MMM", locale).format(c.getTime());
 		} catch (ParseException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	public static String getDayNameFromInt(int date) {
+	public static String getDayNameFromInt(int date, Locale locale) {
 		try {
 			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
 			c.setTime(sdf.parse(Integer.toString(date)));
-			return new SimpleDateFormat("EEE", Locale.getDefault()).format(c.getTime());
+			return new SimpleDateFormat("EEE", locale).format(c.getTime());
 		} catch (ParseException e) {
 			e.printStackTrace();
 			return null;

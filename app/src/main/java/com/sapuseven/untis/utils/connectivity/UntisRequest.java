@@ -3,10 +3,7 @@ package com.sapuseven.untis.utils.connectivity;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.sapuseven.untis.activity.ActivityMain;
 import com.sapuseven.untis.utils.Constants;
-import com.sapuseven.untis.utils.ListManager;
-import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,57 +20,21 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 
-import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
-
 public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void, JSONObject> {
-	private final WeakReference<Context> context;
-	private final boolean useCache;
+	private WeakReference<Context> context;
 	private ResponseHandler handler;
-	private int startDateFromWeek;
+	private CachingMode cachingMode;
+
+	public UntisRequest() {
+
+	}
 
 	public UntisRequest(Context context) {
 		this.context = new WeakReference<>(context);
-		this.useCache = false;
-	}
-
-	public UntisRequest(Context context, boolean useCache, int startDateFromWeek) {
-		this.context = new WeakReference<>(context);
-		this.useCache = useCache;
-		this.startDateFromWeek = startDateFromWeek;
 	}
 
 	@Override
 	protected JSONObject doInBackground(UntisRequestQuery... query) {
-		if (useCache) {
-			ListManager listManager = new ListManager(context.get());
-
-			JSONArray days = null;
-			try {
-				days = new JSONObject(listManager
-						.readList("userData", false))
-						.getJSONObject("masterData")
-						.getJSONObject("timeGrid")
-						.getJSONArray("days");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-
-			TimegridUnitManager unitManager = new TimegridUnitManager(days);
-
-			String fileName = ((ActivityMain) context.get()).sessionInfo.getElemType() + "-"
-					+ ((ActivityMain) context.get()).sessionInfo.getElemId() + "-"
-					+ startDateFromWeek + "-"
-					+ addDaysToInt(startDateFromWeek, unitManager.getNumberOfDays() - 1);
-
-			if (listManager.exists(fileName, true))
-				try {
-					return new JSONObject(listManager.readList(fileName, true));
-				} catch (JSONException e) {
-					e.printStackTrace();
-					return null;
-				}
-		}
-
 		try {
 			URL url = new URL(query[0].getURI().toString());
 
@@ -128,8 +89,6 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 				return null;
 			}
 		}
-
-		// TODO: Implement a new caching system (display cache while loading, option to toggle cache for background tasks)
 	}
 
 	@Override
@@ -164,22 +123,33 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 		return this;
 	}
 
+	public void setCachingMode(CachingMode cachingMode) {
+		this.cachingMode = cachingMode;
+	}
+
+	public enum CachingMode {
+		RETURN_CACHE,
+		RETURN_CACHE_LOAD_LIVE,
+		RETURN_CACHE_LOAD_LIVE_RETURN_LIVE,
+		LOAD_LIVE
+	}
+
 	public interface ResponseHandler {
 		void onResponseReceived(JSONObject response);
 	}
 
 	public static class UntisRequestQuery {
-		private final String jsonrpc = "2.0";
+		private String jsonrpc = "2.0";
 		private String method = "";
 		private String url = "";
 		private String school = "";
 		private JSONArray params = new JSONArray();
 
-		String getJsonrpc() {
+		public String getJsonrpc() {
 			return jsonrpc;
 		}
 
-		String getMethod() {
+		public String getMethod() {
 			return method;
 		}
 
@@ -187,11 +157,15 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.method = method;
 		}
 
+		public String getUrl() {
+			return url;
+		}
+
 		public void setUrl(String url) {
 			this.url = url;
 		}
 
-		String getSchool() {
+		public String getSchool() {
 			return school;
 		}
 
@@ -199,7 +173,7 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.school = school;
 		}
 
-		JSONArray getParams() {
+		public JSONArray getParams() {
 			return params;
 		}
 
@@ -207,7 +181,7 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.params = params;
 		}
 
-		URI getURI() throws URISyntaxException {
+		public URI getURI() throws URISyntaxException {
 			return new URI("https", url, "/WebUntis/jsonrpc_intern.do", "school=" + getSchool(), "");
 		}
 	}

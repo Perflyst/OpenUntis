@@ -73,6 +73,8 @@ dependencies {
 	implementation('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
 		transitive = true
 	}
+
+	testCompile 'junit:junit:4.12'
 }
 
 if (enableFirebase) {

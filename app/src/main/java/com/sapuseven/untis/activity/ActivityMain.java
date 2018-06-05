@@ -169,7 +169,7 @@ public class ActivityMain extends AppCompatActivity
 
 			swipeRefresh = findViewById(R.id.swipeRefresh);
 			swipeRefresh.setOnRefreshListener(() -> {
-				int startDate = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+				int startDate = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 						.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(),
 								(currentViewPos - 50) * 7).getTime()));
 				int days = 4;
@@ -190,7 +190,7 @@ public class ActivityMain extends AppCompatActivity
 				currentViewPos++;
 
 			mPagerHeader = findViewById(R.id.viewpagerHeader);
-			mPagerHeaderAdapter = new AdapterTimetableHeader(getSupportFragmentManager());
+			mPagerHeaderAdapter = new AdapterTimetableHeader(getSupportFragmentManager(), mUserDataList);
 			mPagerHeader.setAdapter(mPagerHeaderAdapter);
 
 			mPagerTable = findViewById(R.id.viewpagerTimegrid);
@@ -763,7 +763,7 @@ public class ActivityMain extends AppCompatActivity
 				ViewGroup.LayoutParams.MATCH_PARENT, dp2px(60)));
 		((TextView) v.findViewById(R.id.tvTimeStart)).setText(unitData.getDisplayStartTime());
 		((TextView) v.findViewById(R.id.tvTimeEnd)).setText(unitData.getDisplayEndTime());
-		((TextView) v.findViewById(R.id.tvHourIndex)).setText(String.format(Locale.US, "%d", index));
+		((TextView) v.findViewById(R.id.tvHourIndex)).setText(String.format(Locale.ENGLISH, "%d", index));
 
 		if (alternatingHours && index % 2 == 1)
 			v.setBackgroundColor(alternativeBackgroundColor);
@@ -807,10 +807,10 @@ public class ActivityMain extends AppCompatActivity
 	private int addDaysToInt(int startDate, int days) {
 		try {
 			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
 			c.setTime(sdf.parse(Integer.toString(startDate)));
 			c.add(Calendar.DATE, days);
-			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 					.format(c.getTime()));
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -861,7 +861,7 @@ public class ActivityMain extends AppCompatActivity
 						startActivity(i);
 					}).show();
 				}
-			} catch (JSONException e) {
+			} catch (NullPointerException | JSONException e) {
 				e.printStackTrace();
 			}
 		};

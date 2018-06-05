@@ -36,6 +36,7 @@ import com.sapuseven.untis.view.VerticalTextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.text.ParseException;
@@ -54,6 +55,7 @@ import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 
 public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 	private static final float DARKNESS_FACTOR = 0.8f;
+	private WeakReference<FragmentTimetable> fragmentContext;
 	private final WeakReference<FragmentTimetable> fragmentContext;
 	private GridLayout glTimetable;
 
@@ -156,11 +158,19 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 
 		a.recycle();
 
-		if (fragmentContext.get().userDataList == null)
-			fragmentContext.get().userDataList = ListManager.getUserData(fragmentContext.get().listManager);
+		try {
+			fragmentContext.get().userDataList = new JSONObject(fragmentContext.get().listManager.readList("userData", false));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 
 		for (int day = 0; day < cols / 2; day++) {
 			try {
+				long timer2 = System.nanoTime();
+
+				if (fragmentContext.get().isCurrentWeek())
+					Log.d("TimetableSetup", "Table setup timer duration holidays: " + (System.nanoTime() - timer2) / 1000000.0 + "ms");
+
 				JSONArray holidays = fragmentContext.get().userDataList.getJSONObject("masterData").getJSONArray("holidays");
 				LinearLayout holidayItem = null;
 				StringBuilder holidayLabelString = null;
@@ -216,12 +226,16 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 				e.printStackTrace();
 			}
 
+			if (fragmentContext.get().isCurrentWeek())
+				Log.d("TimetableSetup", "Table setup timer before hours: " + (System.nanoTime() - timer) / 1000000 + "ms");
+
 			int lastHourIndex = 0;
 			for (int i = 0; i < rows; i++)
 				if (timetable[0].has(day, i))
 					lastHourIndex = i;
 
 			for (int hour = 0; hour < rows; hour++) {
+				long timer3 = System.nanoTime();
 				final ArrayList<TimetableItemData> allItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour);
 				if (allItems.size() == 0) { // A free hour
 					LinearLayout emptyItem = new LinearLayout(context);
@@ -270,6 +284,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 					if (item.isHidden())
 						continue;
 
+					View view = fragmentContext.get().inflater
 					@SuppressLint("InflateParams") View view = fragmentContext.get().inflater
 							.inflate(R.layout.table_item, null, false);
 
@@ -411,6 +426,8 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 
 	@Override
 	protected void onPostExecute(Void v) {
+		if (fragmentContext.get().isCurrentWeek())
+			Log.d("TimetableSetup", "Table setup timer onPostExecute start: " + (System.nanoTime() - timer) / 1000000 + "ms");
 		if (glTimetable == null)
 			return;
 
@@ -476,7 +493,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 		Calendar cEnd = Calendar.getInstance();
 
 		try {
-			SimpleDateFormat sourceFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US);
+			SimpleDateFormat sourceFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.ENGLISH);
 			cStart.setTime(sourceFormat.parse(startDateTime));
 			cEnd.setTime(sourceFormat.parse(endDateTime));
 		} catch (ParseException e) {

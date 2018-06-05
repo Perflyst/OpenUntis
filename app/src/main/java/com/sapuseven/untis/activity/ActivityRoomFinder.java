@@ -322,21 +322,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void loadRoom(RequestModel room) {
-		JSONArray dayList = null;
-		try {
-			dayList = new JSONObject(new ListManager(getApplication())
-					.readList("userData", false)).getJSONObject("masterData")
-					.getJSONObject("timeGrid").getJSONArray("days");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
-
-		int days = unitManager.getNumberOfDays();
-		int hours = unitManager.getMaxHoursPerDay();
-
-		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 				.format(getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 
 		SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
@@ -354,6 +340,20 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					RequestModel requestModel = mRequestQueue.get(0);
 
 					Timetable timetable = new Timetable(response.getJSONObject("result"), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+
+					JSONArray dayList = null;
+					try {
+						dayList = new JSONObject(new ListManager(getApplication())
+								.readList("userData", false)).getJSONObject("masterData")
+								.getJSONObject("timeGrid").getJSONArray("days");
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+
+					TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
+
+					int days = unitManager.getNumberOfDays();
+					int hours = unitManager.getMaxHoursPerDay();
 
 					boolean[] states = new boolean[days * hours];
 
@@ -406,7 +406,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					.put("id", room.getRoomID())
 					.put("type", getElemTypeName(ROOM))
 					.put("startDate", startDateFromWeek)
-					.put("endDate", addDaysToInt(startDateFromWeek, days))
+					.put("endDate", addDaysToInt(startDateFromWeek, 4)) // TODO: Replace with actual week length
 					.put("masterDataTimestamp", System.currentTimeMillis())
 					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
 		} catch (JSONException e) {
@@ -414,6 +414,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		}
 		query.setParams(new JSONArray().put(params));
 
+		api.setCachingMode(UntisRequest.CachingMode.RETURN_CACHE_LOAD_LIVE);
 		api.setResponseHandler(handler).submit(query);
 	}
 
@@ -439,12 +440,12 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		Calendar cNow = Calendar.getInstance();
 		Calendar cToCompare = Calendar.getInstance();
 
-		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.US)
+		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 
 		for (int i = 0; i < unitManager.getNumberOfDays() * unitManager.getMaxHoursPerDay(); i++) {
 			String dateTime = addDaysToInt(startDateFromWeek, i / unitManager.getMaxHoursPerDay(),
-					new SimpleDateFormat("yyyy-MM-dd'T'", Locale.US))
+					new SimpleDateFormat("yyyy-MM-dd'T'", Locale.ENGLISH))
 					+ String.format("%1$5s", unitManager.getUnits().get(i % unitManager
 					.getMaxHoursPerDay()).getDisplayEndTime()).replace(' ', '0') + "Z";
 
@@ -584,8 +585,8 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private class RequestModel {
-		private final String displayName;
-		private final int roomID;
+		private String displayName;
+		private int roomID;
 		private boolean refreshOnly;
 
 		RequestModel(int roomID, String displayName) {
@@ -611,162 +612,4 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			return roomID;
 		}
 	}
-
-	/*private class Request extends AsyncTask<Void, Void, String> {
-		private static final String jsonrpc = "2.0";
-		private final String method = "getTimetable2017";
-		private final String id = ID_GET_TIMETABLE;
-		private final String displayName;
-		private String url = "";
-		private String params = "{}";
-		private String school = "";
-		private boolean refreshOnly;
-
-		Request(String url, String displayName) {
-			this.url = Constants.UntisAPI.DEFAULT_PROTOCOL + url + Constants.UntisAPI.DEFAULT_WEBUNTIS_PATH;
-			this.displayName = displayName;
-		}
-
-		void setSchool(String school) {
-			this.school = school;
-		}
-
-		void setParams(String params) {
-			this.params = params;
-		}
-
-		@Override
-		protected String doInBackground(Void... p1) {
-			String result;
-			HttpURLConnection urlConnection = null;
-			try {
-				String url = this.url;
-				if (this.school.length() > 0)
-					url += "?school=" + this.school;
-				urlConnection = (HttpURLConnection) new URL(url).openConnection();
-
-				JSONObject responseect = new JSONObject();
-				responseect.put("id", this.id);
-				responseect.put("method", this.method);
-				responseect.put("params", new JSONArray(this.params));
-				responseect.put("jsonrpc", jsonrpc);
-
-				urlConnection.setDoOutput(true);
-				urlConnection.setRequestMethod("POST");
-				urlConnection.setRequestProperty("Content-Type", "application/json");
-				urlConnection.setRequestProperty("Accept", "application/json");
-				urlConnection.connect();
-
-				DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
-				wr.writeBytes(responseect.toString());
-				wr.close();
-
-				int response = urlConnection.getResponseCode();
-				if (response >= 200 && response <= 399)
-					result = inputStreamToString(urlConnection.getInputStream());
-				else
-					result = "{}";
-			} catch (Exception e) {
-				result = "{\"id\":\"" + this.id + "\",\"error\":{\"message\":\"" + e.getMessage()
-						.replace("\"", "\\\"") + "\"}}";
-			} finally {
-				if (urlConnection != null)
-					urlConnection.disconnect();
-			}
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			try {
-				JSONObject response = new JSONObject(result);
-				if (response.has("error")) {
-					Log.w("error", response.toString());
-					Snackbar.make(mRecyclerView,
-							getString(R.string.snackbar_error, response.getJSONObject("error")
-									.getString("message")), Snackbar.LENGTH_LONG)
-							.setAction("OK", null).show();
-				} else if (response.has("result")) {
-					Timetable timetable = new Timetable(response.getJSONObject("result"), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
-
-					JSONArray dayList = null;
-					try {
-						dayList = new JSONObject(new ListManager(getApplication())
-								.readList("userData", false)).getJSONObject("masterData")
-								.getJSONObject("timeGrid").getJSONArray("days");
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-
-					TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
-
-					int days = unitManager.getNumberOfDays();
-					int hours = unitManager.getMaxHoursPerDay();
-
-					boolean[] states = new boolean[days * hours];
-
-					for (int i = 0; i < states.length; i++) {
-						int day = i / hours;
-						int hour = i % hours;
-
-						if (timetable.getItems(day, hour).size() > 0)
-							states[day * hours + hour] = true;
-					}
-
-					StringBuilder binaryData = new StringBuilder();
-					for (boolean value : states)
-						binaryData.append(value ? '1' : '0');
-
-					if (!TextUtils.isEmpty(binaryData.toString())) {
-						if (refreshOnly)
-							showDeleteItemDialog(displayName);
-
-						BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-								openFileOutput("roomList.txt", MODE_APPEND), "UTF-8"));
-						writer.write(mRequestQueue.get(0).getDisplayName());
-						writer.newLine();
-						writer.write(binaryData.toString());
-						writer.newLine();
-						writer.write(String.valueOf(getStartDateFromWeek(Calendar.getInstance(), 0,
-								true).getTimeInMillis()));
-						writer.newLine();
-						writer.close();
-					}
-
-					if (refreshOnly)
-						mRefreshingItems.remove(0);
-
-					reload();
-					refreshRoomList();
-				}
-			} catch (JSONException | IOException e) {
-				e.printStackTrace();
-			}
-			mRequestQueue.remove(0);
-			executeRequestQueue();
-		}
-
-		private String getDisplayName() {
-			return displayName;
-		}
-
-		private String inputStreamToString(InputStream inputStream) throws IOException {
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-			String line;
-			StringBuilder result = new StringBuilder();
-			while ((line = bufferedReader.readLine()) != null)
-				result.append(line);
-
-			inputStream.close();
-			return result.toString();
-		}
-
-		boolean isRefreshOnly() {
-			return refreshOnly;
-		}
-
-		void refreshOnly() {
-			this.refreshOnly = true;
-		}
-	}*/
 }
