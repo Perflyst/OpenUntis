@@ -170,8 +170,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/android,osx,windows,linux,intellij,java
-/.idea/caches/
-/.idea/codeStyles/codeStyleConfig.xml
 /keys.tar
 /app/fabric.properties
 /app/google-services.json
+/.idea/codeStyles/
+/.idea/caches/
