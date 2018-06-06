@@ -5,6 +5,10 @@ import android.content.Context;
 public class Conversions {
 	private static float scale = -1;
 
+	public Conversions() {
+		throw new RuntimeException("Instantiation not allowed");
+	}
+
 	public static void setScale(Context context) {
 		scale = context.getResources().getDisplayMetrics().density;
 	}

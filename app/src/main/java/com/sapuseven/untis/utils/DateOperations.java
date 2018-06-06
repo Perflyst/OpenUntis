@@ -9,6 +9,10 @@ import java.util.Locale;
 public class DateOperations {
 	private static final SimpleDateFormat FROM_ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US);
 
+	public DateOperations() {
+		throw new RuntimeException("Instantiation not allowed");
+	}
+
 	public static Calendar getStartDateFromWeek(Calendar week, int offset, boolean resetTime) {
 		week.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
 		week.add(Calendar.DAY_OF_MONTH, offset);
