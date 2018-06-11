@@ -290,6 +290,36 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 					if (item.isHidden())
 						continue;
 
+					int rowSpan = determineHours(item, units);
+
+					if (rowSpan > 1) {
+						for (int j = 0; j < rowSpan - 1; j++) {
+							timetable[0].addOffset(day, hour + j + 1);
+							timetable[0].addDummyItem(day, hour + j + 1, item);
+						}
+					}
+
+					while (hour + rowSpan < rows) {
+						ArrayList<TimetableItemData> nextItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour + rowSpan);
+						if (item.mergeWith(nextItems)) {
+							rowSpan++;
+							//timetable[0].addOffset(day, hour + rowSpan - 1);
+						} else {
+							break;
+						}
+					}
+
+					int colSpan = 2;
+
+					for (int j = 0; j < rowSpan; j++) {
+						ArrayList<TimetableItemData> nextItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour + j);
+						if (nextItems.size() >= 2 || timetable[0].getOffset(day, hour) >= 1)
+							colSpan = 1;
+					}
+
+					if (i + timetable[0].getOffset(day, hour) >= 2)
+						continue;
+
 					@SuppressLint("InflateParams") View view = fragmentContext.get().inflater
 							.inflate(R.layout.table_item, null, false);
 
@@ -332,33 +362,6 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 						tvC.setTextColor(textColor);
 						tvTL.setTextColor(textColor);
 						tvBR.setTextColor(textColor);
-					}
-
-					int rowSpan = determineHours(item, units);
-
-					if (rowSpan > 1) {
-						for (int j = 0; j < rowSpan - 1; j++) {
-							timetable[0].addOffset(day, hour + j + 1);
-							timetable[0].addDummyItem(day, hour + j + 1, item);
-						}
-					}
-
-					while (hour + rowSpan < rows) {
-						ArrayList<TimetableItemData> nextItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour + rowSpan);
-						if (item.mergeWith(nextItems)) {
-							rowSpan++;
-							timetable[0].addOffset(day, hour + rowSpan - 1);
-						} else {
-							break;
-						}
-					}
-
-					int colSpan = 2;
-
-					for (int j = 0; j < rowSpan; j++) {
-						ArrayList<TimetableItemData> nextItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour + j);
-						if (nextItems.size() >= 2 || timetable[0].getOffset(day, hour) >= 1)
-							colSpan = 1;
 					}
 
 					TimetableItemBackground vBackground = view.findViewById(R.id.vBackground);
@@ -413,7 +416,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 
 					vBackground.setDividerPosition(height);
 
-					if (i >= 1 && allItems.size() >= 3)
+					if (i + timetable[0].getOffset(day, hour) >= 1 && allItems.size() >= 3)
 						vBackground.setIndicatorColor(defaultBackgroundColor);
 
 					setupItemText(view, item);
@@ -487,6 +490,9 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 	}
 
 	private void setupItemText(View view, TimetableItemData item) {
+		if (fragmentContext.get().main == null)
+			return;
+
 		if (item.isHidden()) {
 			((TextView) view.findViewById(R.id.tvTL))
 					.setText(item.getHolidays(fragmentContext.get().userDataList)

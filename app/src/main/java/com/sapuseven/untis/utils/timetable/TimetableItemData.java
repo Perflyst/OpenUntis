@@ -33,7 +33,7 @@ public class TimetableItemData {
 
 	TimetableItemData(JSONObject itemData) {
 		for (int i = 0; i < itemData.optJSONArray("elements").length(); i++) {
-			switch (itemData.optJSONArray("elements").optJSONObject(i).optString("type")) {
+			switch (itemData.optJSONArray("elements").optJSONObject(i).optString("type")) { //  // id = current value | orgId = original value if for example the teacher has changed
 				case "CLASS":
 					addClass(itemData.optJSONArray("elements").optJSONObject(i).optInt("id"));
 					break;
