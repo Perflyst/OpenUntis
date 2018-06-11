@@ -29,6 +29,7 @@ public class TimetableItemData {
 	private final List<String> infos = new ArrayList<>();
 	private boolean hidden;
 	private int backColor;
+	private boolean dummy = false;
 
 	TimetableItemData(JSONObject itemData) {
 		for (int i = 0; i < itemData.optJSONArray("elements").length(); i++) {
@@ -272,5 +273,13 @@ public class TimetableItemData {
 	private void addRoom(List<Integer> rooms) {
 		for (int room : rooms)
 			addRoom(room);
+	}
+
+	public boolean isDummy() {
+		return dummy;
+	}
+
+	public void setDummy(boolean dummy) {
+		this.dummy = dummy;
 	}
 }

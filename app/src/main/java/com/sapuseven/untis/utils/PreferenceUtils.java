@@ -18,6 +18,8 @@ public class PreferenceUtils {
 	}
 
 	public static boolean getPrefBool(Context context, SharedPreferences prefs, String key) {
+		if (context == null)
+			return false;
 		Resources res = context.getResources();
 		return prefs.getBoolean(key, res.getBoolean(res.getIdentifier(key + "_default", "bool", context.getPackageName())));
 	}

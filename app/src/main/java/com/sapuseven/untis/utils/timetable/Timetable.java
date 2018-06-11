@@ -111,6 +111,11 @@ public class Timetable {
 		return getItems(day, hour).size() > 0;
 	}
 
+	public void addDummyItem(int day, int hour, TimetableItemData item) {
+		item.setDummy(true);
+		units[day][hour].units.add(item);
+	}
+
 	private class UnitList {
 		final ArrayList<TimetableItemData> units = new ArrayList<>();
 	}

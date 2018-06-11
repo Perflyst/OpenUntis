@@ -385,6 +385,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 								.edit().clear().apply();
 						ListManager lm = new ListManager(getActivity());
 						lm.delete("userData", false);
+						lm.invalidateCaches();
 						restartApplication(getActivity());
 						return true;
 					});

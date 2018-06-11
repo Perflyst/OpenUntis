@@ -63,46 +63,31 @@ public class NotificationSetup extends BroadcastReceiver {
 
 		prefs = context.getSharedPreferences("login_data", MODE_PRIVATE);
 
-		UntisRequest api = new UntisRequest(context);
+		UntisRequest api = new UntisRequest(context, sessionInfo, startDateFromWeek);
 
 		UntisRequest.ResponseHandler handler = response -> {
+			if (response == null) {
+				Log.w("NotificationSetup", "Result is null");
+				// TODO: Stop loading and show "unknown error: null";
+				return;
+			}
 			Log.d("NotificationSetup", "Request executed, response: " + response.toString().substring(0, Math.min(255, response.toString().length())));
 			try {
 				if (response.has("result")) {
 					setup(response.getJSONObject("result"));
-					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, 4);
+					int days = 4;
+					try {
+						days = ListManager.getUserData(listManager).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days").length();
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+					String fileName = sessionInfo.getElemType() + "-" + sessionInfo.getElemId() + "-" + startDateFromWeek + "-" + addDaysToInt(startDateFromWeek, days - 1);
 					listManager.saveList(fileName, response.toString(), true);
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		};
-
-		JSONObject params = new JSONObject();
-		try {
-			params
-					.put("id", sessionInfo.getElemId())
-					.put("type", sessionInfo.getElemType())
-					.put("startDate", startDateFromWeek)
-					.put("endDate", addDaysToInt(startDateFromWeek, 4))
-					.put("masterDataTimestamp", System.currentTimeMillis())
-					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
-		} catch (JSONException e) {
-			e.printStackTrace(); // TODO: Implement proper error handling
-		}
-
-		UntisRequest.UntisRequestQuery query = new UntisRequest.UntisRequestQuery();
-		query.setMethod(Constants.UntisAPI.METHOD_GET_TIMETABLE);
-		query.setParams(new JSONArray().put(params));
-		query.setUrl(prefs.getString("url", null));
-		query.setSchool(prefs.getString("school", null));
-
-		api.setCachingMode(UntisRequest.CachingMode.LOAD_LIVE);
-		api.setResponseHandler(handler).submit(query);
-	}
-
-	private void setup(JSONObject data) {
-		Calendar c = Calendar.getInstance();
 
 		JSONObject params = new JSONObject();
 		int days = 4;
@@ -117,7 +102,7 @@ public class NotificationSetup extends BroadcastReceiver {
 					.put("id", sessionInfo.getElemId())
 					.put("type", sessionInfo.getElemType())
 					.put("startDate", startDateFromWeek)
-					.put("endDate", addDaysToInt(startDateFromWeek, days))
+					.put("endDate", addDaysToInt(startDateFromWeek, days - 1))
 					.put("masterDataTimestamp", System.currentTimeMillis())
 					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
 		} catch (JSONException e) {
@@ -130,6 +115,7 @@ public class NotificationSetup extends BroadcastReceiver {
 		query.setUrl(prefs.getString("url", null));
 		query.setSchool(prefs.getString("school", null));
 
+		api.setCachingMode(UntisRequest.CachingMode.LOAD_LIVE_FALLBACK_CACHE);
 		api.setResponseHandler(handler).submit(query);
 	}
 

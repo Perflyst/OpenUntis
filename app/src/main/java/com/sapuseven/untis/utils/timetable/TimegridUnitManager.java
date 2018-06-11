@@ -92,6 +92,10 @@ public class TimegridUnitManager {
 			return startTime;
 		}
 
+		String getEndTime() {
+			return endTime;
+		}
+
 		public String getDisplayStartTime() {
 			String displayTime = startTime;
 			while (displayTime.charAt(0) == '0')

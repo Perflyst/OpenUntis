@@ -4,6 +4,9 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.sapuseven.untis.utils.Constants;
+import com.sapuseven.untis.utils.ListManager;
+import com.sapuseven.untis.utils.SessionInfo;
+import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,21 +23,77 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 
-public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void, JSONObject> {
-	private WeakReference<Context> context;
+import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
+import static com.sapuseven.untis.utils.connectivity.UntisRequest.CachingMode.LOAD_LIVE;
+import static com.sapuseven.untis.utils.connectivity.UntisRequest.CachingMode.LOAD_LIVE_FALLBACK_CACHE;
+import static com.sapuseven.untis.utils.connectivity.UntisRequest.CachingMode.RETURN_CACHE;
+import static com.sapuseven.untis.utils.connectivity.UntisRequest.CachingMode.RETURN_CACHE_LOAD_LIVE;
+
+public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, JSONObject, JSONObject> {
+	private final WeakReference<Context> context;
 	private ResponseHandler handler;
-	private CachingMode cachingMode;
-
-	public UntisRequest() {
-
-	}
+	private CachingMode cachingMode = LOAD_LIVE;
+	private int startDateFromWeek;
+	private JSONObject cacheFallback;
+	private SessionInfo sessionInfo;
 
 	public UntisRequest(Context context) {
 		this.context = new WeakReference<>(context);
 	}
 
+	public UntisRequest(Context context, SessionInfo sessionInfo) {
+		this.context = new WeakReference<>(context);
+		this.sessionInfo = sessionInfo;
+	}
+
+	public UntisRequest(Context context, SessionInfo sessionInfo, int startDateFromWeek) {
+		this.context = new WeakReference<>(context);
+		this.startDateFromWeek = startDateFromWeek;
+		this.sessionInfo = sessionInfo;
+	}
+
 	@Override
 	protected JSONObject doInBackground(UntisRequestQuery... query) {
+		boolean cacheExists = false;
+
+		if (cachingMode != LOAD_LIVE) {
+			ListManager listManager = new ListManager(context.get());
+
+			JSONArray days = null;
+			try {
+				days = new JSONObject(listManager
+						.readList("userData", false))
+						.getJSONObject("masterData")
+						.getJSONObject("timeGrid")
+						.getJSONArray("days");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			TimegridUnitManager unitManager = new TimegridUnitManager(days);
+
+			String fileName = sessionInfo.getElemType() + "-"
+					+ sessionInfo.getElemId() + "-"
+					+ startDateFromWeek + "-"
+					+ addDaysToInt(startDateFromWeek, unitManager.getNumberOfDays() - 1);
+
+			cacheExists = listManager.exists(fileName, true);
+
+			if (cacheExists)
+				try {
+					if (cachingMode == RETURN_CACHE)
+						return new JSONObject(listManager.readList(fileName, true));
+					else if (cachingMode == LOAD_LIVE_FALLBACK_CACHE)
+						cacheFallback = new JSONObject(listManager.readList(fileName, true));
+					else
+						publishProgress(new JSONObject(listManager.readList(fileName, true)));
+				} catch (JSONException e) {
+					e.printStackTrace();
+					if (cachingMode == RETURN_CACHE)
+						return null;
+				}
+		}
+
 		try {
 			URL url = new URL(query[0].getURI().toString());
 
@@ -58,37 +117,63 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 
 			int statusCode = connection.getResponseCode();
 			if (statusCode != HttpURLConnection.HTTP_OK) {
-				return new JSONObject()
-						.put("id", 0)
-						.put("error", new JSONObject()
-								.put("code", Constants.UntisAPI.ERROR_CODE_UNKNOWN)
-								.put("message", "Unexpected status code: " + statusCode)
-						);
+				if (cachingMode == LOAD_LIVE)
+					return new JSONObject()
+							.put("id", 0)
+							.put("error", new JSONObject()
+									.put("code", Constants.UntisAPI.ERROR_CODE_UNKNOWN)
+									.put("message", "Unexpected status code: " + statusCode)
+							);
+				else if (cachingMode == LOAD_LIVE_FALLBACK_CACHE && cacheFallback != null)
+					return cacheFallback;
+				return null;
 			}
 
 			InputStream inputStream = connection.getInputStream();
 
 			if (inputStream != null) {
-				return new JSONObject(readStream(inputStream))
-						.put("timeModified", System.currentTimeMillis());
+				if (cachingMode != RETURN_CACHE_LOAD_LIVE
+						|| (cachingMode == RETURN_CACHE_LOAD_LIVE && !cacheExists))
+					return new JSONObject(readStream(inputStream))
+							.put("timeModified", System.currentTimeMillis());
 			} else {
-				return new JSONObject();
+				if (cachingMode == LOAD_LIVE_FALLBACK_CACHE && cacheFallback != null)
+					return cacheFallback;
+				else
+					return null;
 			}
 		} catch (Exception e) {
 			try {
-				return new JSONObject()
-						.put("id", 0)
-						.put("error", new JSONObject()
-								.put("code", e instanceof UnknownHostException ?
-										Constants.UntisAPI.ERROR_CODE_NO_SERVER_FOUND :
-										Constants.UntisAPI.ERROR_CODE_UNKNOWN)
-								.put("message", e.getMessage())
-						);
+				if (cachingMode == LOAD_LIVE)
+					return new JSONObject()
+							.put("id", 0)
+							.put("error", new JSONObject()
+									.put("code", e instanceof UnknownHostException ?
+											Constants.UntisAPI.ERROR_CODE_NO_SERVER_FOUND :
+											Constants.UntisAPI.ERROR_CODE_UNKNOWN)
+									.put("message", e.getMessage())
+							);
+				else if (cachingMode == LOAD_LIVE_FALLBACK_CACHE && cacheFallback != null)
+					return cacheFallback;
+				else
+					return null;
 			} catch (JSONException e1) {
 				e1.printStackTrace();
 				return null;
 			}
 		}
+
+		return null;
+	}
+
+	@Override
+	protected void onProgressUpdate(JSONObject... responses) {
+		if (context.get() == null)
+			return;
+
+		if (responses.length > 0)
+			for (JSONObject response : responses)
+				handler.onResponseReceived(response);
 	}
 
 	@Override
@@ -131,7 +216,8 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 		RETURN_CACHE,
 		RETURN_CACHE_LOAD_LIVE,
 		RETURN_CACHE_LOAD_LIVE_RETURN_LIVE,
-		LOAD_LIVE
+		LOAD_LIVE,
+		LOAD_LIVE_FALLBACK_CACHE
 	}
 
 	public interface ResponseHandler {
@@ -145,11 +231,11 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 		private String school = "";
 		private JSONArray params = new JSONArray();
 
-		public String getJsonrpc() {
+		String getJsonrpc() {
 			return jsonrpc;
 		}
 
-		public String getMethod() {
+		String getMethod() {
 			return method;
 		}
 
@@ -157,15 +243,11 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.method = method;
 		}
 
-		public String getUrl() {
-			return url;
-		}
-
 		public void setUrl(String url) {
 			this.url = url;
 		}
 
-		public String getSchool() {
+		String getSchool() {
 			return school;
 		}
 
@@ -173,7 +255,7 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.school = school;
 		}
 
-		public JSONArray getParams() {
+		JSONArray getParams() {
 			return params;
 		}
 
@@ -181,7 +263,7 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, Void
 			this.params = params;
 		}
 
-		public URI getURI() throws URISyntaxException {
+		URI getURI() throws URISyntaxException {
 			return new URI("https", url, "/WebUntis/jsonrpc_intern.do", "school=" + getSchool(), "");
 		}
 	}

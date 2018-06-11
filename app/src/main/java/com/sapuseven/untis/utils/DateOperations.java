@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DateOperations {
 	private static final SimpleDateFormat FROM_ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US);
@@ -81,5 +83,14 @@ public class DateOperations {
 
 	public static Date parseFromISO(String dateTime) throws ParseException {
 		return FROM_ISO_8601.parse(dateTime);
+	}
+
+	public static int getComparableTime(String dateTime) {
+		Pattern pattern = Pattern.compile("[0-9]{2}:[0-9]{2}");
+		Matcher matcher = pattern.matcher(dateTime);
+		if (matcher.find())
+			return Integer.parseInt((matcher.group(0).replace(":", "")));
+		else
+			throw new IllegalArgumentException("No time found");
 	}
 }

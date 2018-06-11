@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -160,8 +161,13 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		UntisRequest api = new UntisRequest(this);
 
 		UntisRequest.ResponseHandler handler = response -> {
+			if (response == null) {
+				Log.w("ActivityLoginDataInput", "response is null");
+				// TODO: Stop loading and show "unknown error: null";
+				return;
+			}
 			try {
-				if (response != null && response.has("result")) {
+				if (response.has("result")) {
 					mPbLoadingStatus.setVisibility(View.GONE);
 					mIvLoadingStatusSuccess.setVisibility(View.VISIBLE);
 					mTvLoadingStatus.setText(getString(R.string.data_loaded));

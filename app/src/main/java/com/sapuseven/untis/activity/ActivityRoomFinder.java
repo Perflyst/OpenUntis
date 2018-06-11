@@ -39,6 +39,7 @@ import com.sapuseven.untis.utils.Constants;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
+import com.sapuseven.untis.utils.SessionInfo;
 import com.sapuseven.untis.utils.connectivity.UntisRequest;
 import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
 import com.sapuseven.untis.utils.timetable.Timetable;
@@ -69,18 +70,17 @@ import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 import static com.sapuseven.untis.utils.connectivity.UntisAuthentication.getAuthObject;
 
 public class ActivityRoomFinder extends AppCompatActivity implements View.OnClickListener {
-	private int mRoomListMargins;
-	private JSONObject mUserDataList;
-	private AlertDialog mDialog;
-	private ArrayList<AdapterItemRoomFinder> mRoomList;
-	private AdapterRoomFinder mRoomAdapter;
-	private int mCurrentHourIndex = -1;
-	private int mHourIndexOffset;
-	private ArrayList<RequestModel> mRequestQueue;
-	private ArrayList<String> mRefreshingItems;
-	private RecyclerView mRecyclerView;
-	private TextView mCurrentHour;
-	private int mMaxHourIndex = 0;
+	private int roomListMargins;
+	private JSONObject userDataList;
+	private AlertDialog dialog;
+	private ArrayList<AdapterItemRoomFinder> roomList;
+	private AdapterRoomFinder roomAdapter;
+	private int currentHourIndex = -1;
+	private int hourIndexOffset;
+	private ArrayList<RequestModel> requestQueue;
+	private RecyclerView recyclerView;
+	private TextView currentHour;
+	private int maxHourIndex = 0;
 
 	public static ArrayList<String> getRooms(Context context, boolean includeDisable) {
 		ArrayList<String> roomList = new ArrayList<>();
@@ -127,33 +127,33 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_room_finder);
 
-		mRoomListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
+		roomListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
-		mUserDataList = ListManager.getUserData(getApplicationContext());
+		userDataList = ListManager.getUserData(getApplicationContext());
 
-		mRecyclerView = findViewById(R.id.lvRoomList);
+		recyclerView = findViewById(R.id.lvRoomList);
 		setupNoRoomsIndicator();
-		setupRoomList(mRecyclerView);
+		setupRoomList(recyclerView);
 		setupHourSelector();
 	}
 
 	private void setupHourSelector() {
 		findViewById(R.id.btnNextHour).setOnClickListener(v -> {
-			if (mCurrentHourIndex + mHourIndexOffset < mMaxHourIndex) {
-				mHourIndexOffset++;
+			if (currentHourIndex + hourIndexOffset < maxHourIndex) {
+				hourIndexOffset++;
 				refreshRoomList();
 			}
 		});
 
 		findViewById(R.id.btnPrevHour).setOnClickListener(v -> {
-			if (mCurrentHourIndex + mHourIndexOffset > 0) {
-				mHourIndexOffset--;
+			if (currentHourIndex + hourIndexOffset > 0) {
+				hourIndexOffset--;
 				refreshRoomList();
 			}
 		});
 
 		findViewById(R.id.tvCurrentHour).setOnClickListener(view -> {
-			mHourIndexOffset = 0;
+			hourIndexOffset = 0;
 			refreshRoomList();
 		});
 	}
@@ -174,13 +174,12 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void setupRoomList(RecyclerView listView) {
-		mRoomList = new ArrayList<>();
-		mRequestQueue = new ArrayList<>();
-		mRefreshingItems = new ArrayList<>();
+		roomList = new ArrayList<>();
+		requestQueue = new ArrayList<>();
 
 		listView.setLayoutManager(new LinearLayoutManager(this));
-		mRoomAdapter = new AdapterRoomFinder(this, mRoomList);
-		listView.setAdapter(mRoomAdapter);
+		roomAdapter = new AdapterRoomFinder(this, roomList);
+		listView.setAdapter(roomAdapter);
 
 		reload();
 
@@ -189,55 +188,62 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void reload() {
-		mRoomList.clear();
+		roomList.clear();
 		try {
 			BufferedReader reader =
 					new BufferedReader(new InputStreamReader(openFileInput("roomList.txt")));
 			String name;
 			while ((name = reader.readLine()) != null) {
 				AdapterItemRoomFinder roomItem =
-						new AdapterItemRoomFinder(this, name, mRefreshingItems.contains(name));
+						new AdapterItemRoomFinder(this, name, isInRequestQueue(name));
 				String binaryData = reader.readLine();
 				boolean[] states = new boolean[binaryData.length()];
 				for (int i = 0; i < states.length; i++)
 					states[i] = binaryData.charAt(i) == '1';
 				roomItem.setStates(states);
-				mMaxHourIndex = states.length - 1;
+				maxHourIndex = states.length - 1;
 				roomItem.setDate(Long.parseLong(reader.readLine()));
-				mRoomList.add(roomItem);
+				roomList.add(roomItem);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		for (RequestModel r : mRequestQueue) {
+		for (RequestModel r : requestQueue) {
 			if (!r.isRefreshOnly())
-				mRoomList.add(new AdapterItemRoomFinder(this, r.getDisplayName(), true));
-			mRoomAdapter.notifyItemInserted(mRoomList.size() - 1);
+				roomList.add(new AdapterItemRoomFinder(this, r.getDisplayName(), true));
+			roomAdapter.notifyItemInserted(roomList.size() - 1);
 		}
 
 		refreshRoomList();
 	}
 
+	private boolean isInRequestQueue(String name) {
+		for (RequestModel r : requestQueue)
+			if (r.getDisplayName().equals(name))
+				return true;
+		return false;
+	}
+
 	private void refreshRoomList() {
-		if (mRoomList.isEmpty())
+		if (roomList.isEmpty())
 			findViewById(R.id.tvNoRooms).setVisibility(View.VISIBLE);
 		else
 			findViewById(R.id.tvNoRooms).setVisibility(View.GONE);
 
-		Collections.sort(mRoomList); // TODO: Due to multiple calls of getIndex(), this takes quite a bit of time. Better make this asynchronous and display a loading indicator
-		mRoomAdapter.notifyDataSetChanged();
+		Collections.sort(roomList); // TODO: Due to multiple calls of getIndex(), this takes quite a bit of time. Better make this asynchronous and display a loading indicator
+		roomAdapter.notifyDataSetChanged();
 		displayCurrentHour();
 	}
 
 	private void showItemList() {
 		try {
-			final ElementName elementName = new ElementName(ROOM).setUserDataList(mUserDataList);
+			final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
 			LinearLayout content = new LinearLayout(this);
 			content.setOrientation(LinearLayout.VERTICAL);
 
 			final List<String> list = new ArrayList<>();
-			JSONArray roomList = mUserDataList.optJSONObject("masterData").optJSONArray("rooms");
+			JSONArray roomList = userDataList.optJSONObject("masterData").optJSONArray("rooms");
 			for (int i = 0; i < roomList.length(); i++)
 				list.add(roomList.getJSONObject(i).getString("name"));
 			Collections.sort(list, String::compareToIgnoreCase);
@@ -247,7 +253,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			LinearLayout.LayoutParams searchFieldParams =
 					new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 							ViewGroup.LayoutParams.WRAP_CONTENT);
-			searchFieldParams.setMargins(mRoomListMargins, mRoomListMargins, mRoomListMargins, 0);
+			searchFieldParams.setMargins(roomListMargins, roomListMargins, roomListMargins, 0);
 			titleContainer.setLayoutParams(searchFieldParams);
 
 			GridView gridView = new GridView(this);
@@ -283,7 +289,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				for (String item : adapter.getSelectedItems())
 					addRoom(new AdapterItemRoomFinder(context, item, true),
 							(Integer) elementName.findFieldByValue("name", item, "id"));
-				mDialog.dismiss();
+				dialog.dismiss();
 				executeRequestQueue();
 			});
 
@@ -291,10 +297,10 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			content.addView(gridView);
 			content.addView(selectAll);
 
-			mDialog = new AlertDialog.Builder(this)
+			dialog = new AlertDialog.Builder(this)
 					.setView(content)
 					.create();
-			mDialog.show();
+			dialog.show();
 		} catch (JSONException e) {
 			e.printStackTrace();
 			new AlertDialog.Builder(this)
@@ -306,10 +312,10 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void addRoom(AdapterItemRoomFinder item, int roomID) {
-		if (mRoomList.contains(item))
+		if (roomList.contains(item))
 			return;
 
-		mRequestQueue.add(new RequestModel(roomID, item.getName()));
+		requestQueue.add(new RequestModel(roomID, item.getName()));
 
 		refreshRoomList();
 	}
@@ -317,43 +323,52 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	private void executeRequestQueue() {
 		reload();
 
-		if (mRequestQueue.size() > 0)
-			loadRoom(mRequestQueue.get(0));
+		if (requestQueue.size() > 0)
+			loadRoom(requestQueue.get(0));
 	}
 
 	private void loadRoom(RequestModel room) {
+		JSONArray dayList = null;
+		try {
+			dayList = new JSONObject(new ListManager(getApplication())
+					.readList("userData", false)).getJSONObject("masterData")
+					.getJSONObject("timeGrid").getJSONArray("days");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
+
+		int days = unitManager.getNumberOfDays();
+		int hours = unitManager.getMaxHoursPerDay();
+
 		int startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 				.format(getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 
 		SharedPreferences prefs = getSharedPreferences("login_data", MODE_PRIVATE);
-		UntisRequest api = new UntisRequest(this);
+		SessionInfo sessionInfo = new SessionInfo();
+		sessionInfo.setElemId(room.getRoomID());
+		sessionInfo.setElemType(getElemTypeName(ROOM));
+
+		UntisRequest api = new UntisRequest(this, sessionInfo);
 
 		UntisRequest.ResponseHandler handler = response -> {
+			if (response == null) {
+				Log.w("ActivityRoomFinder", "response is null");
+				// TODO: Stop loading and show "unknown error: null";
+				return;
+			}
 			try {
 				if (response.has("error")) {
 					Log.w("error", response.toString());
-					Snackbar.make(mRecyclerView,
+					Snackbar.make(recyclerView,
 							getString(R.string.snackbar_error, response.getJSONObject("error")
 									.getString("message")), Snackbar.LENGTH_LONG)
 							.setAction("OK", null).show();
 				} else if (response.has("result")) {
-					RequestModel requestModel = mRequestQueue.get(0);
+					RequestModel requestModel = requestQueue.get(0);
 
 					Timetable timetable = new Timetable(response.getJSONObject("result"), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
-
-					JSONArray dayList = null;
-					try {
-						dayList = new JSONObject(new ListManager(getApplication())
-								.readList("userData", false)).getJSONObject("masterData")
-								.getJSONObject("timeGrid").getJSONArray("days");
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-
-					TimegridUnitManager unitManager = new TimegridUnitManager(dayList);
-
-					int days = unitManager.getNumberOfDays();
-					int hours = unitManager.getMaxHoursPerDay();
 
 					boolean[] states = new boolean[days * hours];
 
@@ -391,7 +406,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			} catch (JSONException | IOException e) {
 				e.printStackTrace();
 			}
-			mRequestQueue.remove(0);
+			requestQueue.remove(0);
 			executeRequestQueue();
 		};
 
@@ -406,7 +421,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 					.put("id", room.getRoomID())
 					.put("type", getElemTypeName(ROOM))
 					.put("startDate", startDateFromWeek)
-					.put("endDate", addDaysToInt(startDateFromWeek, 4)) // TODO: Replace with actual week length
+					.put("endDate", addDaysToInt(startDateFromWeek, days))
 					.put("masterDataTimestamp", System.currentTimeMillis())
 					.put("auth", getAuthObject(prefs.getString("user", ""), prefs.getString("key", "")));
 		} catch (JSONException e) {
@@ -419,8 +434,8 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	public int getCurrentHourIndex() {
-		if (mCurrentHourIndex >= 0)
-			return mCurrentHourIndex + mHourIndexOffset;
+		if (currentHourIndex >= 0)
+			return currentHourIndex + hourIndexOffset;
 
 		int index = 0;
 
@@ -465,23 +480,23 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			index = 0;
 
 		Log.d("RoomFinder", "Current Hour Index: " + index);
-		mCurrentHourIndex = Math.max(index, 0);
-		return mCurrentHourIndex + mHourIndexOffset;
+		currentHourIndex = Math.max(index, 0);
+		return currentHourIndex + hourIndexOffset;
 	}
 
 	public void showDeleteItemDialog(int position) {
 		new AlertDialog.Builder(this)
-				.setTitle(getString(R.string.delete_item_title, mRoomList.get(position).getName()))
+				.setTitle(getString(R.string.delete_item_title, roomList.get(position).getName()))
 				.setMessage(R.string.delete_item_text)
 				.setPositiveButton(R.string.yes, (dialog, which) -> {
 					try {
-						if (deleteItem(mRoomList.get(position).getName())) {
-							mRoomList.remove(position);
-							mRoomAdapter.notifyItemRemoved(position);
+						if (deleteItem(roomList.get(position).getName())) {
+							roomList.remove(position);
+							roomAdapter.notifyItemRemoved(position);
 							refreshRoomList();
 						}
 					} catch (IOException e) {
-						Snackbar.make(mRecyclerView, getString(R.string.snackbar_error,
+						Snackbar.make(recyclerView, getString(R.string.snackbar_error,
 								e.getMessage()),
 								Snackbar.LENGTH_LONG).setAction("OK", null).show();
 					}
@@ -530,15 +545,15 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 				.setMessage(getString(R.string.refresh_item_text))
 				.setPositiveButton(R.string.refresh_this_item, (dialog, which) -> {
 					refreshItemData(position);
-					mRoomAdapter.notifyDataSetChanged();
+					roomAdapter.notifyDataSetChanged();
 					executeRequestQueue();
 					dialog.dismiss();
 				})
 				.setNeutralButton(R.string.refresh_all_items, (dialog, which) -> {
-					for (int i = 0; i < mRoomList.size(); i++)
-						if (mRoomList.get(i).isOutdated())
+					for (int i = 0; i < roomList.size(); i++)
+						if (roomList.get(i).isOutdated())
 							refreshItemData(i);
-					mRoomAdapter.notifyDataSetChanged();
+					roomAdapter.notifyDataSetChanged();
 					executeRequestQueue();
 					dialog.dismiss();
 				})
@@ -548,35 +563,35 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	}
 
 	private void refreshItemData(final int position) {
-		mRoomList.get(position).setLoading();
+		roomList.get(position).setLoading();
 
-		final ElementName elementName = new ElementName(ROOM).setUserDataList(mUserDataList);
+		final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
 
-		mRequestQueue.add(new RequestModel((Integer) elementName.findFieldByValue("name",
-				mRoomList.get(position).getName(), "id"), mRoomList.get(position).getName(), true));
+		requestQueue.add(new RequestModel((Integer) elementName.findFieldByValue("name",
+				roomList.get(position).getName(), "id"), roomList.get(position).getName(), true));
 	}
 
 	private void displayCurrentHour() {
-		if (mCurrentHour == null)
-			mCurrentHour = findViewById(R.id.tvCurrentHour);
+		if (currentHour == null)
+			currentHour = findViewById(R.id.tvCurrentHour);
 
-		if (mHourIndexOffset < 0)
-			mCurrentHour.setText(getResources().getQuantityString(R.plurals.hour_index_last,
-					Math.abs(mHourIndexOffset), Math.abs(mHourIndexOffset)));
-		else if (mHourIndexOffset > 0)
-			mCurrentHour.setText(getResources().getQuantityString(R.plurals.hour_index_next,
-					mHourIndexOffset, mHourIndexOffset));
+		if (hourIndexOffset < 0)
+			currentHour.setText(getResources().getQuantityString(R.plurals.hour_index_last,
+					Math.abs(hourIndexOffset), Math.abs(hourIndexOffset)));
+		else if (hourIndexOffset > 0)
+			currentHour.setText(getResources().getQuantityString(R.plurals.hour_index_next,
+					hourIndexOffset, hourIndexOffset));
 		else
-			mCurrentHour.setText(getString(R.string.hour_index_current));
+			currentHour.setText(getString(R.string.hour_index_current));
 	}
 
 	@Override
 	public void onClick(final View v) {
-		int itemPosition = mRecyclerView.getChildLayoutPosition(v);
-		AdapterItemRoomFinder item = mRoomList.get(itemPosition);
+		int itemPosition = recyclerView.getChildLayoutPosition(v);
+		AdapterItemRoomFinder item = roomList.get(itemPosition);
 
 		Intent intent = new Intent();
-		final ElementName elementName = new ElementName(ROOM).setUserDataList(mUserDataList);
+		final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
 		intent.putExtra("elemId", (int) elementName.findFieldByValue("name", item.getName(), "id"));
 		intent.putExtra("elemType", ROOM);
 		intent.putExtra("displayName", getString(R.string.title_room, item.getName()));

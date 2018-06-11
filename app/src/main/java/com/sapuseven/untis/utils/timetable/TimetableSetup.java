@@ -28,6 +28,7 @@ import com.sapuseven.untis.R;
 import com.sapuseven.untis.activity.ActivityRoomFinder;
 import com.sapuseven.untis.fragment.FragmentTimetable;
 import com.sapuseven.untis.utils.Constants;
+import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
@@ -56,7 +57,6 @@ import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 	private static final float DARKNESS_FACTOR = 0.8f;
 	private WeakReference<FragmentTimetable> fragmentContext;
-	private final WeakReference<FragmentTimetable> fragmentContext;
 	private GridLayout glTimetable;
 
 	public TimetableSetup(FragmentTimetable context) {
@@ -158,76 +158,84 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 
 		a.recycle();
 
+		if (fragmentContext.get().userDataList == null)
+			fragmentContext.get().userDataList = ListManager.getUserData(fragmentContext.get().listManager);
+
+		JSONObject masterData = null;
+		ArrayList<TimegridUnitManager.UnitData> units = null;
+
 		try {
-			fragmentContext.get().userDataList = new JSONObject(fragmentContext.get().listManager.readList("userData", false));
+			masterData = fragmentContext.get().userDataList.getJSONObject("masterData");
+			TimegridUnitManager unitManager = new TimegridUnitManager(masterData.getJSONObject("timeGrid").getJSONArray("days"));
+
+			units = unitManager.getUnits();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		JSONArray holidays = null;
+		try {
+			holidays = masterData.getJSONArray("holidays");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
 		for (int day = 0; day < cols / 2; day++) {
+			LinearLayout holidayItem = null;
+			StringBuilder holidayLabelString = null;
+
 			try {
-				long timer2 = System.nanoTime();
+				if (holidays != null)
+					for (int i = 0; i < holidays.length(); i++) {
+						if (isBetween(addDaysToInt(fragmentContext.get().startDateFromWeek, day),
+								Integer.parseInt(holidays.getJSONObject(i)
+										.getString("startDate")
+										.replace("-", "")),
+								Integer.parseInt(holidays.getJSONObject(i)
+										.getString("endDate")
+										.replace("-", "")))) {
 
-				if (fragmentContext.get().isCurrentWeek())
-					Log.d("TimetableSetup", "Table setup timer duration holidays: " + (System.nanoTime() - timer2) / 1000000.0 + "ms");
+							if (holidayItem == null) {
+								holidayItem = new LinearLayout(context);
 
-				JSONArray holidays = fragmentContext.get().userDataList.getJSONObject("masterData").getJSONArray("holidays");
-				LinearLayout holidayItem = null;
-				StringBuilder holidayLabelString = null;
+								GridLayout.Spec rowSpec = GridLayout.spec(0, rows);
+								GridLayout.Spec colSpec = GridLayout.spec(day * 2, 2);
+								GridLayout.LayoutParams params = new GridLayout.LayoutParams(rowSpec, colSpec);
+								params.height = hourHeight * rows;
+								if (day * 2 == cols - 2)
+									params.width = lastDayWidth; // fill up all the remaining space to prevent a gap
+								else
+									params.width = dayWidth;
 
-				for (int i = 0; i < holidays.length(); i++) {
-					if (isBetween(addDaysToInt(fragmentContext.get().startDateFromWeek, day),
-							Integer.parseInt(holidays.getJSONObject(i)
-									.getString("startDate")
-									.replace("-", "")),
-							Integer.parseInt(holidays.getJSONObject(i)
-									.getString("endDate")
-									.replace("-", "")))) {
+								holidayItem.setLayoutParams(params);
+								holidayItem.setGravity(Gravity.CENTER_HORIZONTAL);
+							}
 
-						if (holidayItem == null) {
-							holidayItem = new LinearLayout(context);
-
-							GridLayout.Spec rowSpec = GridLayout.spec(0, rows);
-							GridLayout.Spec colSpec = GridLayout.spec(day * 2, 2);
-							GridLayout.LayoutParams params = new GridLayout.LayoutParams(rowSpec, colSpec);
-							params.height = hourHeight * rows;
-							if (day * 2 == cols - 2)
-								params.width = lastDayWidth; // fill up all the remaining space to prevent a gap
-							else
-								params.width = dayWidth;
-
-							holidayItem.setLayoutParams(params);
-							holidayItem.setGravity(Gravity.CENTER_HORIZONTAL);
-						}
-
-						if (holidayLabelString == null) {
-							holidayLabelString = new StringBuilder(holidays.getJSONObject(i).getString("longName"));
-						} else {
-							holidayLabelString.append(fragmentContext.get().getString(R.string.holiday_label_separator)).append(holidays.getJSONObject(i).getString("longName"));
+							if (holidayLabelString == null) {
+								holidayLabelString = new StringBuilder(holidays.getJSONObject(i).getString("longName"));
+							} else {
+								holidayLabelString.append(fragmentContext.get().getString(R.string.holiday_label_separator)).append(holidays.getJSONObject(i).getString("longName"));
+							}
 						}
 					}
-				}
-
-				if (holidayItem != null) {
-					VerticalTextView holidayLabel = new VerticalTextView(context);
-					LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
-							ViewGroup.LayoutParams.WRAP_CONTENT,
-							ViewGroup.LayoutParams.MATCH_PARENT);
-					labelParams.setMargins(0, dp2px(12), 0, 0);
-					holidayLabel.setLayoutParams(labelParams);
-					holidayLabel.setText(holidayLabelString);
-
-					holidayItem.setBackgroundColor(colorFree);
-					holidayItem.addView(holidayLabel);
-					glTimetable.addView(holidayItem);
-					continue;
-				}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 
-			if (fragmentContext.get().isCurrentWeek())
-				Log.d("TimetableSetup", "Table setup timer before hours: " + (System.nanoTime() - timer) / 1000000 + "ms");
+			if (holidayItem != null) {
+				VerticalTextView holidayLabel = new VerticalTextView(context);
+				LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
+						ViewGroup.LayoutParams.WRAP_CONTENT,
+						ViewGroup.LayoutParams.MATCH_PARENT);
+				labelParams.setMargins(0, dp2px(12), 0, 0);
+				holidayLabel.setLayoutParams(labelParams);
+				holidayLabel.setText(holidayLabelString);
+
+				holidayItem.setBackgroundColor(colorFree);
+				holidayItem.addView(holidayLabel);
+				glTimetable.addView(holidayItem);
+				continue;
+			}
 
 			int lastHourIndex = 0;
 			for (int i = 0; i < rows; i++)
@@ -235,7 +243,6 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 					lastHourIndex = i;
 
 			for (int hour = 0; hour < rows; hour++) {
-				long timer3 = System.nanoTime();
 				final ArrayList<TimetableItemData> allItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour);
 				if (allItems.size() == 0) { // A free hour
 					LinearLayout emptyItem = new LinearLayout(context);
@@ -284,7 +291,6 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 					if (item.isHidden())
 						continue;
 
-					View view = fragmentContext.get().inflater
 					@SuppressLint("InflateParams") View view = fragmentContext.get().inflater
 							.inflate(R.layout.table_item, null, false);
 
@@ -329,7 +335,15 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 						tvBR.setTextColor(textColor);
 					}
 
-					int rowSpan = 1;
+					int rowSpan = determineHours(item, units);
+
+					if (rowSpan > 1) {
+						for (int j = 0; j < rowSpan - 1; j++) {
+							timetable[0].addOffset(day, hour + j + 1);
+							timetable[0].addDummyItem(day, hour + j + 1, item);
+						}
+					}
+
 					while (hour + rowSpan < rows) {
 						ArrayList<TimetableItemData> nextItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour + rowSpan);
 						if (item.mergeWith(nextItems)) {
@@ -344,7 +358,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 
 					for (int j = 0; j < rowSpan; j++) {
 						ArrayList<TimetableItemData> nextItems = (ArrayList<TimetableItemData>) timetable[0].getItems(day, hour + j);
-						if (nextItems.size() >= 2)
+						if (nextItems.size() >= 2 || timetable[0].getOffset(day, hour) >= 1)
 							colSpan = 1;
 					}
 
@@ -424,10 +438,31 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 		return null;
 	}
 
+	private int determineHours(TimetableItemData item, ArrayList<TimegridUnitManager.UnitData> units) {
+		if (item.isDummy())
+			return 1;
+
+		int startHour = 0, endHour = 0;
+		int itemStart = DateOperations.getComparableTime(item.getStartDateTime());
+		int itemEnd = DateOperations.getComparableTime(item.getEndDateTime());
+
+		for (int i = 0; i < units.size(); i++) {
+			int unitStart = DateOperations.getComparableTime(units.get(i).getStartTime());
+			int unitEnd = DateOperations.getComparableTime(units.get(i).getEndTime());
+
+			if (itemStart >= unitStart)
+				startHour = i;
+			if (itemEnd >= unitEnd)
+				endHour = i;
+			else
+				break;
+		}
+
+		return endHour + 1 - startHour;
+	}
+
 	@Override
 	protected void onPostExecute(Void v) {
-		if (fragmentContext.get().isCurrentWeek())
-			Log.d("TimetableSetup", "Table setup timer onPostExecute start: " + (System.nanoTime() - timer) / 1000000 + "ms");
 		if (glTimetable == null)
 			return;
 

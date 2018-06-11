@@ -18,7 +18,6 @@ public class ElementName {
 	public static final boolean SHORT = false;
 	private final List<String> names = new ArrayList<>();
 	private final List<String> longNames = new ArrayList<>();
-	private List<Integer> ids = new ArrayList<>();
 	private int type;
 	private JSONObject userData;
 
@@ -61,7 +60,6 @@ public class ElementName {
 		if (this.userData == null)
 			throw new RuntimeException("You have to provide a unitList via setUserDataList()!");
 		type = elemType;
-		ids = list;
 		for (int i : list)
 			try {
 				names.add((String) findFieldByValue("id", i, "name"));

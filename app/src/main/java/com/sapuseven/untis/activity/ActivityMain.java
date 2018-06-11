@@ -128,6 +128,7 @@ public class ActivityMain extends AppCompatActivity
 
 			setupRemoteConfig();
 		}
+
 		mItemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -179,7 +180,7 @@ public class ActivityMain extends AppCompatActivity
 					e.printStackTrace();
 				}
 				mListManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
-						"-" + startDate + "-" + addDaysToInt(startDate, days), true);
+						"-" + startDate + "-" + addDaysToInt(startDate, days - 1), true);
 				refresh();
 			});
 
@@ -190,7 +191,7 @@ public class ActivityMain extends AppCompatActivity
 				currentViewPos++;
 
 			mPagerHeader = findViewById(R.id.viewpagerHeader);
-			mPagerHeaderAdapter = new AdapterTimetableHeader(getSupportFragmentManager(), mUserDataList);
+			mPagerHeaderAdapter = new AdapterTimetableHeader(getSupportFragmentManager());
 			mPagerHeader.setAdapter(mPagerHeaderAdapter);
 
 			mPagerTable = findViewById(R.id.viewpagerTimegrid);
@@ -850,7 +851,7 @@ public class ActivityMain extends AppCompatActivity
 
 		ApiRequest.ResponseHandler handler = response -> {
 			if (response == null)
-				return;
+				return; // TODO: Display network error
 
 			try {
 				JSONObject list = new JSONObject(response);
@@ -861,7 +862,7 @@ public class ActivityMain extends AppCompatActivity
 						startActivity(i);
 					}).show();
 				}
-			} catch (NullPointerException | JSONException e) {
+			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		};
