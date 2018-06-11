@@ -1,7 +1,7 @@
 <resources>
 
 
-	<declare-styleable name="colorpickerview__ColorPickerView">
+	<declare-styleable name="colorpickerview__ColorPanelView">
 		<attr name="colorpickerview__alphaChannelVisible" format="boolean|reference"/>
 		<attr name="colorpickerview__alphaChannelText" format="string|reference"/>
 		<attr name="colorpickerview__sliderColor" format="color|reference"/>

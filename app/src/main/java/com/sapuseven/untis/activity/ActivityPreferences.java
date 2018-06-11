@@ -1,5 +1,6 @@
 package com.sapuseven.untis.activity;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -367,7 +368,7 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				ClipboardManager clipboard = (ClipboardManager) getActivity()
 						.getSystemService(Context.CLIPBOARD_SERVICE);
 				if (clipboard != null) {
-					ClipData clip = ClipData.newPlainText(getString(R.string.firebase_key),
+					@SuppressLint("MissingFirebaseInstanceTokenRefresh") ClipData clip = ClipData.newPlainText(getString(R.string.firebase_key),
 							FirebaseInstanceId.getInstance().getToken());
 					clipboard.setPrimaryClip(clip);
 					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);

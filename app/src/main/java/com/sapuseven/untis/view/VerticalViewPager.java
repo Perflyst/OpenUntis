@@ -1,5 +1,6 @@
 package com.sapuseven.untis.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewPager;
@@ -54,6 +55,7 @@ public class VerticalViewPager extends ViewPager {
 		return intercepted;
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		return super.onTouchEvent(swapXY(ev));

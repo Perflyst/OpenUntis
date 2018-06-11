@@ -16,6 +16,7 @@
 
 package com.github.danielnilsson9.colorpickerview.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -97,8 +98,8 @@ public class ColorPanelView extends View {
 
 	private void init(Context context, AttributeSet attrs) {
 
-		TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.colorpickerview__ColorPickerView);
-		mBorderColor = a.getColor(R.styleable.colorpickerview__ColorPickerView_colorpickerview__borderColor, 0xFF6E6E6E);
+		@SuppressLint("CustomViewStyleable") TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.colorpickerview__ColorPanelView);
+		mBorderColor = a.getColor(R.styleable.colorpickerview__ColorPanelView_colorpickerview__borderColor, 0xFF6E6E6E);
 		a.recycle();
 
 		applyThemeColors(context);

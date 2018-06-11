@@ -221,4 +221,6 @@
 	<string name="save">Speichern</string>
 	<string name="key_copy_failed">Fehler beim Kopieren</string>
 	<string name="donation">Spende</string>
+	<string name="preference_timetable_refresh_in_background">Stundenplan immer aktualisieren</string>
+	<string name="preference_timetable_refresh_in_background_desc">Aktivieren, um den aktuellen Stundenplan im Hintergrund zu laden, auch wenn eine zwischengespeicherte Version existiert</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.sapuseven.untis.utils;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -27,7 +28,7 @@ public class UserRegistration {
 		String user = prefs.getString("user", "UNKNOWN");
 		String school = prefs.getString("school", "UNKNOWN");
 
-		String id = Settings.Secure.getString(activityMain.getContentResolver(), Settings.Secure.ANDROID_ID);
+		@SuppressLint("HardwareIds") String id = Settings.Secure.getString(activityMain.getContentResolver(), Settings.Secure.ANDROID_ID);
 
 		ApiRequest api = new ApiRequest(main);
 

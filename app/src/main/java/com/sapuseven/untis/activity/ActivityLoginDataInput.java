@@ -179,9 +179,7 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 					mPbLoadingStatus.setVisibility(View.GONE);
 					mIvLoadingStatusFailed.setVisibility(View.VISIBLE);
 
-					int errorCode = Constants.UntisAPI.ERROR_CODE_UNKNOWN;
-					if (response != null)
-						errorCode = response.getJSONObject("error").getInt("code");
+					int errorCode = response.getJSONObject("error").getInt("code");
 
 					switch (errorCode) {
 						case Constants.UntisAPI.ERROR_CODE_NO_SERVER_FOUND:

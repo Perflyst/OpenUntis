@@ -24,11 +24,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ImageLoader {
-	private final MemoryCache memoryCache = new MemoryCache();
-	private final FileCache fileCache;
-	private final ExecutorService executorService;
-	private final Handler handler = new Handler();
-	private final Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
+	private MemoryCache memoryCache = new MemoryCache();
+	private FileCache fileCache;
+	private ExecutorService executorService;
+	private Handler handler = new Handler();
+	private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
 
 	public ImageLoader(Context context) {
 		fileCache = new FileCache(context);
@@ -131,9 +131,14 @@ public class ImageLoader {
 		return tag == null || !tag.equals(photoToLoad.url);
 	}
 
+	public void clearCache() {
+		memoryCache.clear();
+		fileCache.clear();
+	}
+
 	private class PhotoToLoad {
-		final String url;
-		final ImageView imageView;
+		String url;
+		ImageView imageView;
 
 		PhotoToLoad(String u, ImageView i) {
 			url = u;
@@ -142,9 +147,8 @@ public class ImageLoader {
 	}
 
 	class PhotosLoader implements Runnable {
-		final PhotoToLoad photoToLoad;
+		PhotoToLoad photoToLoad;
 		@DrawableRes
-		final
 		int stub_id;
 
 		PhotosLoader(PhotoToLoad photoToLoad, @DrawableRes int stub_id) {
@@ -170,10 +174,9 @@ public class ImageLoader {
 	}
 
 	class BitmapDisplayer implements Runnable {
-		final Bitmap bitmap;
-		final PhotoToLoad photoToLoad;
+		Bitmap bitmap;
+		PhotoToLoad photoToLoad;
 		@DrawableRes
-		final
 		int stub_id;
 
 		BitmapDisplayer(Bitmap bitmap, PhotoToLoad photoToLoad, @DrawableRes int stub_id) {

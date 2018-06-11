@@ -1,5 +1,6 @@
 package com.sapuseven.untis.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
@@ -567,6 +568,7 @@ public class SortableListView extends ListView {
 		}
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		if (mIgnoreTouchEvent) {

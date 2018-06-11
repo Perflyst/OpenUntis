@@ -81,12 +81,16 @@ public class UntisRequest extends AsyncTask<UntisRequest.UntisRequestQuery, JSON
 
 			if (cacheExists)
 				try {
-					if (cachingMode == RETURN_CACHE)
-						return new JSONObject(listManager.readList(fileName, true));
-					else if (cachingMode == LOAD_LIVE_FALLBACK_CACHE)
-						cacheFallback = new JSONObject(listManager.readList(fileName, true));
-					else
-						publishProgress(new JSONObject(listManager.readList(fileName, true)));
+					switch (cachingMode) {
+						case RETURN_CACHE:
+							return new JSONObject(listManager.readList(fileName, true));
+						case LOAD_LIVE_FALLBACK_CACHE:
+							cacheFallback = new JSONObject(listManager.readList(fileName, true));
+							break;
+						default:
+							publishProgress(new JSONObject(listManager.readList(fileName, true)));
+							break;
+					}
 				} catch (JSONException e) {
 					e.printStackTrace();
 					if (cachingMode == RETURN_CACHE)
