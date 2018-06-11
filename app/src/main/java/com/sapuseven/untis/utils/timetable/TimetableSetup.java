@@ -54,10 +54,9 @@ import static com.sapuseven.untis.utils.ElementName.TEACHER;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefBool;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 
-public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
+public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 	private static final float DARKNESS_FACTOR = 0.8f;
 	private WeakReference<FragmentTimetable> fragmentContext;
-	private GridLayout glTimetable;
 
 	public TimetableSetup(FragmentTimetable context) {
 		this.fragmentContext = new WeakReference<>(context);
@@ -75,7 +74,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 	}
 
 	@Override
-	protected Void doInBackground(Timetable... timetable) {
+	protected GridLayout doInBackground(Timetable... timetable) {
 		Context context = this.fragmentContext.get().getContext();
 
 		if (context == null)
@@ -86,7 +85,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 		int rows = timetable[0].getHoursPerDay();
 		int cols = timetable[0].getNumberOfDays() * 2;
 
-		glTimetable = new GridLayout(fragmentContext.get().getContext());
+		GridLayout glTimetable = new GridLayout(fragmentContext.get().getContext());
 		glTimetable.setColumnCount(cols);
 		glTimetable.setRowCount(rows);
 		glTimetable.setOrientation(GridLayout.HORIZONTAL);
@@ -435,7 +434,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 				}
 			}
 		}
-		return null;
+		return glTimetable;
 	}
 
 	private int determineHours(TimetableItemData item, ArrayList<TimegridUnitManager.UnitData> units) {
@@ -462,7 +461,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, Void> {
 	}
 
 	@Override
-	protected void onPostExecute(Void v) {
+	protected void onPostExecute(GridLayout glTimetable) {
 		if (glTimetable == null)
 			return;
 
