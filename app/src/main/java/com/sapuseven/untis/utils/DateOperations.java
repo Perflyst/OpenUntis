@@ -1,5 +1,7 @@
 package com.sapuseven.untis.utils;
 
+import android.util.Log;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -9,6 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DateOperations {
+	private static final String TAG = "DateOperations";
+
 	private static final SimpleDateFormat FROM_ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.ENGLISH);
 
 	public DateOperations() {
@@ -39,7 +43,7 @@ public class DateOperations {
 			c.add(Calendar.DATE, days);
 			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(c.getTime()));
 		} catch (ParseException e) {
-			e.printStackTrace();
+			Log.w(TAG, e.getMessage());
 			return startDate;
 		}
 	}
@@ -52,7 +56,7 @@ public class DateOperations {
 			c.add(Calendar.DATE, days);
 			return targetFormat.format(c.getTime());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			Log.w(TAG, e.getMessage());
 			return null;
 		}
 	}
@@ -64,7 +68,7 @@ public class DateOperations {
 			c.setTime(sdf.parse(Integer.toString(date)));
 			return new SimpleDateFormat("d. MMM", locale).format(c.getTime());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			Log.w(TAG, e.getMessage());
 			return null;
 		}
 	}
@@ -76,7 +80,7 @@ public class DateOperations {
 			c.setTime(sdf.parse(Integer.toString(date)));
 			return new SimpleDateFormat("EEE", locale).format(c.getTime());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			Log.w(TAG, e.getMessage());
 			return null;
 		}
 	}

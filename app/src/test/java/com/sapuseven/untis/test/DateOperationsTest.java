@@ -2,7 +2,9 @@ package com.sapuseven.untis.test;
 
 import com.sapuseven.untis.utils.DateOperations;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -15,6 +17,9 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DateOperationsTest {
+	@Rule
+	public ExpectedException exceptionGrabber = ExpectedException.none();
+
 	@Test(expected = RuntimeException.class)
 	public void dateOperations_constructor() {
 		new DateOperations();
@@ -28,6 +33,14 @@ public class DateOperationsTest {
 		week.set(Calendar.MINUTE, 1);
 		week.set(Calendar.SECOND, 1);
 		week.set(Calendar.MILLISECOND, 1);
+
+		assertThat(week.get(Calendar.YEAR), is(2018));
+		assertThat(week.get(Calendar.MONTH), is(Calendar.MAY));
+		assertThat(week.get(Calendar.DAY_OF_MONTH), is(9));
+		assertThat(week.get(Calendar.HOUR_OF_DAY), is(1));
+		assertThat(week.get(Calendar.MINUTE), is(1));
+		assertThat(week.get(Calendar.SECOND), is(1));
+		assertThat(week.get(Calendar.MILLISECOND), is(1));
 
 		Calendar startDay = DateOperations.getStartDateFromWeek(week, 0);
 		assertThat(startDay.get(Calendar.YEAR), is(2018));
@@ -99,5 +112,15 @@ public class DateOperationsTest {
 	public void dateOperations_parseFromISO() throws ParseException {
 		Date expected = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.ENGLISH).parse("2018-05-09T22:10");
 		assertThat(DateOperations.parseFromISO("2018-05-09T22:10"), is(expected));
+	}
+
+	@Test
+	public void dateOperations_getComparableTime() {
+		assertThat(DateOperations.getComparableTime("08:15"), is(815));
+		assertThat(DateOperations.getComparableTime("10:30Z"), is(1030));
+		assertThat(DateOperations.getComparableTime("T13:45"), is(1345));
+
+		exceptionGrabber.expect(IllegalArgumentException.class);
+		DateOperations.getComparableTime("");
 	}
 }
