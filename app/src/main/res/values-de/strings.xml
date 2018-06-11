@@ -223,4 +223,7 @@
 	<string name="donation">Spende</string>
 	<string name="preference_timetable_refresh_in_background">Stundenplan immer aktualisieren</string>
 	<string name="preference_timetable_refresh_in_background_desc">Aktivieren, um den aktuellen Stundenplan im Hintergrund zu laden, auch wenn eine zwischengespeicherte Version existiert</string>
+	<string name="week_empty">Diese Woche ist schulfrei :D</string>
+	<string name="feature_disabled_title">Funktion deaktiviert</string>
+	<string name="feature_disabled">Diese Funktion ist vorüberkehend deaktiviert. Schau später wieder vorbei!</string>
 </resources>
