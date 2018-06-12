@@ -64,7 +64,7 @@ import java.util.Locale;
 
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
 import static com.sapuseven.untis.utils.DateOperations.getStartDateFromWeek;
-import static com.sapuseven.untis.utils.ElementName.ROOM;
+import static com.sapuseven.untis.utils.ElementName.ElementType.ROOM;
 import static com.sapuseven.untis.utils.SessionInfo.getElemTypeName;
 import static com.sapuseven.untis.utils.ThemeUtils.setupTheme;
 import static com.sapuseven.untis.utils.connectivity.UntisAuthentication.getAuthObject;

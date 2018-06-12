@@ -81,9 +81,9 @@ import java.util.NoSuchElementException;
 import io.fabric.sdk.android.Fabric;
 
 import static com.sapuseven.untis.utils.Conversions.dp2px;
-import static com.sapuseven.untis.utils.ElementName.CLASS;
-import static com.sapuseven.untis.utils.ElementName.ROOM;
-import static com.sapuseven.untis.utils.ElementName.TEACHER;
+import static com.sapuseven.untis.utils.ElementName.ElementType.CLASS;
+import static com.sapuseven.untis.utils.ElementName.ElementType.ROOM;
+import static com.sapuseven.untis.utils.ElementName.ElementType.TEACHER;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefBool;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 import static com.sapuseven.untis.utils.ThemeUtils.restartApplication;
@@ -619,13 +619,13 @@ public class ActivityMain extends AppCompatActivity
 			case REQUEST_CODE_ROOM_FINDER:
 				if (resultCode == RESULT_OK) {
 					setTarget(data.getIntExtra("elemId", 0),
-							data.getIntExtra("elemType", ElementName.ROOM),
+							ElementName.ElementType.fromValue(data.getIntExtra("elemType", ElementName.ElementType.ROOM.value)),
 							data.getStringExtra("displayName"));
 				}
 		}
 	}
 
-	private void showItemList(final int elementType, @StringRes int searchFieldHint,
+	private void showItemList(final ElementName.ElementType elementType, @StringRes int searchFieldHint,
 	                          final int targetPageTitle, String masterDataField) {
 		DialogInterface.OnCancelListener cancelListener = dialogInterface -> {
 			if (getSupportActionBar() != null)
@@ -722,7 +722,7 @@ public class ActivityMain extends AppCompatActivity
 		}
 	}
 
-	private void setTarget(int elemId, int elemType, String displayName) {
+	private void setTarget(int elemId, ElementName.ElementType elemType, String displayName) {
 		if (sessionInfo == null)
 			sessionInfo = new SessionInfo();
 		sessionInfo.setElemId(elemId);

@@ -8,17 +8,11 @@ import java.util.NoSuchElementException;
 
 @SuppressWarnings("WeakerAccess")
 public class ElementName {
-	public static final int CLASS = 0x0001;
-	public static final int TEACHER = 0x0002;
-	public static final int SUBJECT = 0x0003;
-	public static final int ROOM = 0x0004;
-	public static final int STUDENT = 0x0005;
-	public static final int HOLIDAY = 0x0006;
 	public static final boolean FULL = true;
 	public static final boolean SHORT = false;
 	private final List<String> names = new ArrayList<>();
 	private final List<String> longNames = new ArrayList<>();
-	private int type;
+	private ElementType type;
 	private JSONObject userData;
 
 	public ElementName() {
@@ -28,11 +22,11 @@ public class ElementName {
 		this.userData = userDataList;
 	}
 
-	public ElementName(int type) {
+	public ElementName(ElementType type) {
 		this.type = type;
 	}
 
-	public static String getTypeName(int type) {
+	public static String getTypeName(ElementType type) {
 		switch (type) {
 			case CLASS:
 				return "klassen";
@@ -56,7 +50,7 @@ public class ElementName {
 		return this;
 	}
 
-	public ElementName fromIdList(List<Integer> list, int elemType) {
+	public ElementName fromIdList(List<Integer> list, ElementType elemType) {
 		if (this.userData == null)
 			throw new RuntimeException("You have to provide a unitList via setUserDataList()!");
 		type = elemType;
@@ -136,5 +130,28 @@ public class ElementName {
 
 	public List<String> getLongNames() {
 		return longNames;
+	}
+
+	public enum ElementType {
+		UNKNOWN(0),
+		CLASS(1),
+		TEACHER(2),
+		SUBJECT(3),
+		ROOM(4),
+		STUDENT(5),
+		HOLIDAY(6);
+
+		public final int value;
+
+		ElementType(int value) {
+			this.value = value;
+		}
+
+		public static ElementType fromValue(int value) {
+			for (ElementType result : values())
+				if (result.value == value) return result;
+
+			return UNKNOWN;
+		}
 	}
 }

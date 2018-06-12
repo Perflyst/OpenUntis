@@ -49,8 +49,8 @@ import java.util.Locale;
 import static com.sapuseven.untis.fragment.FragmentTimetable.isBetween;
 import static com.sapuseven.untis.utils.Conversions.dp2px;
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
-import static com.sapuseven.untis.utils.ElementName.ROOM;
-import static com.sapuseven.untis.utils.ElementName.TEACHER;
+import static com.sapuseven.untis.utils.ElementName.ElementType.ROOM;
+import static com.sapuseven.untis.utils.ElementName.ElementType.TEACHER;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefBool;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefInt;
 
@@ -75,6 +75,9 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 
 	@Override
 	protected GridLayout doInBackground(Timetable... timetable) {
+		if (fragmentContext.get() == null)
+			return null;
+
 		Context context = this.fragmentContext.get().getContext();
 
 		if (context == null)
@@ -440,6 +443,23 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 		return glTimetable;
 	}
 
+	@Override
+	protected void onPostExecute(GridLayout glTimetable) {
+		if (fragmentContext.get() == null || glTimetable == null)
+			return;
+
+		((ViewGroup) fragmentContext.get().rootView.findViewById(R.id.rlRoot)).addView(glTimetable, 0,
+				new ViewGroup.LayoutParams(
+						ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.MATCH_PARENT));
+
+		if (fragmentContext.get().isCurrentWeek()) {
+			fragmentContext.get().main.stopRefreshing();
+			fragmentContext.get().main.setLastRefresh(fragmentContext.get().lastRefresh);
+		}
+		fragmentContext.get().pbLoading.setVisibility(View.GONE);
+	}
+
 	private int determineHours(TimetableItemData item, ArrayList<TimegridUnitManager.UnitData> units) {
 		if (item.isDummy())
 			return 1;
@@ -463,23 +483,6 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 		return endHour + 1 - startHour;
 	}
 
-	@Override
-	protected void onPostExecute(GridLayout glTimetable) {
-		if (glTimetable == null)
-			return;
-
-		((ViewGroup) fragmentContext.get().rootView.findViewById(R.id.rlRoot)).addView(glTimetable, 0,
-				new ViewGroup.LayoutParams(
-						ViewGroup.LayoutParams.MATCH_PARENT,
-						ViewGroup.LayoutParams.MATCH_PARENT));
-
-		if (fragmentContext.get().isCurrentWeek()) {
-			fragmentContext.get().main.stopRefreshing();
-			fragmentContext.get().main.setLastRefresh(fragmentContext.get().lastRefresh);
-		}
-		fragmentContext.get().pbLoading.setVisibility(View.GONE);
-	}
-
 	private boolean shouldColorizeCell(int day, int hour, boolean alternatingDays, boolean alternatingHours) {
 		if (alternatingDays && alternatingHours)
 			return day % 2 == 0 ^ hour % 2 == 0;
@@ -490,7 +493,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 	}
 
 	private void setupItemText(View view, TimetableItemData item) {
-		if (fragmentContext.get().main == null)
+		if (fragmentContext.get() == null || fragmentContext.get().main == null)
 			return;
 
 		if (item.isHidden()) {
@@ -556,7 +559,8 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 	}
 
 	private boolean shouldShowIndicatorForHour(SharedPreferences prefs, int currentHourIndex, int lastHourIndex) {
-		return fragmentContext.get().getActivity() != null
+		return fragmentContext.get() != null
+				&& fragmentContext.get().getActivity() != null
 				&& !TextUtils.isEmpty(prefs.getString("preference_room_to_display_in_free_lessons", null))
 				&& ActivityRoomFinder.getRooms(fragmentContext.get().getActivity(), false).contains(prefs.getString("preference_room_to_display_in_free_lessons", null))
 				&& (!prefs.getBoolean("preference_room_to_display_in_free_lessons_trim", false)

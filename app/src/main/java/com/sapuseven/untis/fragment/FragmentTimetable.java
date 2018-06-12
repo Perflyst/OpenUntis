@@ -44,9 +44,6 @@ import java.util.Objects;
 
 import static com.sapuseven.untis.utils.Conversions.setScale;
 import static com.sapuseven.untis.utils.DateOperations.addDaysToInt;
-import static com.sapuseven.untis.utils.ElementName.CLASS;
-import static com.sapuseven.untis.utils.ElementName.ROOM;
-import static com.sapuseven.untis.utils.ElementName.TEACHER;
 import static com.sapuseven.untis.utils.PreferenceUtils.getPrefBool;
 import static com.sapuseven.untis.utils.connectivity.UntisAuthentication.getAuthObject;
 
@@ -231,7 +228,7 @@ public class FragmentTimetable extends Fragment {
 		itemDetailsDialog.setItems(timetableItemData);
 	}
 
-	void setTarget(int id, int type) {
+	void setTarget(int id, ElementName.ElementType type) {
 		final ElementName elementName = new ElementName(type).setUserDataList(userDataList);
 		main.sessionInfo.setElemId(id);
 		main.sessionInfo.setElemType(SessionInfo.getElemTypeName(type));

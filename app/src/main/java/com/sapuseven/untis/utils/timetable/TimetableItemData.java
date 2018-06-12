@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.graphics.Color.parseColor;
-import static com.sapuseven.untis.utils.ElementName.CLASS;
-import static com.sapuseven.untis.utils.ElementName.HOLIDAY;
-import static com.sapuseven.untis.utils.ElementName.ROOM;
-import static com.sapuseven.untis.utils.ElementName.SUBJECT;
-import static com.sapuseven.untis.utils.ElementName.TEACHER;
+import static com.sapuseven.untis.utils.ElementName.ElementType.CLASS;
+import static com.sapuseven.untis.utils.ElementName.ElementType.HOLIDAY;
+import static com.sapuseven.untis.utils.ElementName.ElementType.ROOM;
+import static com.sapuseven.untis.utils.ElementName.ElementType.SUBJECT;
+import static com.sapuseven.untis.utils.ElementName.ElementType.TEACHER;
 
 public class TimetableItemData {
 	private final ArrayList<Integer> holidays = new ArrayList<>();

@@ -20,9 +20,9 @@ import com.sapuseven.untis.utils.timetable.TimetableItemData;
 import org.json.JSONObject;
 
 import static com.sapuseven.untis.utils.Conversions.dp2px;
-import static com.sapuseven.untis.utils.ElementName.CLASS;
-import static com.sapuseven.untis.utils.ElementName.ROOM;
-import static com.sapuseven.untis.utils.ElementName.TEACHER;
+import static com.sapuseven.untis.utils.ElementName.ElementType.CLASS;
+import static com.sapuseven.untis.utils.ElementName.ElementType.ROOM;
+import static com.sapuseven.untis.utils.ElementName.ElementType.TEACHER;
 
 public class FragmentTimetableItemDetails extends Fragment {
 	private TimetableItemData timetableItemData;
@@ -142,7 +142,7 @@ public class FragmentTimetableItemDetails extends Fragment {
 		return root;
 	}
 
-	private void setTarget(int id, int type) {
+	private void setTarget(int id, ElementName.ElementType type) {
 		fragment.setTarget(id, type);
 	}
 
