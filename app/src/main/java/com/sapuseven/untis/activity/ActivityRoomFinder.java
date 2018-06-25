@@ -238,7 +238,7 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 
 	private void showItemList() {
 		try {
-			final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
+			final ElementName elementName = new ElementName(ROOM, userDataList);
 			LinearLayout content = new LinearLayout(this);
 			content.setOrientation(LinearLayout.VERTICAL);
 
@@ -286,9 +286,14 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 			selectAll.setText(R.string.add);
 			final ActivityRoomFinder context = this;
 			selectAll.setOnClickListener(v -> {
-				for (String item : adapter.getSelectedItems())
-					addRoom(new AdapterItemRoomFinder(context, item, true),
-							(Integer) elementName.findFieldByValue("name", item, "id"));
+				for (String item : adapter.getSelectedItems()) {
+					try {
+						addRoom(new AdapterItemRoomFinder(context, item, true),
+								(Integer) elementName.findFieldByValue("name", item, "id"));
+					} catch (JSONException e) {
+						e.printStackTrace(); // Not expected to occur
+					}
+				}
 				dialog.dismiss();
 				executeRequestQueue();
 			});
@@ -565,10 +570,14 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 	private void refreshItemData(final int position) {
 		roomList.get(position).setLoading();
 
-		final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
+		final ElementName elementName = new ElementName(ROOM, userDataList);
 
-		requestQueue.add(new RequestModel((Integer) elementName.findFieldByValue("name",
-				roomList.get(position).getName(), "id"), roomList.get(position).getName(), true));
+		try {
+			requestQueue.add(new RequestModel((Integer) elementName.findFieldByValue("name",
+					roomList.get(position).getName(), "id"), roomList.get(position).getName(), true));
+		} catch (JSONException e) {
+			e.printStackTrace(); // Not expected to occur
+		}
 	}
 
 	private void displayCurrentHour() {
@@ -591,8 +600,12 @@ public class ActivityRoomFinder extends AppCompatActivity implements View.OnClic
 		AdapterItemRoomFinder item = roomList.get(itemPosition);
 
 		Intent intent = new Intent();
-		final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
-		intent.putExtra("elemId", (int) elementName.findFieldByValue("name", item.getName(), "id"));
+		final ElementName elementName = new ElementName(ROOM, userDataList);
+		try {
+			intent.putExtra("elemId", (int) elementName.findFieldByValue("name", item.getName(), "id"));
+		} catch (JSONException e) {
+			e.printStackTrace(); // Not expected to occur
+		}
 		intent.putExtra("elemType", ROOM);
 		intent.putExtra("displayName", getString(R.string.title_room, item.getName()));
 		setResult(RESULT_OK, intent);

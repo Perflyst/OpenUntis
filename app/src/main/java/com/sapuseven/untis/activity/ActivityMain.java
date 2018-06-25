@@ -360,24 +360,24 @@ public class ActivityMain extends AppCompatActivity
 			if (appLinkData != null && !TextUtils.isEmpty(appLinkData.getQuery())) {
 				try {
 					if (!TextUtils.isEmpty(appLinkData.getQueryParameter("room")))
-						setTarget((int) new ElementName(ROOM).setUserDataList(mUserDataList)
+						setTarget((int) new ElementName(ROOM, mUserDataList)
 										.findFieldByValue("name", appLinkData
 												.getQueryParameter("room"), "id"), ROOM,
 								getString(R.string.title_room, appLinkData.getQueryParameter("room")));
 					else if (!TextUtils.isEmpty(appLinkData.getQueryParameter("teacher")))
-						setTarget((int) new ElementName(TEACHER).setUserDataList(mUserDataList)
+						setTarget((int) new ElementName(TEACHER, mUserDataList)
 										.findFieldByValue("name", appLinkData
 												.getQueryParameter("teacher"), "id"), TEACHER,
 								getTeacherTitleByName(appLinkData.getQueryParameter("teacher")));
 					else if (!TextUtils.isEmpty(appLinkData.getQueryParameter("class")))
-						setTarget((int) new ElementName(CLASS).setUserDataList(mUserDataList)
+						setTarget((int) new ElementName(CLASS, mUserDataList)
 										.findFieldByValue("name", appLinkData
 												.getQueryParameter("class"), "id"), CLASS,
 								getString(R.string.title_class,
 										URLDecoder.decode(appLinkData.getQueryParameter("class"),
 												"UTF-8")));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
+				} catch (UnsupportedEncodingException | JSONException e) {
+					e.printStackTrace(); // Not expected to occur
 				} catch (NoSuchElementException e) {
 					e.printStackTrace();
 
@@ -405,10 +405,14 @@ public class ActivityMain extends AppCompatActivity
 	}
 
 	private String getTeacherTitleByName(String teacherName) {
-		ElementName teacher = new ElementName(TEACHER).setUserDataList(mUserDataList);
-		return getString(R.string.title_teacher,
-				teacher.findFieldByValue("name", teacherName, "firstName"),
-				teacher.findFieldByValue("name", teacherName, "lastName"));
+		ElementName teacher = new ElementName(TEACHER, mUserDataList);
+		try {
+			return getString(R.string.title_teacher,
+					teacher.findFieldByValue("name", teacherName, "firstName"),
+					teacher.findFieldByValue("name", teacherName, "lastName"));
+		} catch (JSONException e) {
+			return getString(R.string.error);
+		}
 	}
 
 	private void logUser(int id, String name) {
@@ -650,8 +654,7 @@ public class ActivityMain extends AppCompatActivity
 		};
 
 		try {
-			final ElementName elementName = new ElementName(elementType)
-					.setUserDataList(mUserDataList);
+			final ElementName elementName = new ElementName(elementType, mUserDataList);
 			LinearLayout content = new LinearLayout(this);
 			content.setOrientation(LinearLayout.VERTICAL);
 
@@ -673,19 +676,23 @@ public class ActivityMain extends AppCompatActivity
 			gridView.setAdapter(adapter);
 			gridView.setNumColumns(3);
 			gridView.setOnItemClickListener((parent, view, position, id) -> {
-				if (targetPageTitle == -1)
-					setTarget((int) elementName
-									.findFieldByValue("name", list.get(position), "id"),
-							elementType,
-							elementName.findFieldByValue("name",
-									list.get(position), "firstName") + " "
-									+ elementName.findFieldByValue("name", list.get(position),
-									"lastName"));
-				else
-					setTarget((Integer) elementName.findFieldByValue("name", list.get(position),
-							"id"),
-							elementType,
-							getString(targetPageTitle, list.get(position)));
+				try {
+					if (targetPageTitle == -1) {
+						setTarget((int) elementName
+										.findFieldByValue("name", list.get(position), "id"),
+								elementType,
+								elementName.findFieldByValue("name",
+										list.get(position), "firstName") + " "
+										+ elementName.findFieldByValue("name", list.get(position),
+										"lastName"));
+					} else
+						setTarget((Integer) elementName.findFieldByValue("name", list.get(position),
+								"id"),
+								elementType,
+								getString(targetPageTitle, list.get(position)));
+				} catch (JSONException e) {
+					e.printStackTrace(); // Not expected to occur
+				}
 			});
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 

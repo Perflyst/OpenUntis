@@ -228,8 +228,8 @@ public class FragmentTimetable extends Fragment {
 		itemDetailsDialog.setItems(timetableItemData);
 	}
 
-	void setTarget(int id, ElementName.ElementType type) {
-		final ElementName elementName = new ElementName(type).setUserDataList(userDataList);
+	void setTarget(int id, ElementName.ElementType type) throws JSONException {
+		final ElementName elementName = new ElementName(type, userDataList);
 		main.sessionInfo.setElemId(id);
 		main.sessionInfo.setElemType(SessionInfo.getElemTypeName(type));
 		if (main.getSupportActionBar() != null)

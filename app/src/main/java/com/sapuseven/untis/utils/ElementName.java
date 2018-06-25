@@ -1,12 +1,12 @@
 package com.sapuseven.untis.utils;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@SuppressWarnings("WeakerAccess")
 public class ElementName {
 	public static final boolean FULL = true;
 	public static final boolean SHORT = false;
@@ -22,8 +22,9 @@ public class ElementName {
 		this.userData = userDataList;
 	}
 
-	public ElementName(ElementType type) {
+	public ElementName(ElementType type, JSONObject userDataList) {
 		this.type = type;
+		this.userData = userDataList;
 	}
 
 	public static String getTypeName(ElementType type) {
@@ -45,35 +46,28 @@ public class ElementName {
 		}
 	}
 
-	public ElementName setUserDataList(JSONObject userDataList) {
-		this.userData = userDataList;
-		return this;
-	}
-
 	public ElementName fromIdList(List<Integer> list, ElementType elemType) {
-		if (this.userData == null)
-			throw new RuntimeException("You have to provide a unitList via setUserDataList()!");
 		type = elemType;
 		for (int i : list)
 			try {
 				names.add((String) findFieldByValue("id", i, "name"));
-			} catch (NoSuchElementException ignored) {
+			} catch (NoSuchElementException | JSONException ignored) {
 			}
 		for (int i : list)
 			try {
 				longNames.add((String) findFieldByValue("id", i, "longName"));
-			} catch (NoSuchElementException ignored) {
+			} catch (NoSuchElementException | JSONException ignored) {
 			}
 		return this;
 	}
 
-	public Object findFieldByValue(String srcField, Object srcValue, String dstFieldName) {
+	public Object findFieldByValue(String srcField, Object srcValue, String dstFieldName) throws JSONException {
 		if (srcField == null || srcValue == null || dstFieldName == null)
 			return null;
-		for (int i = 0; i < userData.optJSONObject("masterData").optJSONArray(getTypeName(type)).length(); i++)
-			if (userData.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(srcField).equals(srcValue))
-				return userData.optJSONObject("masterData").optJSONArray(getTypeName(type)).optJSONObject(i).opt(dstFieldName);
-		throw new NoSuchElementException("Item not found");
+		for (int i = 0; i < userData.getJSONObject("masterData").getJSONArray(getTypeName(type)).length(); i++)
+			if (userData.getJSONObject("masterData").getJSONArray(getTypeName(type)).getJSONObject(i).get(srcField).equals(srcValue))
+				return userData.getJSONObject("masterData").getJSONArray(getTypeName(type)).getJSONObject(i).get(dstFieldName);
+		throw new JSONException("Data array empty");
 	}
 
 	public boolean isEmpty() {

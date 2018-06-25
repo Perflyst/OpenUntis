@@ -17,6 +17,7 @@ import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.timetable.TimetableItemData;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import static com.sapuseven.untis.utils.Conversions.dp2px;
@@ -43,6 +44,9 @@ public class FragmentTimetableItemDetails extends Fragment {
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		LinearLayout root = (LinearLayout) inflater.inflate(R.layout.dialog_timetable_item_detail_page, container, false);
 
+		if (timetableItemData == null)
+			return root;
+
 		if (timetableItemData.getTeachers(userDataList).isEmpty())
 			root.findViewById(R.id.llTeachers).setVisibility(View.GONE);
 		if (timetableItemData.getClasses(userDataList).isEmpty())
@@ -68,7 +72,7 @@ public class FragmentTimetableItemDetails extends Fragment {
 
 		LinearLayout list = root.findViewById(R.id.llTeacherList);
 		for (final String s : timetableItemData.getTeachers(userDataList).getNames()) {
-			final ElementName elementName = new ElementName(TEACHER).setUserDataList(userDataList);
+			final ElementName elementName = new ElementName(TEACHER, userDataList);
 			TextView tv = new TextView(context.getApplicationContext());
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
 					ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -79,15 +83,19 @@ public class FragmentTimetableItemDetails extends Fragment {
 			tv.setTextColor(color);
 			tv.setGravity(Gravity.CENTER_VERTICAL);
 			tv.setOnClickListener(view -> {
-				if (elementName.findFieldByValue("name", s, "id") != null)
-					setTarget((Integer) elementName.findFieldByValue("name", s, "id"), TEACHER);
+				try {
+					if (elementName.findFieldByValue("name", s, "id") != null)
+						setTarget((Integer) elementName.findFieldByValue("name", s, "id"), TEACHER);
+				} catch (JSONException e) {
+					e.printStackTrace(); // Not expected to occur
+				}
 			});
 			list.addView(tv);
 		}
 
 		list = root.findViewById(R.id.llClassList);
 		for (final String s : timetableItemData.getClasses(userDataList).getNames()) {
-			final ElementName elementName = new ElementName(CLASS).setUserDataList(userDataList);
+			final ElementName elementName = new ElementName(CLASS, userDataList);
 			TextView tv = new TextView(context.getApplicationContext());
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
 					ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -98,16 +106,20 @@ public class FragmentTimetableItemDetails extends Fragment {
 			tv.setTextColor(color);
 			tv.setGravity(Gravity.CENTER_VERTICAL);
 			tv.setOnClickListener(view -> {
-				if (elementName.findFieldByValue("name", s, "id") != null)
-					setTarget((Integer) elementName
-							.findFieldByValue("name", s, "id"), CLASS);
+				try {
+					if (elementName.findFieldByValue("name", s, "id") != null)
+						setTarget((Integer) elementName
+								.findFieldByValue("name", s, "id"), CLASS);
+				} catch (JSONException e) {
+					e.printStackTrace(); // Not expected to occur
+				}
 			});
 			list.addView(tv);
 		}
 
 		list = root.findViewById(R.id.llRoomList);
 		for (final String s : timetableItemData.getRooms(userDataList).getNames()) {
-			final ElementName elementName = new ElementName(ROOM).setUserDataList(userDataList);
+			final ElementName elementName = new ElementName(ROOM, userDataList);
 			TextView tv = new TextView(context.getApplicationContext());
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
 					ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -118,8 +130,12 @@ public class FragmentTimetableItemDetails extends Fragment {
 			tv.setTextColor(color);
 			tv.setGravity(Gravity.CENTER_VERTICAL);
 			tv.setOnClickListener(view -> {
-				if (elementName.findFieldByValue("name", s, "id") != null)
-					setTarget((Integer) elementName.findFieldByValue("name", s, "id"), ROOM);
+				try {
+					if (elementName.findFieldByValue("name", s, "id") != null)
+						setTarget((Integer) elementName.findFieldByValue("name", s, "id"), ROOM);
+				} catch (JSONException e) {
+					e.printStackTrace(); // Not expected to occur
+				}
 			});
 			list.addView(tv);
 		}
@@ -142,7 +158,7 @@ public class FragmentTimetableItemDetails extends Fragment {
 		return root;
 	}
 
-	private void setTarget(int id, ElementName.ElementType type) {
+	private void setTarget(int id, ElementName.ElementType type) throws JSONException {
 		fragment.setTarget(id, type);
 	}
 
