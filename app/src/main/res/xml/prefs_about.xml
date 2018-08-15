@@ -6,29 +6,23 @@
 		android:title="@string/app_version"/>
 
 	<Preference
-		android:key="preference_info_changelog"
-		android:title="@string/changelog"/>
-
-	<Preference
 		android:key="preference_info_contact_email"
 		android:summary="@string/contact_email"
 		android:title="@string/contact"/>
 
-	<PreferenceCategory
-		android:title="@string/preference_category_coming_soon">
+	<Preference
+		android:summary="@string/summary_source_orig"
+		android:title="@string/title_source_orig">
+	<intent
+		android:action="android.intent.action.VIEW"
+		android:data="@string/url_source_orig" />
+	</Preference>
 
-		<CheckBoxPreference
-			android:defaultValue="true"
-			android:enabled="false"
-			android:key="preference_send_stats"
-			android:summary="@string/preference_send_stats_desc"
-			android:title="@string/preference_send_stats"/>
-
-		<Preference
-			android:enabled="false"
-			android:key="preference_info_stats"
-			android:summary="@string/preference_info_stats_desc"
-			android:title="@string/preference_info_stats"/>
-
-	</PreferenceCategory>
+	<Preference
+		android:summary="@string/summary_source_floss"
+		android:title="@string/title_source_floss">
+		<intent
+			android:action="android.intent.action.VIEW"
+			android:data="@string/url_source_floss" />
+	</Preference>
 </PreferenceScreen>

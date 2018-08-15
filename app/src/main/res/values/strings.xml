@@ -6,16 +6,10 @@
 	<string name="not_now">Not now</string>
 	<string name="nav_timetables">Timetables</string>
 	<string name="personal_timetable">Personal Timetable</string>
-	<string name="autoupdate_failed">Download failed.</string>
-	<string name="autoupdate_failed_small">Please try again later.</string>
-	<string name="autoupdate_try_again">Try again</string>
-	<string name="autoupdate_manual_update">Manual update</string>
 	<string name="timetable_no_time">00:00</string>
 	<string name="timetable_no_hour_index">0</string>
 	<string name="btn_manual_data_input">Manual data input</string>
-	<string name="autoupdate_outdated">Your app-version is outdated!</string>
 	<string name="btn_update">Update</string>
-	<string name="autoupdate_downloading">Please wait while the latest version of the App is being downloaded…</string>
 	<string name="field_url">Server URL</string>
 	<string name="field_schoolname">School name</string>
 	<string name="field_username">Username</string>
@@ -36,7 +30,13 @@
 	<string name="failed">failed</string>
 	<string name="settings">Settings</string>
 	<string name="contact">Contact</string>
-	<string name="contact_email">betteruntis@sapuseven.com</string>
+	<string name="contact_email">Dev: betteruntis@sapuseven.com \nFLOSS: mail@perflyst.de</string>
+	<string name="title_source_orig">Original SourceCode</string>
+	<string name="summary_source_orig"></string>
+	<string name="url_source_orig">https://github.com/SapuSeven/BetterUntis</string>
+	<string name="title_source_floss">FLOSS SourceCode</string>
+	<string name="summary_source_floss"></string>
+	<string name="url_source_floss">https://github.com/Perflyst/FLOSS-BetterUntis</string>
 	<string name="today">Today</string>
 	<string name="pref_notifications">Notifications</string>
 	<string name="pref_styling">Customization</string>
@@ -59,7 +59,6 @@
 	<string name="preference_use_theme_background">Use theme colors</string>
 	<string name="preference_use_theme_background_desc">This only applies to regular lessons.</string>
 	<string name="preference_dark_theme">Dark theme</string>
-	<string name="title_new_features">New Features</string>
 	<string name="preference_category_themes">Themes</string>
 	<string name="preference_category_backgrounds">Item Colors</string>
 	<string name="preference_theme">Select a theme</string>
@@ -67,8 +66,6 @@
 	<string name="title">Title</string>
 	<string name="description">Description</string>
 	<string name="send">Send</string>
-	<string name="new_features_header">Planned new features</string>
-	<string name="new_features_body">Use drag\'n\'drop to sort the proposals, putting them closer to the top the more you want this feature to be implemented!</string>
 	<string name="toast_colors_reset">Color settings have been reset.</string>
 	<string name="preference_marker">Time indicator</string>
 	<string name="preference_background_irregular">Irregular lessons</string>
@@ -89,13 +86,11 @@
 	<string name="notification_subjects">Next lesson: %1$s</string>
 	<string name="notification_rooms">Room: %1$s</string>
 	<string name="notification_teachers">Teacher: %1$s</string>
-	<string name="changelog">ChangeLog</string>
 	<string name="close">Close</string>
 	<string name="pref_infos">About</string>
 	<string name="app_version">App version</string>
 	<string name="app_version_full">%1$s (%2$d)</string>
 	<string name="preference_account_access_key">Access key</string>
-	<string name="firebase_key">Firebase key</string>
 	<string name="key_copied">Key copied to clipboard</string>
 	<string name="toast_suggestion_submitted">Feature suggestion submitted.</string>
 	<string name="toast_error_occurred">An error occurred.</string>
@@ -159,10 +154,8 @@
 		<item quantity="one">Next hour</item>
 		<item quantity="other">In %d hours</item>
 	</plurals>
-	<string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"http://sapuseven.com\",\n  }\n}]</string>
 	<string name="title_teacher">%1$s %2$s</string>
 	<string name="error_invalid_url">Invalid URL!</string>
-	<string name="title_donations">Donations</string>
 	<string name="week_empty">No school this week :D</string>
 	<string name="last_refreshed">Last refreshed: %1$s</string>
 	<string name="pref_account">Account</string>
@@ -184,7 +177,6 @@
 	<string name="preference_alternating_colors_use_custom_desc">Use a custom background color for alternating days/hours</string>
 	<string name="preference_alternating_color">Custom background color</string>
 	<string name="preference_alternating_color_desc">Choose a custom background color for alternating days/hours</string>
-	<string name="preference_account_firebase_key">Firebase key</string>
 	<string name="preference_category_item_appearance">Item appearance</string>
 	<string name="preference_timetable_item_padding">Item padding</string>
 	<string name="preference_timetable_item_corner_radius">Item corner radius</string>
@@ -204,7 +196,6 @@
 	<string name="alert">Alert</string>
 	<string name="title_share">Share</string>
 	<string name="link_sending_caption">Share the link to %1$s via…</string>
-	<string name="view_changelog">View Changelog</string>
 	<string name="current_version">Current version:</string>
 	<string name="new_version">New version:</string>
 	<string name="drag_to_sort">Drag to sort</string>

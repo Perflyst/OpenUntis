@@ -45,10 +45,5 @@
 			android:icon="@drawable/ic_share"
 			android:title="@string/title_share">
 		</item>
-		<item
-			android:id="@+id/nav_donations"
-			android:icon="@drawable/ic_gift"
-			android:title="@string/title_donations">
-		</item>
 	</group>
 </menu>

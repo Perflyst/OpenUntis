@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -39,26 +38,17 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ShareEvent;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.sapuseven.untis.BuildConfig;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.adapter.AdapterGridView;
 import com.sapuseven.untis.adapter.AdapterTimetable;
 import com.sapuseven.untis.adapter.AdapterTimetableHeader;
 import com.sapuseven.untis.fragment.FragmentDatePicker;
-import com.sapuseven.untis.notification.StartupReceiver;
-import com.sapuseven.untis.utils.AutoUpdater;
 import com.sapuseven.untis.utils.Conversions;
 import com.sapuseven.untis.utils.DateOperations;
 import com.sapuseven.untis.utils.ElementName;
 import com.sapuseven.untis.utils.ListManager;
 import com.sapuseven.untis.utils.SessionInfo;
-import com.sapuseven.untis.utils.UserRegistration;
-import com.sapuseven.untis.utils.connectivity.ApiRequest;
 import com.sapuseven.untis.utils.timetable.TimegridUnitManager;
 
 import org.json.JSONArray;
@@ -77,8 +67,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
-import io.fabric.sdk.android.Fabric;
 
 import static com.sapuseven.untis.utils.Conversions.dp2px;
 import static com.sapuseven.untis.utils.ElementName.ElementType.CLASS;
@@ -110,24 +98,13 @@ public class ActivityMain extends AppCompatActivity
 	private JSONObject mUserDataList;
 	private long mLastBackPress;
 	private int mItemListMargins;
-	private FirebaseRemoteConfig firebaseRemoteConfig;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		if (BuildConfig.ENABLE_FABRIC)
-			Fabric.with(this, new Crashlytics());
 		setupTheme(this, false);
 		super.onCreate(savedInstanceState);
 
 		Conversions.setScale(this);
-
-		if (BuildConfig.ENABLE_FIREBASE) {
-			firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-			firebaseRemoteConfig.setConfigSettings(new FirebaseRemoteConfigSettings.Builder().build());
-			firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
-
-			setupRemoteConfig();
-		}
 
 		mItemListMargins = (int) (12 * getResources().getDisplayMetrics().density + 0.5f);
 
@@ -138,10 +115,6 @@ public class ActivityMain extends AppCompatActivity
 			finish();
 		} else {
 			if (BuildConfig.DEBUG)
-				new UserRegistration().submit(this);
-
-			Intent intent = new Intent(this, StartupReceiver.class);
-			sendBroadcast(intent);
 
 			setContentView(R.layout.activity_main);
 			Toolbar toolbar = findViewById(R.id.toolbar);
@@ -310,7 +283,6 @@ public class ActivityMain extends AppCompatActivity
 			mPagerHeader.setCurrentItem(currentViewPos);
 			mPagerTable.setCurrentItem(currentViewPos);
 
-			checkVersion();
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 				checkForNewFeatures();
 
@@ -396,14 +368,6 @@ public class ActivityMain extends AppCompatActivity
 		}
 	}
 
-	private void setupRemoteConfig() {
-		firebaseRemoteConfig.fetch(3600)
-				.addOnCompleteListener(this, task -> {
-					if (task.isSuccessful())
-						firebaseRemoteConfig.activateFetched();
-				});
-	}
-
 	private String getTeacherTitleByName(String teacherName) {
 		ElementName teacher = new ElementName(TEACHER, mUserDataList);
 		try {
@@ -416,8 +380,6 @@ public class ActivityMain extends AppCompatActivity
 	}
 
 	private void logUser(int id, String name) {
-		Crashlytics.setUserIdentifier(String.valueOf(id));
-		Crashlytics.setUserName(name);
 	}
 
 	@Override
@@ -566,30 +528,13 @@ public class ActivityMain extends AppCompatActivity
 				Intent i1 = new Intent(ActivityMain.this, ActivityPreferences.class);
 				startActivity(i1);
 				break;
-			case R.id.nav_suggested_features:
-				Intent i2 = new Intent(ActivityMain.this, ActivityFeatures.class);
-				startActivity(i2);
-				break;
 			case R.id.nav_free_rooms:
 				Intent i3 = new Intent(ActivityMain.this, ActivityRoomFinder.class);
 				startActivityForResult(i3, REQUEST_CODE_ROOM_FINDER);
 				break;
-			case R.id.nav_donations:
-				// TODO: Fully implement this feature
-				Intent i4 = new Intent(ActivityMain.this, ActivityDonations.class);
-				startActivity(i4);
-				break;
 			case R.id.nav_share:
-				Answers.getInstance().logShare(new ShareEvent()
-						.putMethod("Share via Intent")
-						.putContentName("Share the BetterUntis download link")
-						.putContentType("share")
-						.putContentId(CONTENT_ID_SHARE));
-
 				Intent i = new Intent(Intent.ACTION_SEND);
 				i.setType("text/plain");
-				i.putExtra(Intent.EXTRA_SUBJECT, getFirebaseString("recommendation_subject"));
-				i.putExtra(Intent.EXTRA_TEXT, getFirebaseString("recommendation_text"));
 				startActivity(Intent.createChooser(i, getString(R.string.link_sending_caption, getString(R.string.app_name))));
 				break;
 		}
@@ -597,24 +542,6 @@ public class ActivityMain extends AppCompatActivity
 		DrawerLayout drawer = findViewById(R.id.drawer_layout);
 		drawer.closeDrawer(GravityCompat.START);
 		return true;
-	}
-
-	private String getFirebaseString(String s) {
-		if (BuildConfig.ENABLE_FIREBASE) {
-			return firebaseRemoteConfig.getString(s);
-		} else {
-			if (!mDialog.isShowing()) {
-				mDialog = new AlertDialog.Builder(this)
-						.setTitle("Notice")
-						.setMessage("Failed to initialize Firebase. The full functionality of this feature is not guaranteed.")
-						.setNeutralButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss())
-						.create();
-
-				mDialog.setCanceledOnTouchOutside(true);
-				mDialog.show();
-			}
-			return "";
-		}
 	}
 
 	@Override
@@ -787,30 +714,6 @@ public class ActivityMain extends AppCompatActivity
 		swipeRefresh.setRefreshing(false);
 	}
 
-	private void checkVersion() {
-		Intent i = getIntent();
-		if (i.getBooleanExtra("disable_update_check", false))
-			return;
-		AutoUpdater au = new AutoUpdater() {
-			@Override
-			public void onAppVersionOutdated(int oldVersion, String oldVersionName, int newVersion, String newVersionName) {
-				Intent intent = new Intent(getApplicationContext(), ActivityAppUpdate.class);
-				intent.putExtra("currentVersion", oldVersionName);
-				intent.putExtra("currentVersionCode", oldVersion);
-				intent.putExtra("newVersion", newVersionName);
-				startActivity(intent);
-				finish();
-			}
-		};
-		au.setVersionURL("https://data.sapuseven.com/BetterUntis/api.php?method=getVersion");
-		try {
-			au.setPackageInfo(getPackageManager(), getPackageName());
-		} catch (PackageManager.NameNotFoundException e) {
-			e.printStackTrace();
-		}
-		au.startAutoUpdate(this);
-	}
-
 	@SuppressWarnings("SameParameterValue")
 	private int addDaysToInt(int startDate, int days) {
 		try {
@@ -849,31 +752,9 @@ public class ActivityMain extends AppCompatActivity
 		String user = prefs.getString("user", "");
 		String school = prefs.getString("school", "");
 
-		ApiRequest api = new ApiRequest(this);
-
 		Map<String, String> params = new HashMap<>();
 		params.put("method", "checkForNewFeatures");
 		params.put("school", school);
 		params.put("name", user);
-
-		ApiRequest.ResponseHandler handler = response -> {
-			if (response == null)
-				return; // TODO: Display network error
-
-			try {
-				JSONObject list = new JSONObject(response);
-				if (list.getJSONObject("result").getBoolean("newFeatures")) {
-					Snackbar.make(findViewById(R.id.content_main), R.string.new_feature_planned,
-							Snackbar.LENGTH_INDEFINITE).setAction(R.string.show, view -> {
-						Intent i = new Intent(ActivityMain.this, ActivityFeatures.class);
-						startActivity(i);
-					}).show();
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		};
-
-		api.setResponseHandler(handler).submit(params);
 	}
 }

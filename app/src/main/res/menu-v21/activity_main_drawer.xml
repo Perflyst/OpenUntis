@@ -32,11 +32,6 @@
 			android:title="@string/title_free_rooms">
 		</item>
 		<item
-			android:id="@+id/nav_suggested_features"
-			android:icon="@drawable/ic_suggested_features"
-			android:title="@string/title_new_features">
-		</item>
-		<item
 			android:id="@+id/nav_settings"
 			android:icon="@drawable/ic_settings"
 			android:title="@string/settings">
@@ -49,11 +44,6 @@
 			android:id="@+id/nav_share"
 			android:icon="@drawable/ic_share"
 			android:title="@string/title_share">
-		</item>
-		<item
-			android:id="@+id/nav_donations"
-			android:icon="@drawable/ic_gift"
-			android:title="@string/title_donations">
 		</item>
 	</group>
 </menu>

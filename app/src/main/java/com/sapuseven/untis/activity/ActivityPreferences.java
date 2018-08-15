@@ -20,12 +20,10 @@ import android.widget.Toast;
 
 import com.github.danielnilsson9.colorpickerview.dialog.ColorPickerDialogFragment;
 import com.github.danielnilsson9.colorpickerview.preference.ColorPreference;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.sapuseven.untis.BuildConfig;
 import com.sapuseven.untis.R;
 import com.sapuseven.untis.utils.BetterToast;
 import com.sapuseven.untis.utils.ColorPreferenceList;
-import com.sapuseven.untis.utils.DisplayChangelog;
 import com.sapuseven.untis.utils.ListManager;
 
 import java.util.List;
@@ -358,27 +356,6 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 				}
 			});
 
-			Preference prefFirebaseKey = findPreference("preference_account_firebase_key");
-			if (BuildConfig.ENABLE_FIREBASE) {
-				prefFirebaseKey.setSummary(FirebaseInstanceId.getInstance().getToken());
-			} else {
-				prefFirebaseKey.setSummary("(disabled)");
-			}
-			prefFirebaseKey.setOnPreferenceClickListener(preference -> {
-				ClipboardManager clipboard = (ClipboardManager) getActivity()
-						.getSystemService(Context.CLIPBOARD_SERVICE);
-				if (clipboard != null) {
-					@SuppressLint("MissingFirebaseInstanceTokenRefresh") ClipData clip = ClipData.newPlainText(getString(R.string.firebase_key),
-							FirebaseInstanceId.getInstance().getToken());
-					clipboard.setPrimaryClip(clip);
-					toast.showToast(R.string.key_copied, Toast.LENGTH_SHORT);
-					return true;
-				} else {
-					toast.showToast(R.string.key_copy_failed, Toast.LENGTH_SHORT);
-					return false;
-				}
-			});
-
 			findPreference("preference_account_logout").setOnPreferenceClickListener(
 					preference -> {
 						// TODO: Display a confirmation dialog
@@ -475,26 +452,6 @@ public class ActivityPreferences extends com.sapuseven.untis.activity.appcompat.
 					prefVersion.setSummary(getString(R.string.app_version_full, BuildConfig.VERSION_NAME, clicks));
 				return true;
 			});
-
-			findPreference("preference_info_changelog").setOnPreferenceClickListener(
-					preference -> {
-						new DisplayChangelog(getActivity())
-								.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
-						return true;
-					});
-
-			findPreference("preference_send_stats").setOnPreferenceClickListener(
-					preference -> {
-						// TODO: Disable the Preference and send a request to the server with the current settings and the message to log out.
-						// After that re-enable the preference and show a toast like "You opted out".
-						return false;
-					});
-
-			findPreference("preference_info_stats").setOnPreferenceClickListener(
-					preference -> {
-						// TODO: Show a dialog with this information
-						return false;
-					});
 		}
 
 		@Override

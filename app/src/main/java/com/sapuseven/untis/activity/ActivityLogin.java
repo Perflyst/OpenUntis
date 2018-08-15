@@ -36,15 +36,9 @@ public class ActivityLogin extends AppCompatActivity {
 				intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
 				startActivityForResult(intent, REQUEST_SCAN_CODE);
 			} catch (ActivityNotFoundException | SecurityException e) {
-				try {
 					Intent i = new Intent(Intent.ACTION_VIEW);
-					i.setData(Uri.parse("market://details?id=com.google.zxing.client.android"));
+					i.setData(Uri.parse("https://f-droid.org/en/packages/com.google.zxing.client.android/"));
 					startActivity(i);
-				} catch (ActivityNotFoundException e2) {
-					Intent i = new Intent(Intent.ACTION_VIEW);
-					i.setData(Uri.parse("https://sapuseven.com/scan_qr.php"));
-					startActivity(i);
-				}
 			}
 		});
 	}
