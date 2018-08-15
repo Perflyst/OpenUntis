@@ -1,10 +1,20 @@
 # BetterUntis
-[![Build Status](https://travis-ci.org/SapuSeven/BetterUntis.svg?branch=master)](https://travis-ci.org/SapuSeven/BetterUntis)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e5c17c48fad141e8ba3fc96751f085eb)](https://www.codacy.com/app/SapuSeven/BetterUntis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SapuSeven/BetterUntis&amp;utm_campaign=Badge_Grade)
 
-An alternative Android client for the Untis timetable system.
+Fork of [SapuSeven](https://github.com/SapuSeven/BetterUntis).  
+An alternative FLOSS Android client for the Untis timetable system.
+
+
+## Anti Features
+webuntis.com, non-free network service
+
 
 ## Installation
-You can download the current release [from my website](https://sapuseven.com/apps/BetterUntis) or from the _releases_-page.
+If there are release builds available, you can download them from the [release page](https://github.com/Perflyst/FLOSS-BetterUntis/releases).  
+Alternatively, you can build the app yourself.
 
-Alternatively, you can build the app yourself. See the wiki for detailed instructions.
+
+### Others
+Feel free to submit issues or pull requests!
+
+Original Author: SapuSeven  
+FLOSS maintainer: Perflyst
