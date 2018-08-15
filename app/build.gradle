@@ -4,23 +4,21 @@ android {
 	compileSdkVersion 27
 	buildToolsVersion '27.0.3'
 	defaultConfig {
-		applicationId "com.sapuseven.untis"
+		applicationId "com.perflyst.untis"
 		minSdkVersion 16
 		targetSdkVersion 27
-		versionCode 10
+		versionCode 11
 		versionName "2.0.2"
 		vectorDrawables.useSupportLibrary = true
 	}
 	buildTypes {
 		release {
-			minifyEnabled true
-			shrinkResources true
+			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+			versionNameSuffix '-FLOSS'
 		}
 		debug {
 			minifyEnabled false
-			shrinkResources false
-			ext.enableCrashlytics = false
 			applicationIdSuffix '.debug'
 			versionNameSuffix '-DEBUG'
 		}

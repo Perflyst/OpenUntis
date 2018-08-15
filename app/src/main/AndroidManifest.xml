@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
-          package="com.sapuseven.untis">
+          package="com.perflyst.untis">
 
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 	<uses-permission android:name="android.permission.INTERNET"/>
@@ -77,7 +77,7 @@
 			android:theme="@style/AppTheme.ActionBar">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:value="com.sapuseven.untis.activity.ActivityMain"/>
+				android:value="com.perflyst.untis.activity.ActivityMain"/>
 		</activity>
 
 		<activity
@@ -87,7 +87,7 @@
 			android:theme="@style/AppTheme">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:value="com.sapuseven.untis.activity.ActivityMain"/>
+				android:value="com.perflyst.untis.activity.ActivityMain"/>
 		</activity>
 
 		<provider

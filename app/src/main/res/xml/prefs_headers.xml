@@ -1,32 +1,32 @@
 <preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
 
 	<header
-		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$StylingFragment"
+		android:fragment="com.perflyst.untis.activity.ActivityPreferences$StylingFragment"
 		android:icon="@drawable/ic_prefs_styling"
 		android:title="@string/pref_styling"/>
 
 	<header
-		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$NotificationsFragment"
+		android:fragment="com.perflyst.untis.activity.ActivityPreferences$NotificationsFragment"
 		android:icon="@drawable/ic_prefs_notifications"
 		android:title="@string/pref_notifications"/>
 
 	<header
-		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$RoomFinderFragment"
+		android:fragment="com.perflyst.untis.activity.ActivityPreferences$RoomFinderFragment"
 		android:icon="@drawable/ic_prefs_roomfinder"
 		android:title="@string/title_free_rooms"/>
 
 	<header
-		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$TimetableFragment"
+		android:fragment="com.perflyst.untis.activity.ActivityPreferences$TimetableFragment"
 		android:icon="@drawable/ic_prefs_timetable"
 		android:title="@string/pref_timetable"/>
 
 	<header
-		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$AccountFragment"
+		android:fragment="com.perflyst.untis.activity.ActivityPreferences$AccountFragment"
 		android:icon="@drawable/ic_prefs_personal"
 		android:title="@string/pref_account"/>
 
 	<header
-		android:fragment="com.sapuseven.untis.activity.ActivityPreferences$AboutFragment"
+		android:fragment="com.perflyst.untis.activity.ActivityPreferences$AboutFragment"
 		android:icon="@drawable/ic_prefs_info"
 		android:title="@string/pref_infos"/>
 

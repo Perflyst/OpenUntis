@@ -6,11 +6,11 @@
 	android:layout_height="56dp"
 	android:orientation="vertical">
 
-	<com.sapuseven.untis.view.TimetableItemBackground
+	<com.perflyst.untis.view.TimetableItemBackground
 		android:id="@+id/vBackground"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
-	</com.sapuseven.untis.view.TimetableItemBackground>
+	</com.perflyst.untis.view.TimetableItemBackground>
 
 	<TextView
 		android:id="@+id/tvTL"

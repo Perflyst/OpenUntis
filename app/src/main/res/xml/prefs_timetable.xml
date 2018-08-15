@@ -11,7 +11,7 @@
 		android:title="@string/preference_category_item_appearance">
 
 		<!--suppress AndroidUnknownAttribute -->
-		<com.sapuseven.untis.preference.UnitPreference
+		<com.perflyst.untis.preference.UnitPreference
 			unit="dp"
 			android:defaultValue="@integer/preference_timetable_item_padding_default"
 			android:key="preference_timetable_item_padding"
@@ -21,7 +21,7 @@
 			android:title="@string/preference_timetable_item_padding"/>
 
 		<!--suppress AndroidUnknownAttribute -->
-		<com.sapuseven.untis.preference.UnitPreference
+		<com.perflyst.untis.preference.UnitPreference
 			unit="dp"
 			android:defaultValue="@integer/preference_timetable_item_corner_radius_default"
 			android:key="preference_timetable_item_corner_radius"
@@ -45,7 +45,7 @@
 			android:title="@string/preference_timetable_bold_lesson_name"/>
 
 		<!--suppress AndroidUnknownAttribute -->
-		<com.sapuseven.untis.preference.UnitPreference
+		<com.perflyst.untis.preference.UnitPreference
 			unit="sp"
 			android:defaultValue="@integer/preference_timetable_lesson_name_font_size_default"
 			android:key="preference_timetable_lesson_name_font_size"
@@ -55,7 +55,7 @@
 			android:title="@string/preference_timetable_lesson_name_font_size"/>
 
 		<!--suppress AndroidUnknownAttribute -->
-		<com.sapuseven.untis.preference.UnitPreference
+		<com.perflyst.untis.preference.UnitPreference
 			unit="sp"
 			android:defaultValue="@integer/preference_timetable_lesson_info_font_size_default"
 			android:key="preference_timetable_lesson_info_font_size"

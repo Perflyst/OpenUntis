@@ -22,7 +22,7 @@
 		android:layout_marginRight="16dp"
 		app:layout_anchor="@id/lvRoomList"
 		app:layout_anchorGravity="bottom|right|end"
-		app:layout_behavior="com.sapuseven.untis.view.behavior.ScrollAwareFABBehavior"
+		app:layout_behavior="com.perflyst.untis.view.behavior.ScrollAwareFABBehavior"
 		app:srcCompat="@drawable/ic_add"/>
 
 	<TextView

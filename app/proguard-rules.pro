@@ -16,5 +16,5 @@
 #   public *;
 #}
 
--renamesourcefileattribute SourceFile
--keepattributes SourceFile,LineNumberTable
+#-renamesourcefileattribute SourceFile
+#-keepattributes SourceFile,LineNumberTable
