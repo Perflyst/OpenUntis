@@ -436,9 +436,8 @@ public class ActivityPreferences extends com.perflyst.untis.activity.appcompat.A
 						Intent i3 = new Intent(Intent.ACTION_SEND);
 						i3.setType("plain/text");
 						i3.putExtra(Intent.EXTRA_EMAIL,
-								new String[]{getString(R.string.contact_email)});
-						i3.putExtra(Intent.EXTRA_SUBJECT, "BetterUntis Feedback from user "
-								+ prefs.getString("user", "UNKNOWN"));
+								new String[]{getString(R.string.contact_email_feedback)});
+						i3.putExtra(Intent.EXTRA_SUBJECT, "FLOSS-BetterUntis Feedback");
 						startActivity(Intent.createChooser(i3, getString(R.string.give_feedback)));
 						return true;
 					});
