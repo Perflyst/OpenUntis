@@ -35,7 +35,7 @@
 	<string name="summary_source_floss"></string>
 	<string name="url_source_floss">https://github.com/Perflyst/OpenUntis</string>
 	<string name="title_dev">Developer</string>
-	<string name="summary_dev">2017–2018 SapuSeven /n2018 Perflyst</string>
+	<string name="summary_dev">2017–2018 SapuSeven \n2018 Perflyst</string>
 	<string name="today">Today</string>
 	<string name="pref_notifications">Notifications</string>
 	<string name="pref_styling">Customization</string>

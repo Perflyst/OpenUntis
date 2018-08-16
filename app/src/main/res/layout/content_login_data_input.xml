@@ -6,7 +6,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical"
-	tools:context=".activity.ActivityLoginDataInput"
+	tools:context="de.perflyst.untis.activity.ActivityLoginDataInput"
 	tools:showIn="@layout/app_bar_login_data_input">
 
 	<LinearLayout

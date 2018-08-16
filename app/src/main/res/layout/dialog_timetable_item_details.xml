@@ -6,7 +6,7 @@
 	android:gravity="center_vertical"
 	android:orientation="horizontal">
 
-	<com.perflyst.untis.view.VerticalViewPager
+	<de.perflyst.untis.view.VerticalViewPager
 		android:id="@+id/viewpager"
 		android:layout_width="0dp"
 		android:layout_height="wrap_content"
