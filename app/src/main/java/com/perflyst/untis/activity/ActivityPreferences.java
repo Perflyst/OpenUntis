@@ -437,7 +437,7 @@ public class ActivityPreferences extends com.perflyst.untis.activity.appcompat.A
 						i3.setType("plain/text");
 						i3.putExtra(Intent.EXTRA_EMAIL,
 								new String[]{getString(R.string.contact_email_feedback)});
-						i3.putExtra(Intent.EXTRA_SUBJECT, "FLOSS-BetterUntis Feedback");
+						i3.putExtra(Intent.EXTRA_SUBJECT, "OpenUntis Feedback");
 						startActivity(Intent.createChooser(i3, getString(R.string.give_feedback)));
 						return true;
 					});

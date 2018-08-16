@@ -53,7 +53,7 @@ public class SessionInfo {
 	public void setDataFromJsonObject(JSONObject data) {
 		elemId = data.optInt("elemId", -1);
 		elemType = data.optString("elemType", "");
-		displayName = data.optString("displayName", "BetterUntis");
+		displayName = data.optString("displayName", "OpenUntis");
 	}
 
 	public int getElemId() {

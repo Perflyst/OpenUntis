@@ -1,4 +1,4 @@
-# BetterUntis
+# OpenUntis
 
 Fork of [SapuSeven](https://github.com/SapuSeven/BetterUntis).  
 An alternative FLOSS Android client for the Untis timetable system.
@@ -9,7 +9,7 @@ webuntis.com, non-free network service
 
 
 ## Installation
-If there are release builds available, you can download them from the [release page](https://github.com/Perflyst/FLOSS-BetterUntis/releases).  
+If there are release builds available, you can download them from the [release page](https://github.com/Perflyst/OpenUntis/releases).
 Alternatively, you can build the app yourself.
 
 

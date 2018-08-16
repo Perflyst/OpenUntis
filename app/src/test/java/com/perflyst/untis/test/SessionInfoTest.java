@@ -43,7 +43,7 @@ public class SessionInfoTest {
 
 		assertThat(sessionInfo.getElemId(), is(-1));
 		assertThat(sessionInfo.getElemType(), is(""));
-		assertThat(sessionInfo.getDisplayName(), is("BetterUntis"));
+		assertThat(sessionInfo.getDisplayName(), is("OpenUntis"));
 
 		data.put("elemId", 10);
 		data.put("elemType", "Test");

@@ -11,11 +11,8 @@
 		android:title="@string/contact"/>
 
 	<Preference
-		android:summary="@string/summary_source_orig"
-		android:title="@string/title_source_orig">
-	<intent
-		android:action="android.intent.action.VIEW"
-		android:data="@string/url_source_orig" />
+		android:summary="@string/summary_dev"
+		android:title="@string/title_dev">
 	</Preference>
 
 	<Preference

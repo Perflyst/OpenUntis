@@ -2,12 +2,12 @@
 <defaultsMap>
 	<entry>
 		<key>recommendation_subject</key>
-		<value>Try out BetterUntis!</value>
+		<value>Try out OpenUntis!</value>
 	</entry>
 	<entry>
 		<key>recommendation_text</key>
-		<value>Tired of the default Untis Mobile app? Use FLOSS version of BetterUntis! More information at
-			https://github.com/Perflyst/FLOSS-BetterUntis
+		<value>Tired of the default Untis Mobile app? Use OpenUntis! More information at
+			https://github.com/Perflyst/OpenUntis
 		</value>
 	</entry>
 </defaultsMap>

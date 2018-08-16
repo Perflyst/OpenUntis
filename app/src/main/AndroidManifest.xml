@@ -36,7 +36,7 @@
 				<category android:name="android.intent.category.BROWSABLE"/>
 
 				<data
-					android:path="/apps/BetterUntis/timetable"
+					android:path="/apps/OpenUntis/timetable"
 					android:scheme="https"
 					tools:ignore="AppLinkUrlError" />
 			</intent-filter>

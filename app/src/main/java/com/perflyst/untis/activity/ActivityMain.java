@@ -132,7 +132,7 @@ public class ActivityMain extends AppCompatActivity
 
 				logUser(mUserDataList.getJSONObject("userData").optInt("elemId", -1),
 						mUserDataList.getJSONObject("userData")
-								.optString("displayName", "BetterUntis"));
+								.optString("displayName", "OpenUntis"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -443,7 +443,7 @@ public class ActivityMain extends AppCompatActivity
 						SessionInfo.getElemTypeId(mUserDataList.optJSONObject("userData")
 								.optString("elemType", "")),
 						mUserDataList.optJSONObject("userData")
-								.optString("displayName", "BetterUntis"));
+								.optString("displayName", "OpenUntis"));
 			} else {
 				if (System.currentTimeMillis() - 2000 > mLastBackPress) {
 					Snackbar.make(findViewById(R.id.content_main),
@@ -508,7 +508,7 @@ public class ActivityMain extends AppCompatActivity
 						SessionInfo.getElemTypeId(mUserDataList.optJSONObject("userData")
 								.optString("elemType", "")),
 						mUserDataList.optJSONObject("userData")
-								.optString("displayName", "BetterUntis"));
+								.optString("displayName", "OpenUntis"));
 				break;
 			case R.id.nav_show_classes:
 				//noinspection SpellCheckingInspection
