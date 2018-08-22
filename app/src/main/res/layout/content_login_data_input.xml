@@ -129,6 +129,14 @@
 
 		</RelativeLayout>
 
+		<TextView
+			android:id="@+id/keyInfo"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:gravity="center"
+			android:layout_marginTop="50dp"
+			android:text="@string/field_key_info" />
+
 	</LinearLayout>
 
 	<LinearLayout

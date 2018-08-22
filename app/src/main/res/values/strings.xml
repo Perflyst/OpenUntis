@@ -13,6 +13,7 @@
 	<string name="field_schoolname">School name</string>
 	<string name="field_username">Username</string>
 	<string name="field_key">Key</string>
+	<string name="field_key_info">The key can be found under Shares on your WebUntis profile.</string>
 	<string name="connecting">Connecting…</string>
 	<string name="btn_scan_code">Scan QR Code</string>
 	<string name="welcome">Welcome to OpenUntis!</string>

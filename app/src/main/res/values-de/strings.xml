@@ -19,6 +19,7 @@
 	<string name="failed">fehlgeschlagen</string>
 	<string name="field_schoolname">Schulname</string>
 	<string name="field_username">Benutzername</string>
+	<string name="field_key_info">Der Key ist unter Freigaben auf deinem WebUntis Profil zu finden.</string>
 	<string name="jump_to_date">Zu Datum springen</string>
 	<string name="loading_data">Lade Daten…</string>
 	<string name="navigation_drawer_close">Drawer schließen</string>
