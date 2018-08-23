@@ -30,7 +30,7 @@
 		android:textColor="?android:attr/textColorSecondary"
 		android:textSize="16sp"/>
 
-	<ImageView
+	<android.support.v7.widget.AppCompatImageView
 		android:id="@+id/ivDragHandle"
 		android:layout_width="32dp"
 		android:layout_height="32dp"
@@ -38,7 +38,7 @@
 		android:layout_alignParentRight="true"
 		android:layout_centerVertical="true"
 		android:contentDescription="@string/drag_to_sort"
-		android:tint="?android:attr/textColorSecondary"
+		app:tint="?android:attr/textColorSecondary"
 		app:srcCompat="@drawable/ic_drag_handle"/>
 
 </RelativeLayout>

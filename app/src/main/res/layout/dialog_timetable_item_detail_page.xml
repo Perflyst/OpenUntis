@@ -27,7 +27,7 @@
 		android:layout_height="wrap_content"
 		android:orientation="horizontal">
 
-		<ImageView
+		<android.support.v7.widget.AppCompatImageView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
@@ -37,7 +37,7 @@
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/teachers"
-			android:tint="?android:attr/textColorPrimary"
+			app:tint="?android:attr/textColorPrimary"
 			app:srcCompat="@drawable/ic_teacher"/>
 
 		<HorizontalScrollView
@@ -64,7 +64,7 @@
 		android:layout_height="wrap_content"
 		android:orientation="horizontal">
 
-		<ImageView
+		<android.support.v7.widget.AppCompatImageView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
@@ -74,7 +74,7 @@
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/classes"
-			android:tint="?android:attr/textColorPrimary"
+			app:tint="?android:attr/textColorPrimary"
 			app:srcCompat="@drawable/ic_classes"/>
 
 		<HorizontalScrollView
@@ -101,7 +101,7 @@
 		android:layout_height="wrap_content"
 		android:orientation="horizontal">
 
-		<ImageView
+		<android.support.v7.widget.AppCompatImageView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
@@ -111,7 +111,7 @@
 			android:layout_marginStart="12dp"
 			android:layout_marginTop="12dp"
 			android:contentDescription="@string/rooms"
-			android:tint="?android:attr/textColorPrimary"
+			app:tint="?android:attr/textColorPrimary"
 			app:srcCompat="@drawable/ic_rooms"/>
 
 		<HorizontalScrollView
