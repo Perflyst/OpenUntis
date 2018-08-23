@@ -126,16 +126,16 @@
 	<string name="delete_item">borrar elemento</string>
 	<string name="no_rooms_to_display">No hay aulas que mostrar. ¡Pulsa + para añadir una!</string>
 	<plurals name="room_desc">
-		<item quantity="one">Dieser Raum ist gerade frei.</item>
-		<item quantity="other">Dieser Raum ist %d Stunden lang frei.</item>
+		<item quantity="one">Este aula está libre actualmente.</item>
+		<item quantity="other">Estas aulas están libres actualmente.</item>
 	</plurals>
 	<plurals name="hour_index_last">
-		<item quantity="one">Letzte Stunde</item>
-		<item quantity="other">Vor %d Stunden</item>
+		<item quantity="one">Hace una hora</item>
+		<item quantity="other">Hace %d horas</item>
 	</plurals>
 	<plurals name="hour_index_next">
-		<item quantity="one">Nächste Stunde</item>
-		<item quantity="other">In %d Stunden</item>
+		<item quantity="one">Dentro de una hora</item>
+		<item quantity="other">En %d horas</item>
 	</plurals>
 	<string name="hour_index_current">Hora actual</string>
 	<string name="preference_room_to_display_in_free_lessons">Aula que mostrar en clases gratuítas</string>
@@ -153,16 +153,16 @@
 	<string name="infos">Info</string>
 	<string name="time_diff_just_now">hace solo un momento</string>
 	<plurals name="time_diff_minutes">
-		<item quantity="one">vor einer Minute</item>
-		<item quantity="other">vor %d Minuten</item>
+		<item quantity="one">hace un minuto</item>
+		<item quantity="other">hace %d minutos</item>
 	</plurals>
 	<plurals name="time_diff_hours">
-		<item quantity="one">vor einer Stunde</item>
-		<item quantity="other">vor %d Stunden</item>
+		<item quantity="one">hace una hora</item>
+		<item quantity="other">hace %d horas</item>
 	</plurals>
 	<plurals name="time_diff_days">
-		<item quantity="one">vor einem Tag</item>
-		<item quantity="other">vor %d Tagen</item>
+		<item quantity="one">ayer</item>
+		<item quantity="other">hace %d días</item>
 	</plurals>
 	<string name="holiday_label_separator">" / "</string>
 	<string name="preference_category_colors">Colores</string>
