@@ -31,13 +31,9 @@
 	<string name="timetable_no_hour_index">0</string>
 	<string name="timetable_no_time">00:00</string>
 	<string name="contact">Kontakt</string>
-	<string name="contact_email">OpenUntis: mail@perflyst.de</string>
-	<string name="contact_email_feedback">mail@perflyst.de</string>
 	<string name="title_source_floss">OpenUntis SourceCode</string>
 	<string name="summary_source_floss"></string>
-	<string name="url_source_floss">https://github.com/Perflyst/OpenUntis</string>
 	<string name="title_dev">Developer</string>
-	<string name="summary_dev">2017–2018 SapuSeven \n2018 Perflyst</string>
 	<string name="today">Heute</string>
 	<string name="pref_styling">Anpassung</string>
 	<string name="pref_notifications">Benachrichtigungen</string>
