@@ -33,6 +33,7 @@
 	<string name="contact_email" translatable="false">OpenUntis: mail@perflyst.de</string>
 	<string name="contact_email_feedback" translatable="false">mail@perflyst.de</string>
 	<string name="title_source_floss">OpenUntis SourceCode</string>
+	<string name="summary_source_floss"></string>
 	<string name="url_source_floss" translatable="false">https://github.com/Perflyst/OpenUntis</string>
 	<string name="title_dev">Developer</string>
 	<string name="summary_dev" translatable="false">2017–2018 SapuSeven \n2018 Perflyst</string>
