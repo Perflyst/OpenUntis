@@ -21,7 +21,6 @@
 		<activity
 			android:name="de.perflyst.untis.activity.ActivityMain"
 			android:label="@string/app_name"
-			android:screenOrientation="portrait"
 			android:theme="@style/AppTheme.NoActionBar">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
@@ -45,7 +44,6 @@
 		<activity
 			android:name="de.perflyst.untis.activity.ActivityLogin"
 			android:label="@string/login"
-			android:screenOrientation="portrait"
 			android:theme="@style/AppTheme.NoActionBar">
 		</activity>
 
@@ -53,7 +51,6 @@
 			android:name="de.perflyst.untis.activity.ActivityLoginDataInput"
 			android:label="@string/login"
 			android:parentActivityName="de.perflyst.untis.activity.ActivityLogin"
-			android:screenOrientation="portrait"
 			android:theme="@style/AppTheme.NoActionBar">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
