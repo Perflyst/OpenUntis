@@ -74,32 +74,33 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 
 	@Override
 	protected GridLayout doInBackground(Timetable... timetable) {
-		if (fragmentContext.get() == null)
+		FragmentTimetable strongFragmentContext = fragmentContext.get();
+		if (strongFragmentContext == null)
 			return null;
 
-		Context context = this.fragmentContext.get().getContext();
+		Context context = strongFragmentContext.getContext();
 
 		if (context == null)
 			return null;
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(fragmentContext.get().main);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(strongFragmentContext.main);
 
 		int rows = timetable[0].getHoursPerDay();
 		int cols = timetable[0].getNumberOfDays() * 2;
 
-		GridLayout glTimetable = new GridLayout(fragmentContext.get().getContext());
+		GridLayout glTimetable = new GridLayout(strongFragmentContext.getContext());
 		glTimetable.setColumnCount(cols);
 		glTimetable.setRowCount(rows);
 		glTimetable.setOrientation(GridLayout.HORIZONTAL);
 
 		DisplayMetrics displayMetrics = new DisplayMetrics();
 
-		((Activity) fragmentContext.get().getContext()).getWindowManager()
+		((Activity) strongFragmentContext.getContext()).getWindowManager()
 				.getDefaultDisplay()
 				.getMetrics(displayMetrics);
 
 		int totalWidth = Math.round(displayMetrics.widthPixels
-				- fragmentContext.get().getResources().getDimension(R.dimen.left_sidebar_width));
+				- strongFragmentContext.getResources().getDimension(R.dimen.left_sidebar_width));
 		int dayWidth = totalWidth * 2 / cols;
 		int lastDayWidth = totalWidth - (cols / 2 - 1) * dayWidth;
 		int hourHeight = dp2px(60);
@@ -108,16 +109,16 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 		boolean alternatingHours = getPrefBool(context, prefs, "preference_alternating_hours");
 
 		int alternativeBackgroundColor = Color.WHITE;
-		if (fragmentContext.get().isAdded())
-			alternativeBackgroundColor = fragmentContext.get().getResources().getInteger(R.integer.preference_alternating_color_default_light);
+		if (strongFragmentContext.isAdded())
+			alternativeBackgroundColor = strongFragmentContext.getResources().getInteger(R.integer.preference_alternating_color_default_light);
 		if (getPrefBool(context, prefs, "preference_alternating_colors_use_custom"))
 			alternativeBackgroundColor = getPrefInt(context, prefs, "preference_alternating_color");
-		else if (prefs.getBoolean("preference_dark_theme", false) && fragmentContext.get().isAdded())
-			alternativeBackgroundColor = fragmentContext.get().getResources().getInteger(R.integer.preference_alternating_color_default_dark);
+		else if (prefs.getBoolean("preference_dark_theme", false) && strongFragmentContext.isAdded())
+			alternativeBackgroundColor = strongFragmentContext.getResources().getInteger(R.integer.preference_alternating_color_default_dark);
 
 		int defaultBackgroundColor = Color.WHITE;
-		if (fragmentContext.get().isAdded())
-			defaultBackgroundColor = fragmentContext.get().getResources().getColor(android.R.color.background_light);
+		if (strongFragmentContext.isAdded())
+			defaultBackgroundColor = strongFragmentContext.getResources().getColor(android.R.color.background_light);
 
 		int colorRegular = getPrefInt(context, prefs, "preference_background_regular");
 		int colorRegularPast = getPrefInt(context, prefs, "preference_background_regular_past");
@@ -139,7 +140,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 
 		TypedValue typedValue = new TypedValue();
 
-		TypedArray a = fragmentContext.get().main.obtainStyledAttributes(typedValue.data, new int[]{
+		TypedArray a = strongFragmentContext.main.obtainStyledAttributes(typedValue.data, new int[]{
 				R.attr.colorPrimary,
 				R.attr.colorPrimaryDark,
 				android.R.attr.colorBackground
@@ -159,14 +160,14 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 
 		a.recycle();
 
-		if (fragmentContext.get().userDataList == null)
-			fragmentContext.get().userDataList = ListManager.getUserData(fragmentContext.get().listManager);
+		if (strongFragmentContext.userDataList == null)
+			strongFragmentContext.userDataList = ListManager.getUserData(strongFragmentContext.listManager);
 
 		JSONObject masterData = null;
 		ArrayList<TimegridUnitManager.UnitData> units = null;
 
 		try {
-			masterData = fragmentContext.get().userDataList.getJSONObject("masterData");
+			masterData = strongFragmentContext.userDataList.getJSONObject("masterData");
 			TimegridUnitManager unitManager = new TimegridUnitManager(masterData.getJSONObject("timeGrid").getJSONArray("days"));
 
 			units = unitManager.getUnits();
@@ -188,7 +189,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 			try {
 				if (holidays != null)
 					for (int i = 0; i < holidays.length(); i++) {
-						if (FragmentTimetable.isBetween(addDaysToInt(fragmentContext.get().startDateFromWeek, day),
+						if (FragmentTimetable.isBetween(addDaysToInt(strongFragmentContext.startDateFromWeek, day),
 								Integer.parseInt(holidays.getJSONObject(i)
 										.getString("startDate")
 										.replace("-", "")),
@@ -215,7 +216,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 							if (holidayLabelString == null) {
 								holidayLabelString = new StringBuilder(holidays.getJSONObject(i).getString("longName"));
 							} else {
-								holidayLabelString.append(fragmentContext.get().getString(R.string.holiday_label_separator)).append(holidays.getJSONObject(i).getString("longName"));
+								holidayLabelString.append(strongFragmentContext.getString(R.string.holiday_label_separator)).append(holidays.getJSONObject(i).getString("longName"));
 							}
 						}
 					}
@@ -266,10 +267,10 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 						ImageView indicator = new ImageView(context);
 
 						indicator.setImageDrawable(
-								ActivityRoomFinder.getRoomStates(fragmentContext.get().getActivity(), prefs.getString("preference_room_to_display_in_free_lessons", null))
+								ActivityRoomFinder.getRoomStates(strongFragmentContext.getActivity(), prefs.getString("preference_room_to_display_in_free_lessons", null))
 										.charAt(day * rows + hour) == '1' ?
-										ContextCompat.getDrawable(fragmentContext.get().getActivity(), R.drawable.ic_room_occupied) :
-										ContextCompat.getDrawable(fragmentContext.get().getActivity(), R.drawable.ic_room_available));
+										ContextCompat.getDrawable(strongFragmentContext.getActivity(), R.drawable.ic_room_occupied) :
+										ContextCompat.getDrawable(strongFragmentContext.getActivity(), R.drawable.ic_room_available));
 
 						LinearLayout.LayoutParams indicatorParams = new LinearLayout.LayoutParams(dp2px(16), dp2px(16));
 						indicatorParams.setMargins(dp2px(4), 0, 0, dp2px(4));
@@ -322,7 +323,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 					if (i + timetable[0].getOffset(day, hour) >= 2)
 						continue;
 
-					@SuppressLint("InflateParams") View view = fragmentContext.get().inflater
+					@SuppressLint("InflateParams") View view = strongFragmentContext.inflater
 							.inflate(R.layout.table_item, null, false);
 
 					TextView tvC = view.findViewById(R.id.tvC);
@@ -349,16 +350,16 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 						tvBR.setLayoutParams(paramsBR);
 					}
 
-					if (fragmentContext.get().isAdded()) {
+					if (strongFragmentContext.isAdded()) {
 						tvC.setTextSize(nameFontSize);
 						tvTL.setTextSize(infoFontSize);
 						tvBR.setTextSize(infoFontSize);
 
 						int textColor;
 						if (lightText) {
-							textColor = fragmentContext.get().getResources().getColor(android.R.color.primary_text_dark);
+							textColor = strongFragmentContext.getResources().getColor(android.R.color.primary_text_dark);
 						} else {
-							textColor = fragmentContext.get().getResources().getColor(android.R.color.primary_text_light);
+							textColor = strongFragmentContext.getResources().getColor(android.R.color.primary_text_light);
 						}
 
 						tvC.setTextColor(textColor);
@@ -423,7 +424,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 
 					setupItemText(view, item);
 
-					view.setOnClickListener(view1 -> fragmentContext.get().showDetails(allItems));
+					view.setOnClickListener(view1 -> strongFragmentContext.showDetails(allItems));
 
 					try {
 						glTimetable.addView(view);
@@ -434,7 +435,7 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 										", Row: " + hour +
 										", ColSpan: " + colSpan +
 										", RowSpan: " + rowSpan +
-										", Lesson: " + item.getSubjects(fragmentContext.get().userDataList).getName(true));
+										", Lesson: " + item.getSubjects(strongFragmentContext.userDataList).getName(true));
 					}
 				}
 			}
@@ -444,19 +445,20 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 
 	@Override
 	protected void onPostExecute(GridLayout glTimetable) {
-		if (fragmentContext.get() == null || glTimetable == null)
+		FragmentTimetable strongFragmentContext = fragmentContext.get();
+		if (strongFragmentContext == null || glTimetable == null)
 			return;
 
-		((ViewGroup) fragmentContext.get().rootView.findViewById(R.id.rlRoot)).addView(glTimetable, 0,
+		((ViewGroup) strongFragmentContext.rootView.findViewById(R.id.rlRoot)).addView(glTimetable, 0,
 				new ViewGroup.LayoutParams(
 						ViewGroup.LayoutParams.MATCH_PARENT,
 						ViewGroup.LayoutParams.MATCH_PARENT));
 
-		if (fragmentContext.get().isCurrentWeek()) {
-			fragmentContext.get().main.stopRefreshing();
-			fragmentContext.get().main.setLastRefresh(fragmentContext.get().lastRefresh);
+		if (strongFragmentContext.isCurrentWeek()) {
+			strongFragmentContext.main.stopRefreshing();
+			strongFragmentContext.main.setLastRefresh(strongFragmentContext.lastRefresh);
 		}
-		fragmentContext.get().pbLoading.setVisibility(View.GONE);
+		strongFragmentContext.pbLoading.setVisibility(View.GONE);
 	}
 
 	private int determineHours(TimetableItemData item, ArrayList<TimegridUnitManager.UnitData> units) {
@@ -492,36 +494,37 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 	}
 
 	private void setupItemText(View view, TimetableItemData item) {
-		if (fragmentContext.get() == null || fragmentContext.get().main == null)
+		FragmentTimetable strongFragmentContext = fragmentContext.get();
+		if (strongFragmentContext == null || strongFragmentContext.main == null)
 			return;
 
 		if (item.isHidden()) {
 			((TextView) view.findViewById(R.id.tvTL))
-					.setText(item.getHolidays(fragmentContext.get().userDataList)
+					.setText(item.getHolidays(strongFragmentContext.userDataList)
 							.getLongName(ElementName.SHORT));
 		} else {
-			if (SessionInfo.getElemTypeId(fragmentContext.get().main.sessionInfo.getElemType())
+			if (SessionInfo.getElemTypeId(strongFragmentContext.main.sessionInfo.getElemType())
 					== TEACHER)
 				((TextView) view.findViewById(R.id.tvTL))
-						.setText(item.getClasses(fragmentContext.get().userDataList)
+						.setText(item.getClasses(strongFragmentContext.userDataList)
 								.getName(ElementName.SHORT));
 			else
 				((TextView) view.findViewById(R.id.tvTL))
-						.setText(item.getTeachers(fragmentContext.get().userDataList)
+						.setText(item.getTeachers(strongFragmentContext.userDataList)
 								.getName(ElementName.SHORT));
 
-			if (SessionInfo.getElemTypeId(fragmentContext.get().main.sessionInfo.getElemType())
+			if (SessionInfo.getElemTypeId(strongFragmentContext.main.sessionInfo.getElemType())
 					== ROOM)
 				((TextView) view.findViewById(R.id.tvBR))
-						.setText(item.getClasses(fragmentContext.get().userDataList)
+						.setText(item.getClasses(strongFragmentContext.userDataList)
 								.getName(ElementName.SHORT));
 			else
 				((TextView) view.findViewById(R.id.tvBR))
-						.setText(item.getRooms(fragmentContext.get().userDataList)
+						.setText(item.getRooms(strongFragmentContext.userDataList)
 								.getName(ElementName.SHORT));
 
 			((TextView) view.findViewById(R.id.tvC))
-					.setText(item.getSubjects(fragmentContext.get().userDataList)
+					.setText(item.getSubjects(strongFragmentContext.userDataList)
 							.getName(ElementName.SHORT));
 		}
 	}
@@ -558,10 +561,11 @@ public class TimetableSetup extends AsyncTask<Timetable, Void, GridLayout> {
 	}
 
 	private boolean shouldShowIndicatorForHour(SharedPreferences prefs, int currentHourIndex, int lastHourIndex) {
-		return fragmentContext.get() != null
-				&& fragmentContext.get().getActivity() != null
+		FragmentTimetable strongFragmentContext = fragmentContext.get();
+		return strongFragmentContext != null
+				&& strongFragmentContext.getActivity() != null
 				&& !TextUtils.isEmpty(prefs.getString("preference_room_to_display_in_free_lessons", null))
-				&& ActivityRoomFinder.getRooms(fragmentContext.get().getActivity(), false).contains(prefs.getString("preference_room_to_display_in_free_lessons", null))
+				&& ActivityRoomFinder.getRooms(strongFragmentContext.getActivity(), false).contains(prefs.getString("preference_room_to_display_in_free_lessons", null))
 				&& (!prefs.getBoolean("preference_room_to_display_in_free_lessons_trim", false)
 				|| currentHourIndex < lastHourIndex);
 	}
