@@ -81,7 +81,7 @@
 	<string name="preference_notifications_multiple">Enable in multiple-hour lesson</string>
 	<string name="preference_notifications_multiple_desc">Notifications will be shown in breaks within multiple-hour lessons.</string>
 	<string name="give_feedback">Give Feedback</string>
-	<string name="notification_title">Break until %1$d:%2$d</string>
+	<string name="notification_title">Break until %1$02d:%2$02d</string>
 	<string name="notification_subjects">Next lesson: %1$s</string>
 	<string name="notification_rooms">Room: %1$s</string>
 	<string name="notification_teachers">Teacher: %1$s</string>
