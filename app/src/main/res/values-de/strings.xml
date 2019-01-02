@@ -78,7 +78,7 @@
 	<string name="notification_rooms">Raum: %1$s</string>
 	<string name="notification_teachers">Lehrer: %1$s</string>
 	<string name="close">Schließen</string>
-	<string name="notification_title">Pause bis: %1$d:%2$d</string>
+	<string name="notification_title">Pause bis: %1$02d:%2$02d</string>
 	<string name="pref_infos">Infos</string>
 	<string name="app_version_full">%1$s (%2$d)</string>
 	<string name="preference_account_access_key">Zugriffsschlüssel</string>

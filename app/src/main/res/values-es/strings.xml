@@ -78,7 +78,7 @@
 	<string name="notification_rooms">Aula: %1$s</string>
 	<string name="notification_teachers">Profesor/a: %1$s</string>
 	<string name="close">Cerrar</string>
-	<string name="notification_title">Descanso hasta las %1$d%2$d</string>
+	<string name="notification_title">Descanso hasta las %1$02d%2$02d</string>
 	<string name="pref_infos">Acerca de</string>
 	<string name="app_version_full">%1$s (%2$d)</string>
 	<string name="preference_account_access_key">Clave de acceso</string>
