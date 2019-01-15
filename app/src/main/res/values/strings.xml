@@ -73,6 +73,7 @@
 	<string name="preference_background_cancelled_past">Past cancelled lessons</string>
 	<string name="preference_notifications_enable">Enable Notification</string>
 	<string name="preference_notifications_enable_desc">Displays a notification with information about the next lesson while you have break.</string>
+	<string name="preference_notifications_channel_title">Next lesson</string>
 	<string name="subjects">Subjects</string>
 	<string name="preference_notifications_visibility_hidden">Hidden</string>
 	<string name="preference_notifications_visibility_short">Short name</string>
