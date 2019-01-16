@@ -114,18 +114,18 @@ public class NotificationReceiver extends BroadcastReceiver {
 			}
 
 			Notification n = new NotificationCompat.Builder(context, NEXT_LESSON_CHANNEL)
-                    .setContentTitle(title)
-                    .setContentText(message)
-                    .setSmallIcon(R.drawable.ic_stat_timetable)
-                    .setContentIntent(pIntent)
-                    .setStyle(new NotificationCompat.BigTextStyle().bigText(longMessage))
-                    .setAutoCancel(false)
-                    .setOngoing(true)
-                    .setCategory(NotificationCompat.CATEGORY_STATUS)
-                    .build();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                n.visibility = NotificationCompat.VISIBILITY_PUBLIC;
-            if (notificationManager != null)
+				.setContentTitle(title)
+				.setContentText(message)
+				.setSmallIcon(R.drawable.ic_stat_timetable)
+				.setContentIntent(pIntent)
+				.setStyle(new NotificationCompat.BigTextStyle().bigText(longMessage))
+				.setAutoCancel(false)
+				.setOngoing(true)
+				.setCategory(NotificationCompat.CATEGORY_STATUS)
+				.build();
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+				n.visibility = NotificationCompat.VISIBILITY_PUBLIC;
+			if (notificationManager != null)
 				notificationManager.notify(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)), n);
 			else
 				Log.d("NotificationManager", "Failed to notify (notificationManager == null)");
