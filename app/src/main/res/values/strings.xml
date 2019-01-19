@@ -217,4 +217,8 @@
 		<item quantity="one">a day ago</item>
 		<item quantity="other">%d days ago</item>
 	</plurals>
+	<string name="preference_notifications_do_not_disturb">Enable Do Not Disturb</string>
+	<string name="preference_notifications_do_not_disturb_desc">Enables on lesson start automatically the do not disturb
+		mode
+	</string>
 </resources>

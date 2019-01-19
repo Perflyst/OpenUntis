@@ -1,21 +1,18 @@
 package de.perflyst.untis.activity;
 
 import android.app.NotificationManager;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 import android.widget.Toast;
-
 import com.github.danielnilsson9.colorpickerview.dialog.ColorPickerDialogFragment;
 import com.github.danielnilsson9.colorpickerview.preference.ColorPreference;
 import de.perflyst.untis.BuildConfig;
@@ -23,10 +20,9 @@ import de.perflyst.untis.R;
 import de.perflyst.untis.utils.BetterToast;
 import de.perflyst.untis.utils.ColorPreferenceList;
 import de.perflyst.untis.utils.ListManager;
+import de.perflyst.untis.utils.ThemeUtils;
 
 import java.util.List;
-
-import de.perflyst.untis.utils.ThemeUtils;
 
 public class ActivityPreferences extends de.perflyst.untis.activity.appcompat.ActivityPreferences
 		implements ColorPickerDialogFragment.ColorPickerDialogListener {
@@ -247,26 +243,21 @@ public class ActivityPreferences extends de.perflyst.untis.activity.appcompat.Ac
 			addPreferencesFromResource(R.xml.prefs_notifications);
 
 			findPreference("preference_notifications_enable").setOnPreferenceClickListener(
-					preference -> {
-						if (!preference.isEnabled()) {
-							NotificationManager notificationManager = ((NotificationManager) getActivity()
-									.getSystemService(Context.NOTIFICATION_SERVICE));
-							if (notificationManager != null)
-								notificationManager.cancelAll();
-						}
-						return true;
-					});
+					this::cancelNotifications);
 
 			findPreference("preference_notifications_clear").setOnPreferenceClickListener(
-					preference -> {
-						if (!preference.isEnabled()) {
-							NotificationManager notificationManager = ((NotificationManager) getActivity()
-									.getSystemService(Context.NOTIFICATION_SERVICE));
-							if (notificationManager != null)
-								notificationManager.cancelAll();
-						}
-						return true;
-					});
+					this::cancelNotifications);
+
+			findPreference("preference_notifications_do_not_disturb").setOnPreferenceClickListener(preference -> {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && preference.isEnabled()) {
+					NotificationManager notificationManager = ((NotificationManager) getActivity()
+							.getSystemService(Context.NOTIFICATION_SERVICE));
+					if (notificationManager != null && !notificationManager.isNotificationPolicyAccessGranted()) {
+						startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS));
+					}
+				}
+				return true;
+			});
 		}
 
 		@Override
@@ -277,6 +268,16 @@ public class ActivityPreferences extends de.perflyst.untis.activity.appcompat.Ac
 				return true;
 			}
 			return super.onOptionsItemSelected(item);
+		}
+
+		private boolean cancelNotifications(Preference preference) {
+			if (!preference.isEnabled()) {
+				NotificationManager notificationManager = ((NotificationManager) getActivity()
+						.getSystemService(Context.NOTIFICATION_SERVICE));
+				if (notificationManager != null)
+					notificationManager.cancelAll();
+			}
+			return true;
 		}
 	}
 

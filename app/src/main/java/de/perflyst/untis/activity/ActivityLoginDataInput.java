@@ -4,25 +4,17 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
+import android.widget.*;
 import de.perflyst.untis.R;
 import de.perflyst.untis.utils.Constants;
 import de.perflyst.untis.utils.ListManager;
 import de.perflyst.untis.utils.connectivity.UntisRequest;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -114,10 +106,15 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		SharedPreferences prefs = this.getSharedPreferences("loginDataInputBackup", MODE_PRIVATE);
 		Uri uri = getIntent().getData();
 		if (uri != null) {
-			mEtUrl.setText(uri.getQueryParameter("url"));
-			mEtSchool.setText(uri.getQueryParameter("school"));
-			mEtUser.setText(uri.getQueryParameter("user"));
-			mEtKey.setText(uri.getQueryParameter("key"));
+			try {
+				mEtUrl.setText(uri.getQueryParameter("url"));
+				mEtSchool.setText(uri.getQueryParameter("school"));
+				mEtUser.setText(uri.getQueryParameter("user"));
+				mEtKey.setText(uri.getQueryParameter("key"));
+			} catch (UnsupportedOperationException e) {
+				Snackbar.make(mTvLoadingStatus, getString(R.string.snackbar_error, e.getMessage()), Snackbar.LENGTH_LONG)
+						.setAction("OK", null).show();
+			}
 		} else if (prefs != null) {
 			restoreInput(prefs);
 		}
