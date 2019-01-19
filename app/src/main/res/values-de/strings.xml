@@ -214,4 +214,8 @@
 	<string name="week_empty">Diese Woche ist schulfrei :D</string>
 	<string name="feature_disabled_title">Funktion deaktiviert</string>
 	<string name="feature_disabled">Diese Funktion ist vorüberkehend deaktiviert. Schau später wieder vorbei!</string>
+	<string name="preference_notifications_do_not_disturb">Aktviere nicht stören</string>
+	<string name="preference_notifications_do_not_disturb_desc">Aktiviert bei Beginn einer Stunde atomatisch den Nicht
+		stören Modus
+	</string>
 </resources>

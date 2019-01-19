@@ -18,6 +18,12 @@
 		android:key="preference_notifications_clear"
 		android:title="@string/preference_notifications_clear"/>
 
+	<CheckBoxPreference
+		android:defaultValue="false"
+		android:key="preference_notifications_do_not_disturb"
+		android:summary="@string/preference_notifications_do_not_disturb_desc"
+		android:title="@string/preference_notifications_do_not_disturb"/>
+
 	<PreferenceCategory
 		android:title="@string/preference_notifications_group_visible_fields">
 

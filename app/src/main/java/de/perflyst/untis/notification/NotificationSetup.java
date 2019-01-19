@@ -9,17 +9,12 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-import de.perflyst.untis.utils.Constants;
-import de.perflyst.untis.utils.DateOperations;
-import de.perflyst.untis.utils.ElementName;
-import de.perflyst.untis.utils.ListManager;
-import de.perflyst.untis.utils.SessionInfo;
+import android.widget.Toast;
+import de.perflyst.untis.utils.*;
 import de.perflyst.untis.utils.connectivity.UntisRequest;
 import de.perflyst.untis.utils.timetable.TimegridUnitManager;
 import de.perflyst.untis.utils.timetable.Timetable;
 import de.perflyst.untis.utils.timetable.TimetableItemData;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,19 +44,19 @@ public class NotificationSetup extends BroadcastReceiver {
 	}
 
 	private void performRequest() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		if (!prefs.getBoolean("preference_notifications_enable", true))
-			return;
-
 		listManager = new ListManager(context);
 		sessionInfo = new SessionInfo();
 
-		sessionInfo.setDataFromJsonObject(ListManager.getUserData(listManager).optJSONObject("userData"));
+		try {
+			sessionInfo.setDataFromJsonObject(ListManager.getUserData(listManager).optJSONObject("userData"));
+		} catch (NullPointerException e) {
+			Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+		}
 
 		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));
 
-		prefs = context.getSharedPreferences("login_data", MODE_PRIVATE);
+		SharedPreferences prefs = context.getSharedPreferences("login_data", MODE_PRIVATE);
 
 		UntisRequest api = new UntisRequest(context, sessionInfo, startDateFromWeek);
 
