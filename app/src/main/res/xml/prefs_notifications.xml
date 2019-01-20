@@ -14,6 +14,16 @@
 		android:summary="@string/preference_notifications_multiple_desc"
 		android:title="@string/preference_notifications_multiple"/>
 
+	<!--suppress AndroidUnknownAttribute -->
+	<de.perflyst.untis.preference.UnitPreference
+		unit="min"
+		android:defaultValue="@integer/preference_notifications_minutes_before_first_lesson_default"
+		android:title="@string/preference_notifications_minutes_before_first_lesson"
+		android:numeric="integer"
+		android:selectAllOnFocus="true"
+		android:singleLine="true"
+		android:key="preference_notifications_minutes_before_first_lesson"/>
+
 	<Preference
 		android:key="preference_notifications_clear"
 		android:title="@string/preference_notifications_clear"/>

@@ -43,7 +43,6 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -127,7 +126,7 @@ public class ActivityMain extends AppCompatActivity
 					e.printStackTrace();
 				}
 				mListManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
-						"-" + startDate + "-" + addDaysToInt(startDate, days - 1), true);
+						"-" + startDate + "-" + DateOperations.addDaysToInt(startDate, days - 1), true);
 				refresh();
 			});
 
@@ -686,21 +685,6 @@ public class ActivityMain extends AppCompatActivity
 
 	public void stopRefreshing() {
 		swipeRefresh.setRefreshing(false);
-	}
-
-	@SuppressWarnings("SameParameterValue")
-	private int addDaysToInt(int startDate, int days) {
-		try {
-			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
-			c.setTime(sdf.parse(Integer.toString(startDate)));
-			c.add(Calendar.DATE, days);
-			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
-					.format(c.getTime()));
-		} catch (ParseException e) {
-			e.printStackTrace();
-			return startDate;
-		}
 	}
 
 	public void setLastRefresh(long time) {
