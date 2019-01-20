@@ -37,7 +37,7 @@
 				<data
 					android:path="/apps/OpenUntis/timetable"
 					android:scheme="https"
-					tools:ignore="AppLinkUrlError" />
+					android:host="*" />
 			</intent-filter>
 		</activity>
 
