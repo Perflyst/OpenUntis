@@ -28,6 +28,7 @@
 	<integer name="preference_timetable_item_corner_radius_default">2</integer>
 	<integer name="preference_timetable_lesson_name_font_size_default">12</integer>
 	<integer name="preference_timetable_lesson_info_font_size_default">10</integer>
+	<integer name="preference_notifications_minutes_before_first_lesson_default">30</integer>
 
 	<string name="preference_theme_default">default</string>
 </resources>

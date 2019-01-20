@@ -15,7 +15,7 @@ public class DateOperations {
 
 	private static final SimpleDateFormat FROM_ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.ENGLISH);
 
-	public DateOperations() {
+	private DateOperations() {
 		throw new RuntimeException("Instantiation not allowed");
 	}
 
@@ -36,16 +36,7 @@ public class DateOperations {
 	}
 
 	public static int addDaysToInt(int startDate, int days) {
-		try {
-			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
-			c.setTime(sdf.parse(Integer.toString(startDate)));
-			c.add(Calendar.DATE, days);
-			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(c.getTime()));
-		} catch (ParseException e) {
-			Log.w(TAG, e.getMessage());
-			return startDate;
-		}
+		return Integer.parseInt(addDaysToInt(startDate, days, new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)));
 	}
 
 	public static String addDaysToInt(int startDate, int days, SimpleDateFormat targetFormat) {
@@ -87,6 +78,10 @@ public class DateOperations {
 
 	public static Date parseFromISO(String dateTime) throws ParseException {
 		return FROM_ISO_8601.parse(dateTime);
+	}
+
+	public static String convertToISO(Date date) {
+		return FROM_ISO_8601.format(date);
 	}
 
 	public static int getComparableTime(String dateTime) {

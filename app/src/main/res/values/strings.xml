@@ -81,6 +81,11 @@
 	<string name="preference_notifications_group_visible_fields">Visible fields</string>
 	<string name="preference_notifications_multiple">Enable in multiple-hour lesson</string>
 	<string name="preference_notifications_multiple_desc">Notifications will be shown in breaks within multiple-hour lessons.</string>
+	<string name="preference_notifications_minutes_before_first_lesson">Notification before the first lesson</string>
+	<string name="preference_notifications_do_not_disturb">Enable Do Not Disturb</string>
+	<string name="preference_notifications_do_not_disturb_desc">Enables on lesson start automatically the do not disturb
+		mode
+	</string>
 	<string name="give_feedback">Give Feedback</string>
 	<string name="notification_title">Break until %1$02d:%2$02d</string>
 	<string name="notification_subjects">Next lesson: %1$s</string>
@@ -217,8 +222,4 @@
 		<item quantity="one">a day ago</item>
 		<item quantity="other">%d days ago</item>
 	</plurals>
-	<string name="preference_notifications_do_not_disturb">Enable Do Not Disturb</string>
-	<string name="preference_notifications_do_not_disturb_desc">Enables on lesson start automatically the do not disturb
-		mode
-	</string>
 </resources>

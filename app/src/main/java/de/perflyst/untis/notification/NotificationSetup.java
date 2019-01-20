@@ -19,6 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,7 +70,11 @@ public class NotificationSetup extends BroadcastReceiver {
 			Log.d("NotificationSetup", "Request executed, response: " + response.toString().substring(0, Math.min(255, response.toString().length())));
 			try {
 				if (response.has("result")) {
-					setup(response.getJSONObject("result"));
+					try {
+						setup(response.getJSONObject("result"));
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
 					int days = 4;
 					try {
 						days = ListManager.getUserData(listManager).getJSONObject("masterData").getJSONObject("timeGrid").getJSONArray("days").length();
@@ -114,7 +119,7 @@ public class NotificationSetup extends BroadcastReceiver {
 		api.setResponseHandler(handler).submit(query);
 	}
 
-	private void setup(JSONObject data) {
+	private void setup(JSONObject data) throws ParseException {
 		Calendar c = Calendar.getInstance();
 
 		JSONObject userDataList = ListManager.getUserData(listManager);
@@ -149,11 +154,31 @@ public class NotificationSetup extends BroadcastReceiver {
 		if (day >= hoursPerDay)
 			return;
 
+		boolean firstHour = false;
+		boolean lastHour = false;
+
 		for (int currentHourOfDay = 0; currentHourOfDay < hoursPerDay; currentHourOfDay++) {
 			int hour = currentHourOfDay % hoursPerDay;
 
-			if (timetable.getItems(day, hour).size() > 0)
+			if (timetable.getItems(day, hour).size() > 0) {
 				result.add(TimetableItemData.combine(timetable.getItems(day, hour), timetable.getStartDateTime(day, hour), timetable.getEndDateTime(day, hour)));
+				if (!firstHour) {
+					firstHour = true;
+					try {
+						Calendar c1 = Calendar.getInstance();
+						c1.setTime(DateOperations.parseFromISO(timetable.getStartDateTime(day, hour)));
+						c1.add(Calendar.MINUTE, -PreferenceUtils.getPrefInt(context, prefs,"preference_notifications_minutes_before_first_lesson", true));
+						String endDate = DateOperations.convertToISO(c1.getTime());
+						result.add(0, TimetableItemData.combine(new ArrayList<>(), endDate, endDate));
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				if (firstHour && !lastHour) {
+					lastHour = true;
+				}
+			}
 		}
 
 		if (!prefs.getBoolean("preference_notifications_in_multiple", false))
@@ -180,12 +205,10 @@ public class NotificationSetup extends BroadcastReceiver {
 
 		for (int j = 0; j < result.size() - 1; j++) {
 			Calendar c1 = Calendar.getInstance();
-			String endDateTime = result.get(j).getEndDateTime();
-			c1.set(Integer.parseInt(endDateTime.substring(0, 4)), Integer.parseInt(endDateTime.substring(5, 7)) - 1, Integer.parseInt(endDateTime.substring(8, 10)), Integer.parseInt(endDateTime.substring(11, 13)), Integer.parseInt(endDateTime.substring(14, 16)));
+			c1.setTime(DateOperations.parseFromISO(result.get(j).getEndDateTime()));
 
 			Calendar c2 = Calendar.getInstance();
-			String startDateTime = result.get(j + 1).getStartDateTime();
-			c2.set(Integer.parseInt(startDateTime.substring(0, 4)), Integer.parseInt(startDateTime.substring(5, 7)) - 1, Integer.parseInt(startDateTime.substring(8, 10)), Integer.parseInt(startDateTime.substring(11, 13)), Integer.parseInt(startDateTime.substring(14, 16)));
+			c2.setTime(DateOperations.parseFromISO(result.get(j + 1).getStartDateTime()));
 
 			if (c2.getTimeInMillis() > System.currentTimeMillis()) {
 				Intent i1 = new Intent(context, NotificationReceiver.class)

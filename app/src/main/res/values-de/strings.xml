@@ -74,6 +74,11 @@
 	<string name="preference_notifications_group_visible_fields">Sichtbare Daten</string>
 	<string name="preference_notifications_multiple">Während Doppelstunden aktivieren</string>
 	<string name="preference_notifications_multiple_desc">Zeige auch während mehrstündigen Fächern eine Benachrichtigung in den Pausen zwischen den einzelnen Stunden an</string>
+	<string name="preference_notifications_minutes_before_first_lesson">Benachrichtigung vor der ersten Stunde</string>
+	<string name="preference_notifications_do_not_disturb">Aktviere nicht stören</string>
+	<string name="preference_notifications_do_not_disturb_desc">Aktiviert bei Beginn einer Stunde atomatisch den Nicht
+		stören Modus
+	</string>
 	<string name="give_feedback">Feedback geben</string>
 	<string name="notification_subjects">Nächste Stunde: %1$s</string>
 	<string name="notification_rooms">Raum: %1$s</string>
@@ -214,8 +219,4 @@
 	<string name="week_empty">Diese Woche ist schulfrei :D</string>
 	<string name="feature_disabled_title">Funktion deaktiviert</string>
 	<string name="feature_disabled">Diese Funktion ist vorüberkehend deaktiviert. Schau später wieder vorbei!</string>
-	<string name="preference_notifications_do_not_disturb">Aktviere nicht stören</string>
-	<string name="preference_notifications_do_not_disturb_desc">Aktiviert bei Beginn einer Stunde atomatisch den Nicht
-		stören Modus
-	</string>
 </resources>
