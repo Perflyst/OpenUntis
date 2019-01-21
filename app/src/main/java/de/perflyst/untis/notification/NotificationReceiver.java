@@ -22,8 +22,8 @@ public class NotificationReceiver extends BroadcastReceiver {
 
 	private final String NEXT_LESSON_CHANNEL = "next_lesson";
 
-	private int CURRENT_INTERRUPTION_FILTER;
-	private int CURRENT_RINGER_MODE;
+	private static int CURRENT_INTERRUPTION_FILTER;
+	private static int CURRENT_RINGER_MODE;
 
 	@Override
 	public void onReceive(Context context, final Intent intent) {
@@ -74,6 +74,17 @@ public class NotificationReceiver extends BroadcastReceiver {
 				}
 			}
 		} else {
+			if (setDoNotDisturb) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					if (notificationManager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE) {
+						notificationManager.setInterruptionFilter(CURRENT_INTERRUPTION_FILTER);
+					}
+				} else if (audioManager != null) {
+					if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT) {
+						audioManager.setRingerMode(CURRENT_RINGER_MODE);
+					}
+				}
+			}
 			if (showNextLesson) {
 				PendingIntent pIntent = PendingIntent.getActivity(context, 0, new Intent(context, ActivityMain.class), 0);
 				Calendar endTime = Calendar.getInstance();
@@ -146,17 +157,6 @@ public class NotificationReceiver extends BroadcastReceiver {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 					n.visibility = NotificationCompat.VISIBILITY_PUBLIC;
 				notificationManager.notify(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)), n);
-			}
-			if (setDoNotDisturb) {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					if (notificationManager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE) {
-						notificationManager.setInterruptionFilter(this.CURRENT_INTERRUPTION_FILTER);
-					}
-				} else if (audioManager != null) {
-					if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT) {
-						audioManager.setRingerMode(CURRENT_RINGER_MODE);
-					}
-				}
 			}
 		}
 	}
