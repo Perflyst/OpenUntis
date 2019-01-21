@@ -80,7 +80,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 						notificationManager.setInterruptionFilter(CURRENT_INTERRUPTION_FILTER);
 					}
 				} else if (audioManager != null) {
-					if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT) {
+					if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT) {
 						audioManager.setRingerMode(CURRENT_RINGER_MODE);
 					}
 				}
