@@ -36,7 +36,8 @@ public class DateOperations {
 	}
 
 	public static int addDaysToInt(int startDate, int days) {
-		return Integer.parseInt(addDaysToInt(startDate, days, new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)));
+		String result = addDaysToInt(startDate, days, new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH));
+		return result == null ? startDate : Integer.parseInt(result);
 	}
 
 	public static String addDaysToInt(int startDate, int days, SimpleDateFormat targetFormat) {
