@@ -22,8 +22,8 @@ public class NotificationReceiver extends BroadcastReceiver {
 
 	private final String NEXT_LESSON_CHANNEL = "next_lesson";
 
-	private static int CURRENT_INTERRUPTION_FILTER;
-	private static int CURRENT_RINGER_MODE;
+	private static int CURRENT_INTERRUPTION_FILTER = 0;
+	private static int CURRENT_RINGER_MODE = -1;
 
 	@Override
 	public void onReceive(Context context, final Intent intent) {
@@ -76,11 +76,12 @@ public class NotificationReceiver extends BroadcastReceiver {
 		} else {
 			if (setDoNotDisturb) {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					if (notificationManager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE) {
+					if (notificationManager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE
+							&& CURRENT_INTERRUPTION_FILTER > 0) {
 						notificationManager.setInterruptionFilter(CURRENT_INTERRUPTION_FILTER);
 					}
 				} else if (audioManager != null) {
-					if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT) {
+					if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT && CURRENT_RINGER_MODE > -1) {
 						audioManager.setRingerMode(CURRENT_RINGER_MODE);
 					}
 				}
