@@ -20,11 +20,6 @@ public class DateOperationsTest {
 	@Rule
 	public ExpectedException exceptionGrabber = ExpectedException.none();
 
-	@Test(expected = RuntimeException.class)
-	public void dateOperations_constructor() {
-		new DateOperations();
-	}
-
 	@Test
 	public void dateOperations_startDateFromWeek() {
 		Calendar week = Calendar.getInstance(Locale.ENGLISH);
