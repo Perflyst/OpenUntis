@@ -22,9 +22,6 @@ public class NotificationReceiver extends BroadcastReceiver {
 
 	private final String NEXT_LESSON_CHANNEL = "next_lesson";
 
-	private static int CURRENT_INTERRUPTION_FILTER = 0;
-	private static int CURRENT_RINGER_MODE = -1;
-
 	@Override
 	public void onReceive(Context context, final Intent intent) {
 		Log.d("NotificationReceiver", "NotificationReceiver received. Extras:");
@@ -66,23 +63,25 @@ public class NotificationReceiver extends BroadcastReceiver {
 			}
 			if (setDoNotDisturb) {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					CURRENT_INTERRUPTION_FILTER = notificationManager.getCurrentInterruptionFilter();
+					prefs.edit().putInt("interruption_filter", notificationManager.getCurrentInterruptionFilter()).apply();
 					notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE);
 				} else if (audioManager != null) {
-					CURRENT_RINGER_MODE = audioManager.getRingerMode();
+					prefs.edit().putInt("ringer_mode", audioManager.getRingerMode()).apply();
 					audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
 				}
 			}
 		} else {
 			if (setDoNotDisturb) {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					int interruptionFilter = prefs.getInt("interruption_filter", 0);
 					if (notificationManager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE
-							&& CURRENT_INTERRUPTION_FILTER > 0) {
-						notificationManager.setInterruptionFilter(CURRENT_INTERRUPTION_FILTER);
+							&& interruptionFilter > 0) {
+						notificationManager.setInterruptionFilter(interruptionFilter);
 					}
 				} else if (audioManager != null) {
-					if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT && CURRENT_RINGER_MODE > -1) {
-						audioManager.setRingerMode(CURRENT_RINGER_MODE);
+					int ringerMode = prefs.getInt("ringer_mode", -1);
+					if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT && ringerMode > -1) {
+						audioManager.setRingerMode(ringerMode);
 					}
 				}
 			}
