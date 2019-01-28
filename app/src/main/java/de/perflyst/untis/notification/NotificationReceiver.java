@@ -1,6 +1,7 @@
 package de.perflyst.untis.notification;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -9,14 +10,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-
 import de.perflyst.untis.R;
 import de.perflyst.untis.activity.ActivityMain;
 
 import java.util.Calendar;
 
 public class NotificationReceiver extends BroadcastReceiver {
+
+	private final String NEXT_LESSON_CHANNEL = "next_lesson";
+
 	@Override
 	public void onReceive(Context context, final Intent intent) {
 		Log.d("NotificationReceiver", "NotificationReceiver received. Extras:");
@@ -28,6 +32,14 @@ public class NotificationReceiver extends BroadcastReceiver {
 			}
 
 		final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		if (notificationManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			NotificationChannel channel = new NotificationChannel(
+					NEXT_LESSON_CHANNEL,
+					context.getString(R.string.preference_notifications_channel_title),
+					NotificationManager.IMPORTANCE_DEFAULT);
+			channel.setDescription(context.getString(R.string.preference_notifications_enable_desc));
+			notificationManager.createNotificationChannel(channel);
+		}
 		boolean clear = intent.getBooleanExtra("clear", false);
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		if (!prefs.getBoolean("preference_notifications_enable", true) ||
@@ -100,30 +112,18 @@ public class NotificationReceiver extends BroadcastReceiver {
 				longMessage.append(context.getString(R.string.notification_teachers, intent.getStringExtra("nextTeacher")));
 			}
 
-			Notification n;
-			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-				n = new Notification.Builder(context)
-						.setContentTitle(title)
-						.setContentText(message)
-						.setSmallIcon(R.drawable.ic_stat_timetable)
-						.setContentIntent(pIntent)
-						.setStyle(new Notification.BigTextStyle().bigText(longMessage))
-						.setAutoCancel(false)
-						.setOngoing(true)
-						.setCategory(Notification.CATEGORY_STATUS)
-						.build();
-				n.visibility = Notification.VISIBILITY_PUBLIC;
-			} else {
-				n = new Notification.Builder(context)
-						.setContentTitle(title)
-						.setContentText(message)
-						.setSmallIcon(R.drawable.ic_stat_timetable)
-						.setContentIntent(pIntent)
-						.setStyle(new Notification.BigTextStyle().bigText(longMessage))
-						.setAutoCancel(false)
-						.setOngoing(true)
-						.build();
-			}
+			Notification n = new NotificationCompat.Builder(context, NEXT_LESSON_CHANNEL)
+					.setContentTitle(title)
+					.setContentText(message)
+					.setSmallIcon(R.drawable.ic_stat_timetable)
+					.setContentIntent(pIntent)
+					.setStyle(new NotificationCompat.BigTextStyle().bigText(longMessage))
+					.setAutoCancel(false)
+					.setOngoing(true)
+					.setCategory(NotificationCompat.CATEGORY_STATUS)
+					.build();
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+				n.visibility = NotificationCompat.VISIBILITY_PUBLIC;
 			if (notificationManager != null)
 				notificationManager.notify(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)), n);
 			else

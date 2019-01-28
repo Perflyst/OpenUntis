@@ -66,6 +66,7 @@
 	<string name="preference_background_irregular_past">Vergangene irreguläre Stunden</string>
 	<string name="preference_notifications_enable">Benachrichtigung aktivieren</string>
 	<string name="preference_notifications_enable_desc">In den Pausen wird eine Benachrichtigung mit Infos zur nächsten Unterrichtsstunde angezeigt</string>
+	<string name="preference_notifications_channel_title">Nächste Stunde</string>
 	<string name="preference_notifications_visibility_hidden">Versteckt</string>
 	<string name="preference_notifications_visibility_long">Langer Name</string>
 	<string name="preference_notifications_visibility_short">Kurzer Name</string>
