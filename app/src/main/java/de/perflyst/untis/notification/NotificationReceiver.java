@@ -55,6 +55,11 @@ public class NotificationReceiver extends BroadcastReceiver {
 				(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && notificationManager.getActiveNotifications().length > 0 && !clear))
 			return;
 
+		if (setDoNotDisturb && showNextLesson) {
+			showNextLesson = !intent.getBooleanExtra("noNotification", false);
+			setDoNotDisturb = !intent.getBooleanExtra("noDoNotDisturb", false);
+		}
+
 		if (clear) {
 			if (showNextLesson) {
 				Log.d("NotificationReceiver", "Attempting to cancel notification #" + intent.getIntExtra("id",

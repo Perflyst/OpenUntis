@@ -167,9 +167,9 @@ public class NotificationSetup extends BroadcastReceiver {
 					try {
 						Calendar c1 = Calendar.getInstance();
 						c1.setTime(DateOperations.parseFromISO(timetable.getStartDateTime(day, hour)));
-						c1.add(Calendar.MINUTE, -PreferenceUtils.getPrefInt(context, prefs,"preference_notifications_minutes_before_first_lesson", true));
+						c1.add(Calendar.MINUTE, -PreferenceUtils.getPrefInt(context, prefs, "preference_notifications_minutes_before_first_lesson", true));
 						String endDate = DateOperations.convertToISO(c1.getTime());
-						result.add(0, TimetableItemData.combine(new ArrayList<>(), endDate, endDate));
+						result.add(0, TimetableItemData.combine(new ArrayList<>(), endDate, endDate)); // startDateTime is never used but can't be null
 					} catch (ParseException e) {
 						e.printStackTrace();
 					}
@@ -177,6 +177,11 @@ public class NotificationSetup extends BroadcastReceiver {
 			} else {
 				if (firstHour && !lastHour) {
 					lastHour = true;
+					Calendar c1 = Calendar.getInstance();
+					c1.setTime(DateOperations.parseFromISO(timetable.getEndDateTime(day, hour)));
+					TimetableItemData itemData = TimetableItemData.combine(new ArrayList<>(), DateOperations.convertToISO(c1.getTime()), null);
+					itemData.setDummy(true);
+					result.add(itemData);
 				}
 			}
 		}
@@ -222,6 +227,8 @@ public class NotificationSetup extends BroadcastReceiver {
 						.putExtra("nextTeacher", result.get(j + 1).getTeachers(userDataList).getName(ElementName.FULL))
 						.putExtra("nextTeacherLong", result.get(j + 1).getTeachers(userDataList).getLongName(ElementName.FULL))
 						.putExtra("clear", false);
+				if (result.get(j +1).isDummy())
+					i1.putExtra("noNotification", true);
 				PendingIntent pi1 = PendingIntent.getBroadcast(context, Integer.parseInt(result.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")), i1, 0);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 					alarmManager.setExact(AlarmManager.RTC_WAKEUP, c1.getTimeInMillis(), pi1);
@@ -233,6 +240,10 @@ public class NotificationSetup extends BroadcastReceiver {
 				Intent i2 = new Intent(context, NotificationReceiver.class)
 						.putExtra("id", (int) (c2.getTimeInMillis() * 0.001))
 						.putExtra("clear", true);
+				if (result.get(j +1).isDummy()) {
+					i2.putExtra("noNotification", true);
+					i2.putExtra("noDoNotDisturb", true);
+				}
 				PendingIntent pi2 = PendingIntent.getBroadcast(context, Integer.parseInt(result.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")) + 1, i2, 0);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 					alarmManager.setExact(AlarmManager.RTC_WAKEUP, c2.getTimeInMillis(), pi2);
