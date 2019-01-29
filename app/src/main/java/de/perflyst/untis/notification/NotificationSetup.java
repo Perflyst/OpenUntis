@@ -178,8 +178,9 @@ public class NotificationSetup extends BroadcastReceiver {
 				if (firstHour && !lastHour) {
 					lastHour = true;
 					Calendar c1 = Calendar.getInstance();
-					c1.setTime(DateOperations.parseFromISO(timetable.getEndDateTime(day, hour)));
-					TimetableItemData itemData = TimetableItemData.combine(new ArrayList<>(), DateOperations.convertToISO(c1.getTime()), null);
+					c1.setTime(DateOperations.parseFromISO(timetable.getEndDateTime(day, hour - 1)));
+					String startDate = DateOperations.convertToISO(c1.getTime());
+					TimetableItemData itemData = TimetableItemData.combine(new ArrayList<>(), startDate, startDate); // endDateTime is never used but can't be null
 					itemData.setDummy(true);
 					result.add(itemData);
 				}
@@ -227,7 +228,7 @@ public class NotificationSetup extends BroadcastReceiver {
 						.putExtra("nextTeacher", result.get(j + 1).getTeachers(userDataList).getName(ElementName.FULL))
 						.putExtra("nextTeacherLong", result.get(j + 1).getTeachers(userDataList).getLongName(ElementName.FULL))
 						.putExtra("clear", false);
-				if (result.get(j +1).isDummy())
+				if (result.get(j + 1).isDummy())
 					i1.putExtra("noNotification", true);
 				PendingIntent pi1 = PendingIntent.getBroadcast(context, Integer.parseInt(result.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")), i1, 0);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -240,7 +241,7 @@ public class NotificationSetup extends BroadcastReceiver {
 				Intent i2 = new Intent(context, NotificationReceiver.class)
 						.putExtra("id", (int) (c2.getTimeInMillis() * 0.001))
 						.putExtra("clear", true);
-				if (result.get(j +1).isDummy()) {
+				if (result.get(j + 1).isDummy()) {
 					i2.putExtra("noNotification", true);
 					i2.putExtra("noDoNotDisturb", true);
 				}
