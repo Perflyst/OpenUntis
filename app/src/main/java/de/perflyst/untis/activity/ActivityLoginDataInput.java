@@ -9,20 +9,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
+import android.widget.*;
 import de.perflyst.untis.R;
 import de.perflyst.untis.utils.Constants;
 import de.perflyst.untis.utils.ListManager;
 import de.perflyst.untis.utils.connectivity.UntisRequest;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,6 +48,8 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		mEtUser = findViewById(R.id.etUser);
 		mEtKey = findViewById(R.id.etKey);
 
+		mBtnLogin.setFocusable(true);
+		mBtnLogin.setFocusableInTouchMode(true);
 		mBtnLogin.setOnClickListener(v -> {
 			EditText error = null;
 			if (mEtUser.getText().length() == 0) {
@@ -105,6 +98,7 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 				mEtUser.setText(appLinkData.getQueryParameter("user"));
 			if (appLinkData.getQueryParameter("key") != null)
 				mEtKey.setText(appLinkData.getQueryParameter("key"));
+			mBtnLogin.requestFocus();
 		}
 	}
 
@@ -118,6 +112,7 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 			mEtSchool.setText(uri.getQueryParameter("school"));
 			mEtUser.setText(uri.getQueryParameter("user"));
 			mEtKey.setText(uri.getQueryParameter("key"));
+			mBtnLogin.requestFocus();
 		} else if (prefs != null) {
 			restoreInput(prefs);
 		}
@@ -145,6 +140,9 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		mEtSchool.setText(prefs.getString("etSchool", ""));
 		mEtUser.setText(prefs.getString("etUser", ""));
 		mEtKey.setText(prefs.getString("etKey", ""));
+
+		if (!mEtUrl.getText().toString().isEmpty())
+			mBtnLogin.requestFocus();
 	}
 
 	private void loadData() {
