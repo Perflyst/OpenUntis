@@ -9,7 +9,14 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import de.perflyst.untis.R;
 import de.perflyst.untis.utils.Constants;
 import de.perflyst.untis.utils.ListManager;
@@ -141,8 +148,9 @@ public class ActivityLoginDataInput extends AppCompatActivity {
 		mEtUser.setText(prefs.getString("etUser", ""));
 		mEtKey.setText(prefs.getString("etKey", ""));
 
-		if (!mEtUrl.getText().toString().isEmpty())
+		if (!mEtUrl.getText().toString().isEmpty()) {
 			mBtnLogin.requestFocus();
+		}
 	}
 
 	private void loadData() {
