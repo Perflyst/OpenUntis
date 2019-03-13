@@ -13,6 +13,7 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 import de.perflyst.untis.R;
 import de.perflyst.untis.activity.ActivityMain;
 
@@ -55,9 +56,17 @@ public class NotificationReceiver extends BroadcastReceiver {
 				(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && notificationManager.getActiveNotifications().length > 0 && !clear))
 			return;
 
-		if (setDoNotDisturb && showNextLesson) {
-			showNextLesson = !intent.getBooleanExtra("noNotification", false);
-			setDoNotDisturb = !intent.getBooleanExtra("noDoNotDisturb", false);
+		if (showNextLesson) {
+			if (intent.getBooleanExtra("noNotification", false)) {
+				showNextLesson = false;
+				Log.d("NotificationReceiver", "Show notification because last lesson");
+			}
+		}
+		if (setDoNotDisturb) {
+			if (intent.getBooleanExtra("noDoNotDisturb", false)) {
+				setDoNotDisturb = false;
+				Log.d("NotificationReceiver", "Show notification because last lesson");
+			}
 		}
 
 		if (clear) {
@@ -67,24 +76,29 @@ public class NotificationReceiver extends BroadcastReceiver {
 				notificationManager.cancel(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)));
 			}
 			if (setDoNotDisturb) {
+				SharedPreferences.Editor e = prefs.edit();
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					prefs.edit().putInt("interruption_filter", notificationManager.getCurrentInterruptionFilter()).apply();
+					e.putInt("interruption_filter", notificationManager.getCurrentInterruptionFilter());
 					notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE);
 				} else if (audioManager != null) {
-					prefs.edit().putInt("ringer_mode", audioManager.getRingerMode()).apply();
+					e.putInt("ringer_mode", audioManager.getRingerMode());
 					audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
 				}
+				e.apply();
 			}
 		} else {
 			if (setDoNotDisturb) {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 					int interruptionFilter = prefs.getInt("interruption_filter", 0);
+					Log.d("NotificationReceiver", "Old interruption filter was " + interruptionFilter);
+					Toast.makeText(context, "Old interruption filter was " + interruptionFilter, Toast.LENGTH_LONG).show();
 					if (notificationManager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE
 							&& interruptionFilter > 0) {
 						notificationManager.setInterruptionFilter(interruptionFilter);
 					}
 				} else if (audioManager != null) {
 					int ringerMode = prefs.getInt("ringer_mode", -1);
+					Log.d("NotificationReceiver", "Old ringer mode was " + ringerMode);
 					if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT && ringerMode > -1) {
 						audioManager.setRingerMode(ringerMode);
 					}

@@ -183,6 +183,7 @@ public class NotificationSetup extends BroadcastReceiver {
 					TimetableItemData itemData = TimetableItemData.combine(new ArrayList<>(), startDate, startDate); // endDateTime is never used but can't be null
 					itemData.setDummy(true);
 					result.add(itemData);
+					Log.d("NotificationSetup", "switch to normal Interruption Filter");
 				}
 			}
 		}
@@ -228,8 +229,10 @@ public class NotificationSetup extends BroadcastReceiver {
 						.putExtra("nextTeacher", result.get(j + 1).getTeachers(userDataList).getName(ElementName.FULL))
 						.putExtra("nextTeacherLong", result.get(j + 1).getTeachers(userDataList).getLongName(ElementName.FULL))
 						.putExtra("clear", false);
-				if (result.get(j + 1).isDummy())
+				if (result.get(j + 1).isDummy()) {
 					i1.putExtra("noNotification", true);
+					Log.d("NotificationSetup", "no notification at " + c1.getTime());
+				}
 				PendingIntent pi1 = PendingIntent.getBroadcast(context, Integer.parseInt(result.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")), i1, 0);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 					alarmManager.setExact(AlarmManager.RTC_WAKEUP, c1.getTimeInMillis(), pi1);
@@ -244,6 +247,7 @@ public class NotificationSetup extends BroadcastReceiver {
 				if (result.get(j + 1).isDummy()) {
 					i2.putExtra("noNotification", true);
 					i2.putExtra("noDoNotDisturb", true);
+					Log.d("NotificationSetup", "no notification to close and no change interruption filter at at " + c2.getTime());
 				}
 				PendingIntent pi2 = PendingIntent.getBroadcast(context, Integer.parseInt(result.get(j).getEndDateTime().substring(4).replaceAll("[^0-9]", "")) + 1, i2, 0);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
