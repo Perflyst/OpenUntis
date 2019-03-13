@@ -179,6 +179,7 @@ public class NotificationSetup extends BroadcastReceiver {
 					lastHour = true;
 					Calendar c1 = Calendar.getInstance();
 					c1.setTime(DateOperations.parseFromISO(timetable.getEndDateTime(day, hour - 1)));
+					c1.add(Calendar.MINUTE, 1);
 					String startDate = DateOperations.convertToISO(c1.getTime());
 					TimetableItemData itemData = TimetableItemData.combine(new ArrayList<>(), startDate, startDate); // endDateTime is never used but can't be null
 					itemData.setDummy(true);
@@ -217,7 +218,7 @@ public class NotificationSetup extends BroadcastReceiver {
 			Calendar c2 = Calendar.getInstance();
 			c2.setTime(DateOperations.parseFromISO(result.get(j + 1).getStartDateTime()));
 
-			if (c2.getTimeInMillis() > System.currentTimeMillis()) {
+			if (c2.getTimeInMillis() > System.currentTimeMillis() && c2.getTimeInMillis() - c1.getTimeInMillis() > 0) {
 				Intent i1 = new Intent(context, NotificationReceiver.class)
 						.putExtra("id", (int) (c2.getTimeInMillis() * 0.001))
 						.putExtra("startTime", c1.getTimeInMillis())
