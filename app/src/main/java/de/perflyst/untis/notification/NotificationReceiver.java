@@ -12,8 +12,8 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 import de.perflyst.untis.R;
 import de.perflyst.untis.activity.ActivityMain;
 
@@ -91,7 +91,6 @@ public class NotificationReceiver extends BroadcastReceiver {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 					int interruptionFilter = prefs.getInt("interruption_filter", 0);
 					Log.d("NotificationReceiver", "Old interruption filter was " + interruptionFilter);
-					Toast.makeText(context, "Old interruption filter was " + interruptionFilter, Toast.LENGTH_LONG).show();
 					if (notificationManager.getCurrentInterruptionFilter() == NotificationManager.INTERRUPTION_FILTER_NONE
 							&& interruptionFilter > 0) {
 						notificationManager.setInterruptionFilter(interruptionFilter);
@@ -111,57 +110,17 @@ public class NotificationReceiver extends BroadcastReceiver {
 				String title = context.getString(R.string.notification_title, endTime.get(Calendar.HOUR_OF_DAY), endTime.get(Calendar.MINUTE));
 				Log.d("NotificationReceiver", "notification delivered: Break until " + endTime.get(Calendar.HOUR_OF_DAY) + ":" + endTime.get(Calendar.MINUTE));
 
-				StringBuilder message = new StringBuilder();
-				if (prefs.getString("preference_notifications_visibility_subjects", "long").equals("long"))
-					message.append(context.getString(R.string.notification_subjects, intent.getStringExtra("nextSubjectLong")));
-				else if (prefs.getString("preference_notifications_visibility_subjects", "long").equals("short"))
-					message.append(context.getString(R.string.notification_subjects, intent.getStringExtra("nextSubject")));
+			StringBuilder message = new StringBuilder();
+			StringBuilder longMessage = new StringBuilder();
 
-				if (prefs.getString("preference_notifications_visibility_rooms", "short").equals("long")) {
-					if (message.length() > 0)
-						message.append(" / ");
-					message.append(context.getString(R.string.notification_rooms, intent.getStringExtra("nextRoomLong")));
-				} else if (prefs.getString("preference_notifications_visibility_rooms", "short").equals("short")) {
-					if (message.length() > 0)
-						message.append(" / ");
-					message.append(context.getString(R.string.notification_rooms, intent.getStringExtra("nextRoom")));
-				}
+			appendInformation(message, longMessage, prefs, "preference_notifications_visibility_subjects", intent,
+					"nextSubject", context, R.string.notification_subjects);
 
-				if (prefs.getString("preference_notifications_visibility_teachers", "short").equals("long")) {
-					if (message.length() > 0)
-						message.append(" / ");
-					message.append(context.getString(R.string.notification_teachers, intent.getStringExtra("nextTeacherLong")));
-				} else if (prefs.getString("preference_notifications_visibility_teachers", "short").equals("short")) {
-					if (message.length() > 0)
-						message.append(" / ");
-					message.append(context.getString(R.string.notification_teachers, intent.getStringExtra("nextTeacher")));
-				}
+			appendInformation(message, longMessage, prefs, "preference_notifications_visibility_rooms", intent,
+					"nextRoom", context, R.string.notification_rooms);
 
-				StringBuilder longMessage = new StringBuilder();
-				if (prefs.getString("preference_notifications_visibility_subjects", "long").equals("long"))
-					longMessage.append(context.getString(R.string.notification_subjects, intent.getStringExtra("nextSubjectLong")));
-				else if (prefs.getString("preference_notifications_visibility_subjects", "long").equals("short"))
-					longMessage.append(context.getString(R.string.notification_subjects, intent.getStringExtra("nextSubject")));
-
-				if (prefs.getString("preference_notifications_visibility_rooms", "short").equals("long")) {
-					if (longMessage.length() > 0)
-						longMessage.append('\n');
-					longMessage.append(context.getString(R.string.notification_rooms, intent.getStringExtra("nextRoomLong")));
-				} else if (prefs.getString("preference_notifications_visibility_rooms", "short").equals("short")) {
-					if (longMessage.length() > 0)
-						longMessage.append('\n');
-					longMessage.append(context.getString(R.string.notification_rooms, intent.getStringExtra("nextRoom")));
-				}
-
-				if (prefs.getString("preference_notifications_visibility_teachers", "short").equals("long")) {
-					if (longMessage.length() > 0)
-						longMessage.append('\n');
-					longMessage.append(context.getString(R.string.notification_teachers, intent.getStringExtra("nextTeacherLong")));
-				} else if (prefs.getString("preference_notifications_visibility_teachers", "short").equals("short")) {
-					if (longMessage.length() > 0)
-						longMessage.append('\n');
-					longMessage.append(context.getString(R.string.notification_teachers, intent.getStringExtra("nextTeacher")));
-				}
+			appendInformation(message, longMessage, prefs, "preference_notifications_visibility_teachers", intent,
+					"nextTeacher", context, R.string.notification_teachers);
 
 				Notification n = new NotificationCompat.Builder(context, NEXT_LESSON_CHANNEL)
 						.setContentTitle(title)
@@ -177,6 +136,28 @@ public class NotificationReceiver extends BroadcastReceiver {
 					n.visibility = NotificationCompat.VISIBILITY_PUBLIC;
 				notificationManager.notify(intent.getIntExtra("id", (int) (System.currentTimeMillis() * 0.001)), n);
 			}
+		}
+	}
+
+	private void appendInformation(StringBuilder message, StringBuilder longMessage,
+								   SharedPreferences prefs, String prefKey, Intent intent, String intentKey,
+								   Context context, int formatResource) {
+		String s = null;
+		if (prefs.getString(prefKey, "short").equals("long")) {
+			s = intent.getStringExtra(intentKey.concat("Long"));
+		} else if (prefs.getString(prefKey, "short").equals("short")) {
+			s = intent.getStringExtra(intentKey);
+		}
+		if (!TextUtils.isEmpty(s)) {
+			if (message.length() > 0) {
+				message.append(" / ");
+			}
+			if (longMessage.length() > 0) {
+				longMessage.append('\n');
+			}
+			String text = context.getString(formatResource, s);
+			message.append(text);
+			longMessage.append(text);
 		}
 	}
 }
