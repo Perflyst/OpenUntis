@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 import de.perflyst.untis.utils.*;
 import de.perflyst.untis.utils.connectivity.UntisRequest;
 import de.perflyst.untis.utils.timetable.TimegridUnitManager;
@@ -48,11 +47,7 @@ public class NotificationSetup extends BroadcastReceiver {
 		listManager = new ListManager(context);
 		sessionInfo = new SessionInfo();
 
-		try {
-			sessionInfo.setDataFromJsonObject(ListManager.getUserData(listManager).optJSONObject("userData"));
-		} catch (NullPointerException e) {
-			Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-		}
+		sessionInfo.setDataFromJsonObject(ListManager.getUserData(listManager).optJSONObject("userData"));
 
 		startDateFromWeek = Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 				.format(DateOperations.getStartDateFromWeek(Calendar.getInstance(), 0).getTime()));

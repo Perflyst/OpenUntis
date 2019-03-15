@@ -22,7 +22,7 @@ public class StartupReceiver extends BroadcastReceiver {
 		if (!prefs.getBoolean("preference_notifications_enable", true))
 			return;
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.HOUR_OF_DAY, 6);
+		calendar.set(Calendar.HOUR_OF_DAY, 1);
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.SECOND, 0);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NotificationSetup.class), PendingIntent.FLAG_UPDATE_CURRENT);
