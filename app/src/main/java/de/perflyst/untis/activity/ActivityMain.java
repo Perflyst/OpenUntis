@@ -335,10 +335,6 @@ public class ActivityMain extends AppCompatActivity
 				// TODO: Add parameter for date selection
 				// TODO: Add parameter for school (for compatibility)
 			}
-			if (!StartupReceiver.executed) {
-				Intent i = new Intent(this, StartupReceiver.class);
-				sendBroadcast(i);
-			}
 		}
 	}
 

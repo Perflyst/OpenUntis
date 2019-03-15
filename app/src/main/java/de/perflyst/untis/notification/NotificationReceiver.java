@@ -59,13 +59,13 @@ public class NotificationReceiver extends BroadcastReceiver {
 		if (showNextLesson) {
 			if (intent.getBooleanExtra("noNotification", false)) {
 				showNextLesson = false;
-				Log.d("NotificationReceiver", "Show notification because last lesson");
+				Log.d("NotificationReceiver", "Show no notification because last lesson");
 			}
 		}
 		if (setDoNotDisturb) {
 			if (intent.getBooleanExtra("noDoNotDisturb", false)) {
 				setDoNotDisturb = false;
-				Log.d("NotificationReceiver", "Show notification because last lesson");
+				Log.d("NotificationReceiver", "Only unmute because last lesson");
 			}
 		}
 
@@ -110,17 +110,17 @@ public class NotificationReceiver extends BroadcastReceiver {
 				String title = context.getString(R.string.notification_title, endTime.get(Calendar.HOUR_OF_DAY), endTime.get(Calendar.MINUTE));
 				Log.d("NotificationReceiver", "notification delivered: Break until " + endTime.get(Calendar.HOUR_OF_DAY) + ":" + endTime.get(Calendar.MINUTE));
 
-			StringBuilder message = new StringBuilder();
-			StringBuilder longMessage = new StringBuilder();
+				StringBuilder message = new StringBuilder();
+				StringBuilder longMessage = new StringBuilder();
 
-			appendInformation(message, longMessage, prefs, "preference_notifications_visibility_subjects", intent,
-					"nextSubject", context, R.string.notification_subjects);
+				appendInformation(message, longMessage, prefs, "preference_notifications_visibility_subjects", intent,
+						"nextSubject", context, R.string.notification_subjects);
 
-			appendInformation(message, longMessage, prefs, "preference_notifications_visibility_rooms", intent,
-					"nextRoom", context, R.string.notification_rooms);
+				appendInformation(message, longMessage, prefs, "preference_notifications_visibility_rooms", intent,
+						"nextRoom", context, R.string.notification_rooms);
 
-			appendInformation(message, longMessage, prefs, "preference_notifications_visibility_teachers", intent,
-					"nextTeacher", context, R.string.notification_teachers);
+				appendInformation(message, longMessage, prefs, "preference_notifications_visibility_teachers", intent,
+						"nextTeacher", context, R.string.notification_teachers);
 
 				Notification n = new NotificationCompat.Builder(context, NEXT_LESSON_CHANNEL)
 						.setContentTitle(title)

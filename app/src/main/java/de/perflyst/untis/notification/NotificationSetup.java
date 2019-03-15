@@ -184,7 +184,7 @@ public class NotificationSetup extends BroadcastReceiver {
 					TimetableItemData itemData = TimetableItemData.combine(new ArrayList<>(), startDate, startDate); // endDateTime is never used but can't be null
 					itemData.setDummy(true);
 					result.add(itemData);
-					Log.d("NotificationSetup", "switch to normal Interruption Filter");
+					Log.d("NotificationSetup", "switch to normal Interruption Filter at " + c1.getTime());
 				}
 			}
 		}

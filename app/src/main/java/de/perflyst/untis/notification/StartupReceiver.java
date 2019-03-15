@@ -14,12 +14,9 @@ import java.util.Calendar;
 
 public class StartupReceiver extends BroadcastReceiver {
 
-	public static boolean executed = false;
-
 	@SuppressLint("UnsafeProtectedBroadcastReceiver")
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		executed = true;
 		Log.d("StartupReceiver", "StartupReceiver received");
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		if (!prefs.getBoolean("preference_notifications_enable", true))
