@@ -26,51 +26,28 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
+import android.view.*;
+import android.widget.*;
 import de.perflyst.untis.BuildConfig;
 import de.perflyst.untis.R;
 import de.perflyst.untis.adapter.AdapterGridView;
 import de.perflyst.untis.adapter.AdapterTimetable;
 import de.perflyst.untis.adapter.AdapterTimetableHeader;
 import de.perflyst.untis.fragment.FragmentDatePicker;
-import de.perflyst.untis.utils.Conversions;
-import de.perflyst.untis.utils.DateOperations;
-import de.perflyst.untis.utils.ElementName;
-import de.perflyst.untis.utils.ListManager;
-import de.perflyst.untis.utils.SessionInfo;
+import de.perflyst.untis.notification.StartupReceiver;
+import de.perflyst.untis.utils.*;
 import de.perflyst.untis.utils.timetable.TimegridUnitManager;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-
-import de.perflyst.untis.utils.ThemeUtils;
+import java.util.*;
 
 import static de.perflyst.untis.utils.Conversions.dp2px;
-import static de.perflyst.untis.utils.ElementName.ElementType.CLASS;
-import static de.perflyst.untis.utils.ElementName.ElementType.ROOM;
-import static de.perflyst.untis.utils.ElementName.ElementType.TEACHER;
+import static de.perflyst.untis.utils.ElementName.ElementType.*;
 import static de.perflyst.untis.utils.PreferenceUtils.getPrefBool;
 import static de.perflyst.untis.utils.PreferenceUtils.getPrefInt;
 
@@ -149,7 +126,7 @@ public class ActivityMain extends AppCompatActivity
 					e.printStackTrace();
 				}
 				mListManager.delete(sessionInfo.getElemType() + "-" + sessionInfo.getElemId() +
-						"-" + startDate + "-" + addDaysToInt(startDate, days - 1), true);
+						"-" + startDate + "-" + DateOperations.addDaysToInt(startDate, days - 1), true);
 				refresh();
 			});
 
@@ -183,7 +160,7 @@ public class ActivityMain extends AppCompatActivity
 
 				@Override
 				public void onPageScrolled(final int position, final float positionOffset,
-				                           final int positionOffsetPixels) {
+										   final int positionOffsetPixels) {
 					if (scrollState == ViewPager.SCROLL_STATE_IDLE) {
 						return;
 					}
@@ -210,7 +187,7 @@ public class ActivityMain extends AppCompatActivity
 
 				@Override
 				public void onPageScrolled(final int position, final float positionOffset,
-				                           final int positionOffsetPixels) {
+										   final int positionOffsetPixels) {
 					if (scrollState == ViewPager.SCROLL_STATE_IDLE) {
 						return;
 					}
@@ -476,7 +453,6 @@ public class ActivityMain extends AppCompatActivity
 		return super.onOptionsItemSelected(item);
 	}
 
-	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 		// Handle navigation view item clicks here.
@@ -550,7 +526,7 @@ public class ActivityMain extends AppCompatActivity
 	}
 
 	private void showItemList(final ElementName.ElementType elementType, @StringRes int searchFieldHint,
-	                          final int targetPageTitle, String masterDataField) {
+							  final int targetPageTitle, String masterDataField) {
 		DialogInterface.OnCancelListener cancelListener = dialogInterface -> {
 			if (getSupportActionBar() != null)
 				getSupportActionBar().setTitle(sessionInfo.getDisplayName());
@@ -705,21 +681,6 @@ public class ActivityMain extends AppCompatActivity
 
 	public void stopRefreshing() {
 		swipeRefresh.setRefreshing(false);
-	}
-
-	@SuppressWarnings("SameParameterValue")
-	private int addDaysToInt(int startDate, int days) {
-		try {
-			Calendar c = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
-			c.setTime(sdf.parse(Integer.toString(startDate)));
-			c.add(Calendar.DATE, days);
-			return Integer.parseInt(new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
-					.format(c.getTime()));
-		} catch (ParseException e) {
-			e.printStackTrace();
-			return startDate;
-		}
 	}
 
 	public void setLastRefresh(long time) {

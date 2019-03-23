@@ -13,6 +13,7 @@ import android.util.Log;
 import java.util.Calendar;
 
 public class StartupReceiver extends BroadcastReceiver {
+
 	@SuppressLint("UnsafeProtectedBroadcastReceiver")
 	@Override
 	public void onReceive(Context context, Intent intent) {
