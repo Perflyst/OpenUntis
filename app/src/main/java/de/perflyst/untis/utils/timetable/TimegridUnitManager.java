@@ -12,6 +12,7 @@ public class TimegridUnitManager {
 	private ArrayList<UnitData> unitList;
 	private JSONArray days;
 	private int numberOfDays = -1;
+	private int longestDay = 0;
 	private int maxHoursPerDay = -1;
 
 	public TimegridUnitManager(JSONArray days) {
@@ -31,8 +32,12 @@ public class TimegridUnitManager {
 
 		for (int i = 0; i < days.length(); i++)
 			try {
-				maxHoursPerDay = Math.max(maxHoursPerDay, days.getJSONObject(i)
-						.getJSONArray("units").length());
+				final int unitsLength = days.getJSONObject(i).getJSONArray("units").length();
+				if (maxHoursPerDay < unitsLength) {
+					maxHoursPerDay = unitsLength;
+					// remember the day with the most units
+					longestDay = i;
+				}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -46,9 +51,12 @@ public class TimegridUnitManager {
 
 	public ArrayList<UnitData> getUnits() {
 		if (unitList == null) {
+			// determine the number of days and longest day in the week before building list of units
+			// (important if week has days with different length)
+			calculateCounts();
 			unitList = new ArrayList<>();
 			try {
-				JSONArray units = days.getJSONObject(0).getJSONArray("units");
+				JSONArray units = days.getJSONObject(longestDay).getJSONArray("units");
 				for (int i = 0; i < units.length(); i++) {
 					UnitData unitData = new UnitData(
 							units.getJSONObject(i).getString("startTime").substring(1),
