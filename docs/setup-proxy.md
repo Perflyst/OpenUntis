@@ -62,6 +62,9 @@ location / {
            # proxy_set_header X-Real-IP $remote_addr;
            # proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
            # proxy_set_header X-Forwarded-Host $server_name;
+           
+           # pass firefox esr header
+           proxy_set_header User-Agent "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0";
            sub_filter_types text/html, application/json;
            sub_filter_once off;
            sub_filter "demo.webuntis.com" "demo.openuntis.example.com";
