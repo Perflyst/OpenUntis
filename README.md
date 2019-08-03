@@ -8,7 +8,16 @@ An alternative FLOSS Android client for the Untis timetable system.
       height="80">](https://f-droid.org/packages/de.perflyst.untis/)
 
 
+## Proxied WebUntis
 
+For more privacy (no transmission of IP address or useragent) you can use following domain instead of the normal webuntis.com domains.  
+Please replace `server` with your webuntis server: `server.openuntis.perflyst.de`
+
+Example:  
+`demo.webuntis.com` -> `demo.openuntis.perflyst.de`
+
+Please note: I have full control over the connection and therefore I could inject malicious code, read your password or analyze the data you transmit.
+I do not process nor look into any of your data which is transmitted. **Access logs are disabled!** Only **error logs are enabled**, no user or password is ever logged, in order to debug issues which may occur. They are **deleted** at least **after 7 days**.
 
 ## Anti Features
 webuntis.com, non-free network service
