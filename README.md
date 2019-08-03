@@ -19,6 +19,8 @@ Example:
 Please note: I have full control over the connection and therefore I could inject malicious code, read your password or analyze the data you transmit.
 I do not process nor look into any of your data which is transmitted. **Access logs are disabled!** Only **error logs are enabled**, no user or password is ever logged, in order to debug issues which may occur. They are **deleted** at least **after 7 days**.
 
+To setup this yourself, check the [proxied WebUntis documentation](https://github.com/Perflyst/OpenUntis/blob/master/docs/setup-proxy.md).
+
 ## Anti Features
 webuntis.com, non-free network service
 
