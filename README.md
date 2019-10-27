@@ -3,6 +3,8 @@
 Fork of [SapuSeven BetterUntis-Legacy](https://github.com/SapuSeven/BetterUntis-Legacy).  
 An alternative FLOSS Android client for the Untis timetable system.
 
+OpenUntis will be replaced with the [new BetterUntis](https://github.com/SapuSeven/BetterUntis/). If you want to contribute or add new features please do it there.
+
 [<img src="https://f-droid.org/badge/get-it-on.png"
       alt="Get it on F-Droid"
       height="80">](https://f-droid.org/packages/de.perflyst.untis/)
